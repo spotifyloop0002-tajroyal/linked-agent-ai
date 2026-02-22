@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect, useCallback } from "react";
+// framer-motion removed from layout for faster load
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   Bot,
@@ -42,11 +42,45 @@ const navItems = [
   { icon: CreditCard, label: "Billing", path: "/dashboard/billing" },
 ];
 
+// Route-to-import map for prefetching on hover
+const routeImports: Record<string, () => Promise<unknown>> = {
+  "/dashboard": () => import("@/pages/Dashboard"),
+  "/dashboard/calendar": () => import("@/pages/CalendarPage"),
+  "/dashboard/agents": () => import("@/pages/Agents"),
+  "/dashboard/analytics": () => import("@/pages/Analytics"),
+  "/dashboard/linkedin": () => import("@/pages/LinkedInConnection"),
+  "/dashboard/settings": () => import("@/pages/Settings"),
+  "/dashboard/billing": () => import("@/pages/Billing"),
+};
+
+const prefetchedRoutes = new Set<string>();
+
 const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { profile, isLoading } = useUserProfile();
+
+  // Prefetch route chunk on hover so navigation is instant
+  const prefetchRoute = useCallback((path: string) => {
+    if (prefetchedRoutes.has(path) || location.pathname === path) return;
+    prefetchedRoutes.add(path);
+    const importFn = routeImports[path];
+    if (importFn) {
+      importFn().catch(() => {
+        // Silent fail — will load normally on click
+        prefetchedRoutes.delete(path);
+      });
+    }
+  }, [location.pathname]);
+
+  // Prefetch adjacent routes after idle to make navigation instant
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      Object.keys(routeImports).forEach(path => prefetchRoute(path));
+    }, 2000); // Wait 2s after page load, then prefetch all dashboard routes
+    return () => clearTimeout(timer);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Session sync is now handled globally by useExtensionAuth in App.tsx
 
@@ -97,17 +131,12 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   return (
     <div className="min-h-screen bg-background">
       {/* Mobile overlay */}
-      <AnimatePresence>
-        {sidebarOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-foreground/20 backdrop-blur-sm z-40 lg:hidden"
-            onClick={() => setSidebarOpen(false)}
-          />
-        )}
-      </AnimatePresence>
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-foreground/20 backdrop-blur-sm z-40 lg:hidden animate-in fade-in duration-200"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
 
       {/* Sidebar */}
       <aside
@@ -148,7 +177,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             {navItems.map((item) => {
               const isActive = location.pathname === item.path;
               return (
-                <NavLink
+              <NavLink
                   key={item.path}
                   to={item.path}
                   className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${
@@ -157,6 +186,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                       : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                   }`}
                   onClick={() => setSidebarOpen(false)}
+                  onMouseEnter={() => prefetchRoute(item.path)}
                 >
                   <item.icon className="w-5 h-5" />
                   <span className="font-medium">{item.label}</span>
