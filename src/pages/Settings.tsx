@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { useUserProfile, ProfileData } from "@/hooks/useUserProfile";
+import { useDashboardProfile } from "@/contexts/DashboardContext";
+import type { ProfileData } from "@/hooks/useUserProfile";
 import { useToast } from "@/hooks/use-toast";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { Button } from "@/components/ui/button";
@@ -44,7 +45,7 @@ import { useLinkedInAPI } from "@/hooks/useLinkedInAPI";
 
 const SettingsPage = () => {
   usePageTitle("Settings");
-  const { profile, isLoading, saveProfile } = useUserProfile();
+  const { profile, isLoading, saveProfile } = useDashboardProfile();
   const { isConnected: linkedInConnected } = useLinkedInAPI();
   const { toast } = useToast();
   const [isSaving, setIsSaving] = useState(false);

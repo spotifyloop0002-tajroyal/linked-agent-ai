@@ -20,7 +20,7 @@ import {
 import { format } from "date-fns";
 import { useAgentChat, GeneratedPost } from "@/hooks/useAgentChat";
 import { useAgents } from "@/hooks/useAgents";
-import { useUserProfile } from "@/hooks/useUserProfile";
+import { useDashboardProfile } from "@/contexts/DashboardContext";
 import { usePostingLimits } from "@/hooks/usePostingLimits";
 import { PostPreviewCard } from "@/components/agents/PostPreviewCard";
 import { ExtensionActivityLog, useExtensionActivityLog } from "@/components/agents/ExtensionActivityLog";
@@ -59,7 +59,7 @@ const AgentChatPage = () => {
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   const { agents } = useAgents();
-  const { profile } = useUserProfile();
+  const { profile } = useDashboardProfile();
 
   // Find the agent if ID provided and LOAD its saved settings
   const currentAgent = agentId ? agents.find(a => a.id === agentId) : null;

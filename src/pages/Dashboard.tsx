@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ExtensionStatus } from "@/components/ExtensionStatus";
 import { useLinkedInAPI } from "@/hooks/useLinkedInAPI";
 import { useLinkedInAnalytics } from "@/hooks/useLinkedInAnalytics";
-import { useUserProfile } from "@/hooks/useUserProfile";
+import { useDashboardProfile } from "@/contexts/DashboardContext";
 import { useAgents } from "@/hooks/useAgents";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { supabase } from "@/integrations/supabase/client";
@@ -103,7 +103,7 @@ const DashboardPage = () => {
   usePageTitle("Dashboard");
   const navigate = useNavigate();
   const { isConnected } = useLinkedInAPI();
-  const { profile, isLoading: profileLoading, fetchProfile } = useUserProfile();
+  const { profile, isLoading: profileLoading, fetchProfile } = useDashboardProfile();
   const { posts: analyticsPosts, isLoading: analyticsLoading } = useLinkedInAnalytics();
   const { agents, isLoading: agentsLoading } = useAgents();
   

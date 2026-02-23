@@ -3,7 +3,7 @@ import { useState, useEffect, useMemo } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useLinkedBotExtension } from "@/hooks/useLinkedBotExtension";
 import { useLinkedInAnalytics } from "@/hooks/useLinkedInAnalytics";
-import { useUserProfile } from "@/hooks/useUserProfile";
+import { useDashboardProfile } from "@/contexts/DashboardContext";
 import { useToast } from "@/hooks/use-toast";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { MissingProfileBanner } from "@/components/linkedin/MissingProfileBanner";
@@ -90,7 +90,7 @@ const AnalyticsPage = () => {
   usePageTitle("Analytics");
   const { toast } = useToast();
   const { isConnected, isInstalled } = useLinkedBotExtension();
-  const { profile: userProfile, isLoading: profileLoading } = useUserProfile();
+  const { profile: userProfile, isLoading: profileLoading } = useDashboardProfile();
   const { isSyncing, syncAnalytics } = useLinkedInAnalytics();
 
   const [posts, setPosts] = useState<PostData[]>([]);

@@ -16,7 +16,7 @@ import {
   User,
 } from "lucide-react";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
-import { useUserProfile } from "@/hooks/useUserProfile";
+import { useDashboardProfile } from "@/contexts/DashboardContext";
 import { supabase } from "@/integrations/supabase/client";
 import {
   DropdownMenu,
@@ -59,7 +59,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { profile, isLoading } = useUserProfile();
+  const { profile, isLoading } = useDashboardProfile();
 
   // Prefetch route chunk on hover so navigation is instant
   const prefetchRoute = useCallback((path: string) => {

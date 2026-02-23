@@ -7,7 +7,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useLinkedBotExtension } from "@/hooks/useLinkedBotExtension";
-import { useUserProfile, LinkedInProfileData } from "@/hooks/useUserProfile";
+import { useDashboardProfile } from "@/contexts/DashboardContext";
+import type { LinkedInProfileData } from "@/hooks/useUserProfile";
 import { useProfileSync } from "@/hooks/useProfileSync";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { formatDistanceToNow } from "date-fns";
@@ -15,7 +16,7 @@ import { Link } from "react-router-dom";
 
 const LinkedInProfile = () => {
   const { isConnected, isInstalled, isLoading: extensionLoading } = useLinkedBotExtension();
-  const { profile, isLoading: profileLoading, fetchProfile } = useUserProfile();
+  const { profile, isLoading: profileLoading, fetchProfile } = useDashboardProfile();
   const { syncProfileData, isRefreshing } = useProfileSync();
   
   const [profileData, setProfileData] = useState<LinkedInProfileData | null>(null);

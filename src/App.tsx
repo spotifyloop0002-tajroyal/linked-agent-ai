@@ -50,6 +50,7 @@ const API = lazy(() => import("./pages/product/API"));
 
 // Lazy-loaded AdminRoute wrapper
 const AdminRoute = lazy(() => import("./components/admin/AdminRoute"));
+const DashboardGuard = lazy(() => import("./components/dashboard/DashboardGuard"));
 
 const queryClient = new QueryClient();
 
@@ -77,15 +78,15 @@ const AppContent = () => {
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/onboarding" element={<Onboarding />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/dashboard/agents" element={<Agents />} />
-            <Route path="/dashboard/agents/chat" element={<AgentChat />} />
-            <Route path="/dashboard/calendar" element={<CalendarPage />} />
-            <Route path="/dashboard/analytics" element={<Analytics />} />
-            <Route path="/dashboard/linkedin" element={<LinkedInConnection />} />
-            <Route path="/dashboard/profile" element={<LinkedInProfile />} />
-            <Route path="/dashboard/settings" element={<Settings />} />
-            <Route path="/dashboard/billing" element={<Billing />} />
+            <Route path="/dashboard" element={<DashboardGuard><Dashboard /></DashboardGuard>} />
+            <Route path="/dashboard/agents" element={<DashboardGuard><Agents /></DashboardGuard>} />
+            <Route path="/dashboard/agents/chat" element={<DashboardGuard><AgentChat /></DashboardGuard>} />
+            <Route path="/dashboard/calendar" element={<DashboardGuard><CalendarPage /></DashboardGuard>} />
+            <Route path="/dashboard/analytics" element={<DashboardGuard><Analytics /></DashboardGuard>} />
+            <Route path="/dashboard/linkedin" element={<DashboardGuard><LinkedInConnection /></DashboardGuard>} />
+            <Route path="/dashboard/profile" element={<DashboardGuard><LinkedInProfile /></DashboardGuard>} />
+            <Route path="/dashboard/settings" element={<DashboardGuard><Settings /></DashboardGuard>} />
+            <Route path="/dashboard/billing" element={<DashboardGuard><Billing /></DashboardGuard>} />
             {/* LinkedIn OAuth callback */}
             <Route path="/auth/linkedin/callback" element={<LinkedInCallback />} />
             {/* Admin Login - public */}
