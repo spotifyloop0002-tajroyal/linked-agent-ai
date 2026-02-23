@@ -52,7 +52,16 @@ const API = lazy(() => import("./pages/product/API"));
 const AdminRoute = lazy(() => import("./components/admin/AdminRoute"));
 const DashboardGuard = lazy(() => import("./components/dashboard/DashboardGuard"));
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes — prevent refetches on page switch
+      gcTime: 10 * 60 * 1000, // 10 minutes cache
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+});
 
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center bg-background">
@@ -78,15 +87,20 @@ const AppContent = () => {
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/onboarding" element={<Onboarding />} />
-            <Route path="/dashboard" element={<DashboardGuard><Dashboard /></DashboardGuard>} />
-            <Route path="/dashboard/agents" element={<DashboardGuard><Agents /></DashboardGuard>} />
-            <Route path="/dashboard/agents/chat" element={<DashboardGuard><AgentChat /></DashboardGuard>} />
-            <Route path="/dashboard/calendar" element={<DashboardGuard><CalendarPage /></DashboardGuard>} />
-            <Route path="/dashboard/analytics" element={<DashboardGuard><Analytics /></DashboardGuard>} />
-            <Route path="/dashboard/linkedin" element={<DashboardGuard><LinkedInConnection /></DashboardGuard>} />
-            <Route path="/dashboard/profile" element={<DashboardGuard><LinkedInProfile /></DashboardGuard>} />
-            <Route path="/dashboard/settings" element={<DashboardGuard><Settings /></DashboardGuard>} />
-            <Route path="/dashboard/billing" element={<DashboardGuard><Billing /></DashboardGuard>} />
+            
+            {/* Dashboard routes: DashboardGuard runs ONCE as layout route */}
+            <Route path="/dashboard" element={<DashboardGuard />}>
+              <Route index element={<Dashboard />} />
+              <Route path="agents" element={<Agents />} />
+              <Route path="agents/chat" element={<AgentChat />} />
+              <Route path="calendar" element={<CalendarPage />} />
+              <Route path="analytics" element={<Analytics />} />
+              <Route path="linkedin" element={<LinkedInConnection />} />
+              <Route path="profile" element={<LinkedInProfile />} />
+              <Route path="settings" element={<Settings />} />
+              <Route path="billing" element={<Billing />} />
+            </Route>
+
             {/* LinkedIn OAuth callback */}
             <Route path="/auth/linkedin/callback" element={<LinkedInCallback />} />
             {/* Admin Login - public */}

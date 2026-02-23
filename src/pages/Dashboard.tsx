@@ -222,20 +222,9 @@ const DashboardPage = () => {
     };
   }, []);
 
-  // Polling fallback - refetch every 15 seconds
+  // Refetch on window focus only (realtime handles live updates)
   useEffect(() => {
-    const interval = setInterval(() => {
-      fetchPosts();
-    }, 15000);
-
-    return () => clearInterval(interval);
-  }, [fetchPosts]);
-
-  // Refetch on window focus
-  useEffect(() => {
-    const handleFocus = () => {
-      fetchPosts();
-    };
+    const handleFocus = () => fetchPosts();
     window.addEventListener('focus', handleFocus);
     return () => window.removeEventListener('focus', handleFocus);
   }, [fetchPosts]);
@@ -286,7 +275,8 @@ const DashboardPage = () => {
     },
   ];
 
-  const isLoading = profileLoading || analyticsLoading || postsLoading || agentsLoading;
+  // Show dashboard immediately — only block on profile (comes from context, already loaded)
+  const isLoading = profileLoading;
 
   if (isLoading) {
     return (

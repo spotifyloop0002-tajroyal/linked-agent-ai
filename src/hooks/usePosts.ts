@@ -129,12 +129,8 @@ export const usePosts = () => {
     setupRealtimeSubscription();
   }, [toast]);
 
-  // Polling fallback: refetch every 10 seconds + on window focus
+  // Refetch on window focus only (realtime handles live updates)
   useEffect(() => {
-    pollingRef.current = setInterval(() => {
-      fetchPosts();
-    }, POLLING_INTERVAL_MS);
-
     const handleFocus = () => {
       fetchPosts();
     };
@@ -142,9 +138,6 @@ export const usePosts = () => {
     window.addEventListener('focus', handleFocus);
     
     return () => {
-      if (pollingRef.current) {
-        clearInterval(pollingRef.current);
-      }
       window.removeEventListener('focus', handleFocus);
     };
   }, [fetchPosts]);
