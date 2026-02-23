@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
 import { RefreshCw, MapPin, Briefcase, User, Clock, AlertCircle, ExternalLink, Linkedin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -22,7 +21,6 @@ const LinkedInProfile = () => {
   const [profileData, setProfileData] = useState<LinkedInProfileData | null>(null);
   const [lastSynced, setLastSynced] = useState<Date | null>(null);
 
-  // Load saved profile data on mount
   useEffect(() => {
     if (profile) {
       const savedData = profile.linkedin_profile_data;
@@ -35,16 +33,11 @@ const LinkedInProfile = () => {
     }
   }, [profile]);
 
-  // Profile scraping is not yet implemented
   const isScrapingImplemented = false;
 
   const handleRefresh = async () => {
-    if (!isScrapingImplemented) {
-      // Don't show error - feature is coming soon
-      return;
-    }
+    if (!isScrapingImplemented) return;
     const result = await syncProfileData(profile?.linkedin_profile_url || undefined);
-    
     if (result.success && result.data) {
       setProfileData(result.data);
       setLastSynced(new Date());
@@ -62,30 +55,21 @@ const LinkedInProfile = () => {
   };
 
   const isLoading = extensionLoading || profileLoading;
-
   const hasProfileUrl = Boolean(profile?.linkedin_profile_url);
 
   return (
     <DashboardLayout>
       <div className="max-w-2xl mx-auto space-y-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
+        <div className="animate-fade-up">
           <h1 className="text-3xl font-bold">LinkedIn Profile</h1>
           <p className="text-muted-foreground mt-2">
             View and sync your LinkedIn profile data
           </p>
-        </motion.div>
+        </div>
 
         {/* Extension Status Warning */}
         {!isLoading && !isInstalled && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-          >
+          <div className="animate-fade-up [animation-delay:100ms]">
             <Alert className="border-warning/50 bg-warning/10">
               <AlertCircle className="w-4 h-4 text-warning" />
               <AlertDescription className="flex items-center justify-between">
@@ -98,15 +82,11 @@ const LinkedInProfile = () => {
                 </Button>
               </AlertDescription>
             </Alert>
-          </motion.div>
+          </div>
         )}
 
         {!isLoading && isInstalled && !isConnected && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-          >
+          <div className="animate-fade-up [animation-delay:100ms]">
             <Alert className="border-warning/50 bg-warning/10">
               <AlertCircle className="w-4 h-4 text-warning" />
               <AlertDescription className="flex items-center justify-between">
@@ -119,16 +99,12 @@ const LinkedInProfile = () => {
                 </Button>
               </AlertDescription>
             </Alert>
-          </motion.div>
+          </div>
         )}
 
         {/* Missing Profile URL Warning */}
         {!isLoading && isConnected && !hasProfileUrl && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-          >
+          <div className="animate-fade-up [animation-delay:100ms]">
             <Alert className="border-destructive/50 bg-destructive/10">
               <AlertCircle className="w-4 h-4 text-destructive" />
               <AlertDescription className="flex items-center justify-between">
@@ -140,15 +116,11 @@ const LinkedInProfile = () => {
                 </Button>
               </AlertDescription>
             </Alert>
-          </motion.div>
+          </div>
         )}
 
         {/* Profile Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-        >
+        <div className="animate-fade-up [animation-delay:200ms]">
           <Card>
             <CardHeader>
             <CardTitle className="flex items-center justify-between">
@@ -272,15 +244,11 @@ const LinkedInProfile = () => {
               )}
             </CardContent>
           </Card>
-        </motion.div>
+        </div>
 
         {/* Saved LinkedIn URL */}
         {profile?.linkedin_profile_url && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-          >
+          <div className="animate-fade-up [animation-delay:300ms]">
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg">Linked Profile URL</CardTitle>
@@ -301,7 +269,7 @@ const LinkedInProfile = () => {
                 )}
               </CardContent>
             </Card>
-          </motion.div>
+          </div>
         )}
       </div>
     </DashboardLayout>

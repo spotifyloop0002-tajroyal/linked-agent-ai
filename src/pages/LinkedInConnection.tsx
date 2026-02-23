@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useLinkedInAPI } from "@/hooks/useLinkedInAPI";
 import { useUserProfile } from "@/hooks/useUserProfile";
@@ -76,14 +75,14 @@ const LinkedInConnectionPage = () => {
   return (
     <DashboardLayout>
       <div className="space-y-6 max-w-4xl mx-auto">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+        <div className="animate-fade-up">
           <h1 className="text-3xl font-bold">LinkedIn Connection</h1>
           <p className="text-muted-foreground mt-1">
             Connect your LinkedIn account via the official API to enable automatic posting
           </p>
-        </motion.div>
+        </div>
 
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+        <div className="animate-fade-up [animation-delay:100ms]">
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -137,10 +136,10 @@ const LinkedInConnectionPage = () => {
               )}
             </CardContent>
           </Card>
-        </motion.div>
+        </div>
 
         {/* Redirect URI info for developers */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+        <div className="animate-fade-up [animation-delay:200ms]">
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Developer Info</CardTitle>
@@ -166,7 +165,7 @@ const LinkedInConnectionPage = () => {
               </div>
             </CardContent>
           </Card>
-        </motion.div>
+        </div>
       </div>
     </DashboardLayout>
   );

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+// framer-motion removed — using CSS animations for faster page load
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -359,11 +359,7 @@ const AgentChatPage = () => {
     <DashboardLayout>
       <div className="h-[calc(100vh-120px)] flex flex-col">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex items-center justify-between pb-4 border-b border-border flex-shrink-0"
-        >
+        <div className="flex items-center justify-between pb-4 border-b border-border flex-shrink-0 animate-fade-in">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" onClick={handleBack}>
               <ArrowLeft className="w-5 h-5" />
@@ -387,7 +383,7 @@ const AgentChatPage = () => {
               Clear Chat
             </Button>
           </div>
-        </motion.div>
+        </div>
 
         {/* Posting Limits Banner */}
         {limitsStatus && (
@@ -417,11 +413,9 @@ const AgentChatPage = () => {
             <ScrollArea className="flex-1 pr-4">
               <div className="space-y-4 pb-4">
                 {messages.map((message, index) => (
-                  <motion.div
+                  <div
                     key={index}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className={`flex ${
+                    className={`flex animate-fade-in ${
                       message.role === "user" ? "justify-end" : "justify-start"
                     }`}
                   >
@@ -447,19 +441,15 @@ const AgentChatPage = () => {
                       )}
                       <p className="text-sm whitespace-pre-wrap">{message.content}</p>
                     </div>
-                  </motion.div>
+                  </div>
                 ))}
                 {isLoading && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="flex justify-start"
-                  >
+                  <div className="flex justify-start animate-fade-in">
                     <div className="bg-muted p-4 rounded-2xl flex items-center gap-2">
                       <Loader2 className="w-4 h-4 animate-spin" />
                       <span className="text-sm">Thinking...</span>
                     </div>
-                  </motion.div>
+                  </div>
                 )}
                 <div ref={chatEndRef} />
               </div>
@@ -468,25 +458,19 @@ const AgentChatPage = () => {
             {/* Chat input */}
             <div className="flex-shrink-0 border-t border-border pt-4 space-y-3">
               {/* Image Upload Panel */}
-              <AnimatePresence>
-                {showImageUpload && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                  >
-                    <ImageUploadPanel
-                      images={uploadedImages}
-                      isUploading={isUploadingImages}
-                      remainingSlots={remainingSlots}
-                      maxImages={maxImages}
-                      onAddImages={addImages}
-                      onRemoveImage={removeImage}
-                      disabled={isLoading}
-                    />
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              {showImageUpload && (
+                <div className="animate-fade-in">
+                  <ImageUploadPanel
+                    images={uploadedImages}
+                    isUploading={isUploadingImages}
+                    remainingSlots={remainingSlots}
+                    maxImages={maxImages}
+                    onAddImages={addImages}
+                    onRemoveImage={removeImage}
+                    disabled={isLoading}
+                  />
+                </div>
+              )}
 
               {/* Options Row */}
               <div className="flex items-center gap-4">
