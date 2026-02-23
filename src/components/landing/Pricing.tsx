@@ -1,5 +1,4 @@
 import { forwardRef } from "react";
-import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Check, Zap, Crown, Rocket } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -70,7 +69,7 @@ const plans = [
       "Team collaboration",
     ],
     limits: {
-      agents: -1, // unlimited
+      agents: -1,
       postsPerMonth: 60,
       postsPerDay: 3,
     },
@@ -95,13 +94,7 @@ const Pricing = forwardRef<HTMLElement>((_, ref) => {
       
       <div className="container relative z-10 px-4">
         {/* Section header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className="text-center max-w-3xl mx-auto mb-10 md:mb-16"
-        >
+        <div className="text-center max-w-3xl mx-auto mb-10 md:mb-16 animate-fade-up">
           <span className="text-primary font-semibold text-sm uppercase tracking-wider">
             Pricing
           </span>
@@ -111,18 +104,15 @@ const Pricing = forwardRef<HTMLElement>((_, ref) => {
           <p className="text-lg text-muted-foreground">
             Start free and scale as you grow. No hidden fees, cancel anytime.
           </p>
-        </motion.div>
+        </div>
 
         {/* Pricing cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 max-w-6xl mx-auto">
           {plans.map((plan, index) => (
-            <motion.div
+            <div
               key={index}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              className={`relative ${plan.popular ? 'md:-mt-4 md:mb-4' : ''}`}
+              className={`relative animate-fade-up ${plan.popular ? 'md:-mt-4 md:mb-4' : ''}`}
+              style={{ animationDelay: `${100 + index * 100}ms` }}
             >
               {plan.popular && (
                 <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full gradient-bg text-primary-foreground text-sm font-medium">
@@ -181,7 +171,7 @@ const Pricing = forwardRef<HTMLElement>((_, ref) => {
                   {plan.cta}
                 </Button>
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>

@@ -1,4 +1,3 @@
-import { motion } from "framer-motion";
 import { 
   Bot, 
   Calendar, 
@@ -64,13 +63,7 @@ const Features = () => {
       
       <div className="container relative z-10 px-4">
         {/* Section header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className="text-center max-w-3xl mx-auto mb-10 md:mb-16"
-        >
+        <div className="text-center max-w-3xl mx-auto mb-10 md:mb-16 animate-fade-up">
           <span className="text-primary font-semibold text-sm uppercase tracking-wider">
             Features
           </span>
@@ -83,16 +76,10 @@ const Features = () => {
             LinkedBot combines cutting-edge AI with the official LinkedIn API to transform 
             how you create and publish LinkedIn content.
           </p>
-        </motion.div>
+        </div>
 
         {/* Stats row */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="flex flex-wrap justify-center gap-4 md:gap-8 mb-12 md:mb-20"
-        >
+        <div className="flex flex-wrap justify-center gap-4 md:gap-8 mb-12 md:mb-20 animate-fade-up [animation-delay:100ms]">
           {stats.map((stat, index) => (
             <div
               key={index}
@@ -107,18 +94,15 @@ const Features = () => {
               </div>
             </div>
           ))}
-        </motion.div>
+        </div>
 
         {/* Features grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
           {features.map((feature, index) => (
-            <motion.div
+            <div
               key={index}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="group relative"
+              className="group relative animate-fade-up"
+              style={{ animationDelay: `${200 + index * 100}ms` }}
             >
               <div className="h-full p-6 rounded-2xl bg-card border border-border shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
                 {/* Icon */}
@@ -132,7 +116,7 @@ const Features = () => {
                   {feature.description}
                 </p>
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>

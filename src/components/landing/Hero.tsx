@@ -1,4 +1,3 @@
-import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Bot, Sparkles, Calendar, BarChart3, Chrome } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -12,22 +11,12 @@ const Hero = () => {
       {/* Animated background */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-secondary/5" />
       
-      {/* Floating orbs - hidden on small screens for performance */}
-      <motion.div
-        className="absolute top-20 left-10 md:left-20 w-48 md:w-72 h-48 md:h-72 bg-primary/20 rounded-full blur-3xl"
-        animate={{ 
-          x: [0, 50, 0],
-          y: [0, 30, 0],
-        }}
-        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+      {/* Floating orbs - CSS animation instead of framer-motion */}
+      <div
+        className="absolute top-20 left-10 md:left-20 w-48 md:w-72 h-48 md:h-72 bg-primary/20 rounded-full blur-3xl animate-float-slow"
       />
-      <motion.div
-        className="absolute bottom-20 right-10 md:right-20 w-64 md:w-96 h-64 md:h-96 bg-secondary/20 rounded-full blur-3xl"
-        animate={{ 
-          x: [0, -30, 0],
-          y: [0, -50, 0],
-        }}
-        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+      <div
+        className="absolute bottom-20 right-10 md:right-20 w-64 md:w-96 h-64 md:h-96 bg-secondary/20 rounded-full blur-3xl animate-float-slow-reverse"
       />
 
       {/* Grid pattern overlay */}
@@ -36,47 +25,27 @@ const Hero = () => {
       <div className="container relative z-10 px-4 py-16 md:py-20 pt-20 md:pt-20">
         <div className="max-w-5xl mx-auto text-center">
           {/* Badge */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 px-3 md:px-4 py-1.5 md:py-2 rounded-full bg-primary/10 border border-primary/20 mb-6 md:mb-8"
-          >
+          <div className="animate-fade-up inline-flex items-center gap-2 px-3 md:px-4 py-1.5 md:py-2 rounded-full bg-primary/10 border border-primary/20 mb-6 md:mb-8">
             <Sparkles className="w-4 h-4 text-primary" />
             <span className="text-sm font-medium text-primary">AI-Powered LinkedIn Automation</span>
-          </motion.div>
+          </div>
 
           {/* Main heading */}
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold mb-4 md:mb-6 leading-tight"
-          >
+          <h1 className="animate-fade-up [animation-delay:100ms] text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold mb-4 md:mb-6 leading-tight">
             Your AI LinkedIn Intern
             <br />
             <span className="gradient-text">Post Smarter, Not Harder</span>
-          </motion.h1>
+          </h1>
 
           {/* Subtitle */}
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="text-base md:text-xl text-muted-foreground max-w-2xl mx-auto mb-8 md:mb-10 px-2"
-          >
+          <p className="animate-fade-up [animation-delay:200ms] text-base md:text-xl text-muted-foreground max-w-2xl mx-auto mb-8 md:mb-10 px-2">
             LinkedBot learns your brand voice and automatically creates, schedules, 
             and posts engaging LinkedIn content. Like having a dedicated social media team, 
             powered by AI.
-          </motion.p>
+          </p>
 
           {/* CTA buttons */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            className="flex flex-col sm:flex-row gap-3 justify-center mb-10 md:mb-16 px-4 sm:px-0"
-          >
+          <div className="animate-fade-up [animation-delay:300ms] flex flex-col sm:flex-row gap-3 justify-center mb-10 md:mb-16 px-4 sm:px-0">
             <Button 
               variant="gradient" 
               size="xl" 
@@ -94,15 +63,10 @@ const Hero = () => {
             >
               Log In
             </Button>
-          </motion.div>
+          </div>
 
           {/* Feature highlights */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-            className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 max-w-3xl mx-auto"
-          >
+          <div className="animate-fade-up [animation-delay:400ms] grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 max-w-3xl mx-auto">
             {[
               { icon: Bot, label: "AI Content Generation" },
               { icon: Calendar, label: "Smart Scheduling" },
@@ -117,16 +81,11 @@ const Hero = () => {
                 <span className="text-sm font-medium text-muted-foreground">{feature.label}</span>
               </div>
             ))}
-          </motion.div>
+          </div>
         </div>
 
         {/* Dashboard preview mockup */}
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.5 }}
-          className="mt-12 md:mt-20 max-w-5xl mx-auto"
-        >
+        <div className="animate-fade-up [animation-delay:500ms] mt-12 md:mt-20 max-w-5xl mx-auto">
           <div className="relative">
             {/* Glow effect */}
             <div className="absolute -inset-4 bg-gradient-to-r from-primary/20 via-secondary/20 to-primary/20 rounded-3xl blur-2xl" />
@@ -152,10 +111,11 @@ const Hero = () => {
                 src={dashboardPreview} 
                 alt="LinkedBot Dashboard Preview showing analytics, scheduled posts, and engagement metrics"
                 className="w-full h-auto"
+                loading="lazy"
               />
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );

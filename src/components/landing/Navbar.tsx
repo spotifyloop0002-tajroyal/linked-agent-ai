@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Bot, Menu, X } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -78,41 +77,36 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile menu */}
-      <AnimatePresence>
-        {mobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-background border-b border-border"
-          >
-            <div className="container px-4 py-4 space-y-4">
-              {navLinks.map((link) => (
-                <button
-                  key={link.label}
-                  onClick={() => handleNavClick(link.href)}
-                  className={`block w-full text-left py-2 font-medium transition-colors ${
-                    isActive(link.href) 
-                      ? "text-primary" 
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {link.label}
-                </button>
-              ))}
-              <div className="flex flex-col gap-2 pt-4 border-t border-border">
-                <Button variant="ghost" onClick={() => navigate("/login")}>
-                  Log In
-                </Button>
-                <Button variant="gradient" onClick={() => navigate("/signup")}>
-                  Get Started
-                </Button>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Mobile menu - CSS transition instead of framer-motion */}
+      <div
+        className={`md:hidden bg-background border-b border-border overflow-hidden transition-all duration-300 ease-in-out ${
+          mobileMenuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+        }`}
+      >
+        <div className="container px-4 py-4 space-y-4">
+          {navLinks.map((link) => (
+            <button
+              key={link.label}
+              onClick={() => handleNavClick(link.href)}
+              className={`block w-full text-left py-2 font-medium transition-colors ${
+                isActive(link.href) 
+                  ? "text-primary" 
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {link.label}
+            </button>
+          ))}
+          <div className="flex flex-col gap-2 pt-4 border-t border-border">
+            <Button variant="ghost" onClick={() => navigate("/login")}>
+              Log In
+            </Button>
+            <Button variant="gradient" onClick={() => navigate("/signup")}>
+              Get Started
+            </Button>
+          </div>
+        </div>
+      </div>
     </nav>
   );
 };
