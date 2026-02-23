@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -112,22 +111,15 @@ const BillingPage = () => {
     <DashboardLayout>
       <div className="space-y-8 max-w-4xl mx-auto">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
+        <div className="animate-fade-up">
           <h1 className="text-3xl font-bold">Billing & Subscription</h1>
           <p className="text-muted-foreground mt-1">
             Manage your subscription and billing details
           </p>
-        </motion.div>
+        </div>
 
         {/* Current Plan */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-        >
+        <div className="animate-fade-up [animation-delay:100ms]">
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -153,15 +145,10 @@ const BillingPage = () => {
               </div>
             </CardHeader>
           </Card>
-        </motion.div>
+        </div>
 
         {/* Usage Stats */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="grid md:grid-cols-3 gap-4"
-        >
+        <div className="animate-fade-up [animation-delay:200ms] grid md:grid-cols-3 gap-4">
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
@@ -226,14 +213,10 @@ const BillingPage = () => {
               </div>
             </CardContent>
           </Card>
-        </motion.div>
+        </div>
 
         {/* Coupon Code */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-        >
+        <div className="animate-fade-up [animation-delay:300ms]">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -289,14 +272,10 @@ const BillingPage = () => {
               </div>
             </CardContent>
           </Card>
-        </motion.div>
+        </div>
 
         {/* Pricing Plans */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-        >
+        <div className="animate-fade-up [animation-delay:400ms]">
           <Card>
             <CardHeader>
               <CardTitle>Choose Your Plan</CardTitle>
@@ -312,10 +291,9 @@ const BillingPage = () => {
                   const isProcessing = selectedPlan === plan && paymentLoading;
                   
                   return (
-                    <motion.div 
+                    <div 
                       key={plan}
-                      whileHover={plan !== "free" && !isCurrentPlan ? { scale: 1.02 } : {}}
-                      className={`p-6 rounded-xl border-2 transition-all ${
+                      className={`p-6 rounded-xl border-2 transition-all hover:scale-[1.02] ${
                         isCurrentPlan 
                           ? "border-primary bg-primary/5" 
                           : plan === "pro"
@@ -425,20 +403,16 @@ const BillingPage = () => {
                           )}
                         </Button>
                       ) : null}
-                    </motion.div>
+                    </div>
                   );
                 })}
               </div>
             </CardContent>
           </Card>
-        </motion.div>
+        </div>
 
         {/* Payment Security */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-        >
+        <div className="animate-fade-up [animation-delay:500ms]">
           <Card>
             <CardContent className="py-4">
               <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground">
@@ -457,7 +431,7 @@ const BillingPage = () => {
               </div>
             </CardContent>
           </Card>
-        </motion.div>
+        </div>
       </div>
     </DashboardLayout>
   );

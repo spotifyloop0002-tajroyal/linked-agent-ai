@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useUserProfile, ProfileData } from "@/hooks/useUserProfile";
 import { useToast } from "@/hooks/use-toast";
@@ -221,24 +220,16 @@ const SettingsPage = () => {
     <DashboardLayout>
       <div className="space-y-6 max-w-4xl mx-auto">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
+        <div className="animate-fade-up">
           <h1 className="text-3xl font-bold">Settings</h1>
           <p className="text-muted-foreground mt-1">
             Manage your account settings and preferences
           </p>
-        </motion.div>
+        </div>
 
         {/* LinkedIn Verification Status Banner */}
         {(verificationStatus?.status === 'success' || (profile as any)?.linkedin_verified) && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.05 }}
-            className="flex flex-col sm:flex-row gap-3"
-          >
+          <div className="animate-fade-up [animation-delay:50ms] flex flex-col sm:flex-row gap-3">
             {((profile as any)?.linkedin_verified || verificationStatus?.status === 'success') && (
               <div className="flex items-center gap-3 px-4 py-3 rounded-lg border border-primary/30 bg-primary/10 flex-1">
                 <Wifi className="w-5 h-5 text-primary flex-shrink-0" />
@@ -248,13 +239,9 @@ const SettingsPage = () => {
                 </div>
               </div>
             )}
-          </motion.div>
+          </div>
         )}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-        >
+        <div className="animate-fade-up [animation-delay:100ms]">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -459,14 +446,11 @@ const SettingsPage = () => {
               </div>
             </CardContent>
           </Card>
-        </motion.div>
+        </div>
 
         {/* Auto-Verification Status */}
         {verificationStatus && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
+          <div className="animate-fade-up [animation-delay:150ms]">
             <Alert 
               variant={verificationStatus.status === 'error' ? 'destructive' : 'default'}
               className={
@@ -501,7 +485,7 @@ const SettingsPage = () => {
                 )}
               </AlertDescription>
             </Alert>
-          </motion.div>
+          </div>
         )}
 
         {/* Subscription moved to Billing page */}
