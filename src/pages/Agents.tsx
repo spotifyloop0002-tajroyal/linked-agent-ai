@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+// framer-motion removed — using CSS animations for faster page load
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -133,11 +133,7 @@ const AgentsPage = () => {
     <DashboardLayout>
       <div className="space-y-8">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
-        >
+        <div className="animate-fade-up flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold">Your AI Posting Agents</h1>
             <p className="text-muted-foreground mt-1">
@@ -168,15 +164,10 @@ const AgentsPage = () => {
               Create New Agent
             </Button>
           </div>
-        </motion.div>
+        </div>
 
         {/* Stats */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="grid grid-cols-2 lg:grid-cols-4 gap-4"
-        >
+        <div className="animate-fade-up [animation-delay:100ms] grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[
             { label: "Total Agents", value: agents.length },
             { label: "Active Agents", value: agents.filter((a) => a.is_active).length },
@@ -191,15 +182,10 @@ const AgentsPage = () => {
               <p className="text-2xl font-bold mt-1">{stat.value}</p>
             </div>
           ))}
-        </motion.div>
+        </div>
 
         {/* Agents grid */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
-        >
+        <div className="animate-fade-up [animation-delay:200ms] grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {agents.map((agent) => {
             const TypeIcon = getTypeIcon(agent.type);
             return (
@@ -281,7 +267,7 @@ const AgentsPage = () => {
               </p>
             </div>
           </button>
-        </motion.div>
+        </div>
       </div>
 
       {/* Create Agent Modal - Steps 1 & 2 only */}
@@ -388,14 +374,8 @@ const AgentsPage = () => {
                       />
                     </button>
 
-                    <AnimatePresence>
-                      {showAdvanced && (
-                        <motion.div
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: "auto" }}
-                          exit={{ opacity: 0, height: 0 }}
-                          className="space-y-6"
-                        >
+                    {showAdvanced && (
+                        <div className="space-y-6 animate-fade-in">
                           <div>
                             <Label>Voice Reference</Label>
                             <Input
@@ -474,9 +454,8 @@ const AgentsPage = () => {
                               ))}
                             </div>
                           </div>
-                        </motion.div>
+                        </div>
                       )}
-                    </AnimatePresence>
                   </div>
                 </div>
               </div>

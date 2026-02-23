@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+// framer-motion removed — using CSS animations for faster page load
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useLinkedBotExtension } from "@/hooks/useLinkedBotExtension";
 import { useLinkedInAnalytics } from "@/hooks/useLinkedInAnalytics";
@@ -283,11 +283,7 @@ const AnalyticsPage = () => {
         {!profileLoading && !hasProfileUrl && isConnected && <MissingProfileBanner />}
 
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
-        >
+        <div className="animate-fade-up flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold">Analytics</h1>
             <p className="text-muted-foreground mt-1">Track your LinkedIn content performance</p>
@@ -314,7 +310,7 @@ const AnalyticsPage = () => {
               </SelectContent>
             </Select>
           </div>
-        </motion.div>
+        </div>
 
         {/* Loading */}
         {isLoading ? (
@@ -331,7 +327,7 @@ const AnalyticsPage = () => {
           </div>
         ) : filteredPosts.length === 0 ? (
           /* Empty State */
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+          <div className="animate-fade-up">
             <div className="bg-card rounded-2xl border border-border p-12 text-center">
               <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
                 <TrendingUp className="w-8 h-8 text-muted-foreground" />
@@ -344,16 +340,11 @@ const AnalyticsPage = () => {
                 {isSyncing ? "Syncing..." : "Sync Now"}
               </Button>
             </div>
-          </motion.div>
+          </div>
         ) : (
           <>
             {/* Summary Cards */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="grid grid-cols-2 lg:grid-cols-5 gap-4"
-            >
+            <div className="animate-fade-up [animation-delay:100ms] grid grid-cols-2 lg:grid-cols-5 gap-4">
               {summaryCards.map((card, i) => (
                 <div key={i} className="bg-card rounded-2xl border border-border p-5 shadow-sm">
                   <div className="flex items-center gap-3 mb-3">
@@ -365,17 +356,12 @@ const AnalyticsPage = () => {
                   <p className="text-xs text-muted-foreground mt-1">{card.label}</p>
                 </div>
               ))}
-            </motion.div>
+            </div>
 
             {/* Charts */}
             <div className="grid lg:grid-cols-2 gap-6">
               {/* Impressions Bar Chart */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="bg-card rounded-2xl border border-border p-6 shadow-sm"
-              >
+              <div className="animate-fade-up [animation-delay:200ms] bg-card rounded-2xl border border-border p-6 shadow-sm">
                 <h3 className="font-semibold mb-4">Impressions by Post</h3>
                 <div className="h-64">
                   <ResponsiveContainer width="100%" height="100%">
@@ -394,15 +380,10 @@ const AnalyticsPage = () => {
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
-              </motion.div>
+              </div>
 
               {/* Trend Line Chart */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.25 }}
-                className="bg-card rounded-2xl border border-border p-6 shadow-sm"
-              >
+              <div className="animate-fade-up [animation-delay:250ms] bg-card rounded-2xl border border-border p-6 shadow-sm">
                 <h3 className="font-semibold mb-4">Growth Trends</h3>
                 <div className="h-64">
                   <ResponsiveContainer width="100%" height="100%">
@@ -425,15 +406,10 @@ const AnalyticsPage = () => {
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
-              </motion.div>
+              </div>
 
               {/* Engagement Comparison */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                className="bg-card rounded-2xl border border-border p-6 shadow-sm lg:col-span-2"
-              >
+              <div className="animate-fade-up [animation-delay:300ms] bg-card rounded-2xl border border-border p-6 shadow-sm lg:col-span-2">
                 <h3 className="font-semibold mb-4">Engagement Rate Comparison</h3>
                 <div className="h-56">
                   <ResponsiveContainer width="100%" height="100%">
@@ -453,16 +429,11 @@ const AnalyticsPage = () => {
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
-              </motion.div>
+              </div>
             </div>
 
             {/* Posts Table */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.35 }}
-              className="bg-card rounded-2xl border border-border shadow-sm"
-            >
+            <div className="animate-fade-up [animation-delay:350ms] bg-card rounded-2xl border border-border shadow-sm">
               <div className="p-6 border-b border-border flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <h3 className="font-semibold">Post Analytics</h3>
                 <Select value={sortBy} onValueChange={setSortBy}>
@@ -518,7 +489,7 @@ const AnalyticsPage = () => {
                   </TableBody>
                 </Table>
               </div>
-            </motion.div>
+            </div>
           </>
         )}
       </div>

@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { motion } from "framer-motion";
+// framer-motion removed — using CSS animations for faster page load
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { ExtensionStatus } from "@/components/ExtensionStatus";
@@ -302,19 +302,12 @@ const DashboardPage = () => {
     <DashboardLayout>
       <div className="space-y-8">
         {/* LinkedIn Connection Status */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
+        <div className="animate-fade-up">
           <ExtensionStatus />
-        </motion.div>
+        </div>
         
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
-        >
+        <div className="animate-fade-up [animation-delay:100ms] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold">
               Welcome back{profile?.name ? `, ${profile.name.split(' ')[0]}` : ''}!
@@ -327,17 +320,15 @@ const DashboardPage = () => {
             <Plus className="w-4 h-4" />
             Create New Agent
           </Button>
-        </motion.div>
+        </div>
 
         {/* Stats grid */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {stats.map((stat, index) => (
-            <motion.div
+            <div
               key={index}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className="bg-card rounded-2xl border border-border p-6 shadow-sm hover:shadow-md transition-shadow"
+              className="animate-fade-up bg-card rounded-2xl border border-border p-6 shadow-sm hover:shadow-md transition-shadow"
+              style={{ animationDelay: `${200 + index * 80}ms` }}
             >
               <div className="flex items-start justify-between mb-4">
                 <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center`}>
@@ -346,17 +337,12 @@ const DashboardPage = () => {
               </div>
               <p className="text-2xl font-bold">{stat.value}</p>
               <p className="text-sm text-muted-foreground">{stat.subtitle}</p>
-            </motion.div>
+            </div>
           ))}
         </div>
 
         {/* Upcoming posts */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="bg-card rounded-2xl border border-border shadow-sm"
-        >
+        <div className="animate-fade-up [animation-delay:500ms] bg-card rounded-2xl border border-border shadow-sm">
           <div className="p-6 border-b border-border">
             <h2 className="text-xl font-semibold">Upcoming Scheduled Posts</h2>
           </div>
@@ -595,15 +581,10 @@ const DashboardPage = () => {
               </table>
             </div>
           )}
-        </motion.div>
+        </div>
 
         {/* Quick actions */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"
-        >
+        <div className="animate-fade-up [animation-delay:600ms] grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <button
             onClick={() => navigate("/dashboard/agents")}
             className="group p-6 bg-card rounded-2xl border border-border shadow-sm hover:shadow-md hover:border-primary/50 transition-all text-left"
@@ -631,7 +612,7 @@ const DashboardPage = () => {
           </button>
           
           {/* LinkedIn API Status */}
-        </motion.div>
+        </div>
       </div>
 
       {/* Post Preview Modal */}
