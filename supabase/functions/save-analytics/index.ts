@@ -68,11 +68,34 @@ serve(async (req) => {
       const sanitize = (v: number) => v >= 1_000_000 ? Math.round(v / 1_000_000) : v;
       
       for (const post of posts) {
+        // Generate a deterministic post_id from URL or content to prevent duplicates
+        const rawId = post.postId || post.id || post.linkedinUrl || post.url;
+        let postId: string;
+        if (rawId) {
+          // Use the provided ID or URL as the key
+          postId = rawId;
+        } else if (post.content) {
+          // Fallback: hash from content + timestamp for uniqueness
+          const key = `${post.content.substring(0, 100)}_${post.timestamp || post.postDate || ''}`;
+          // Simple deterministic hash
+          let hash = 0;
+          for (let i = 0; i < key.length; i++) {
+            const char = key.charCodeAt(i);
+            hash = ((hash << 5) - hash) + char;
+            hash |= 0;
+          }
+          postId = `content_${Math.abs(hash).toString(36)}`;
+        } else {
+          // Skip posts with no identifiable data
+          console.warn('Skipping post with no ID, URL, or content');
+          continue;
+        }
+
         const { error: postError } = await supabase
           .from('post_analytics')
           .upsert({
             user_id: userId,
-            post_id: post.postId || post.id || `post_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            post_id: postId,
             content_preview: post.content?.substring(0, 200) || null,
             linkedin_url: post.linkedinUrl || post.url || null,
             views: sanitize(post.views || 0),

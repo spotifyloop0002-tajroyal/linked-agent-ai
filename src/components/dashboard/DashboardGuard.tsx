@@ -1,21 +1,27 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
+import { useNavigate, Outlet } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { DashboardContext } from "@/contexts/DashboardContext";
 import { Loader2 } from "lucide-react";
 
-interface DashboardGuardProps {
-  children: React.ReactNode;
-}
-
-const DashboardGuard = ({ children }: DashboardGuardProps) => {
+/**
+ * DashboardGuard v2: Wraps ALL dashboard routes as a layout route.
+ * Auth check + profile fetch happens ONCE. Child routes render via <Outlet>.
+ * Navigating between dashboard pages does NOT re-run auth or profile loading.
+ */
+const DashboardGuard = () => {
   const [authChecked, setAuthChecked] = useState(false);
   const [authorized, setAuthorized] = useState(false);
   const navigate = useNavigate();
   const profileHook = useUserProfile();
+  const checkedRef = useRef(false);
 
   useEffect(() => {
+    // Prevent double-check in StrictMode
+    if (checkedRef.current) return;
+    checkedRef.current = true;
+
     let cancelled = false;
 
     const checkAuth = async () => {
@@ -73,7 +79,7 @@ const DashboardGuard = ({ children }: DashboardGuardProps) => {
 
   return (
     <DashboardContext.Provider value={profileHook}>
-      {children}
+      <Outlet />
     </DashboardContext.Provider>
   );
 };
