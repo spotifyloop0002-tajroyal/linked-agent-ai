@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+// framer-motion removed — using CSS animations for faster page load
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -103,11 +103,7 @@ const CalendarPage = () => {
     <DashboardLayout>
       <div className="space-y-8">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
-        >
+        <div className="animate-fade-up flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold">Content Calendar</h1>
             <p className="text-muted-foreground mt-1">
@@ -118,16 +114,10 @@ const CalendarPage = () => {
             <Plus className="w-4 h-4" />
             Create Post
           </Button>
-        </motion.div>
-
+        </div>
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Calendar */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="lg:col-span-2"
-          >
+          <div className="animate-fade-up [animation-delay:100ms] lg:col-span-2">
             <div className="bg-card rounded-2xl border border-border p-6 shadow-sm">
               {/* Calendar header */}
               <div className="flex items-center justify-between mb-6">
@@ -217,14 +207,10 @@ const CalendarPage = () => {
                 }}
               />
             </div>
-          </motion.div>
+          </div>
 
           {/* Selected date posts */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-          >
+          <div className="animate-fade-up [animation-delay:200ms]">
             <div className="bg-card rounded-2xl border border-border p-6 shadow-sm">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="font-semibold">
@@ -301,16 +287,11 @@ const CalendarPage = () => {
                 </div>
               )}
             </div>
-          </motion.div>
+          </div>
         </div>
 
         {/* All scheduled posts */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="bg-card rounded-2xl border border-border shadow-sm"
-        >
+        <div className="animate-fade-up [animation-delay:300ms] bg-card rounded-2xl border border-border shadow-sm">
           <div className="p-6 border-b border-border flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <h2 className="text-xl font-semibold">All Scheduled Posts</h2>
             <Select value={filterAgent} onValueChange={setFilterAgent}>
@@ -383,7 +364,7 @@ const CalendarPage = () => {
               ))}
             </div>
           )}
-        </motion.div>
+        </div>
       </div>
     </DashboardLayout>
   );
