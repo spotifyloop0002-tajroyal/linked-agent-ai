@@ -8,3 +8,15 @@ verify_jwt = false
 
 [functions.dashboard-data]
 verify_jwt = false
+
+[functions.generate-campaign]
+verify_jwt = false
+
+[functions.campaign-daily-research]
+verify_jwt = false
+
+[functions.campaign-auto-post]
+verify_jwt = false
+
+[functions.analyze-writing-dna]
+verify_jwt = false

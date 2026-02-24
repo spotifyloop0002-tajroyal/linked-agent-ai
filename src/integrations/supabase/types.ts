@@ -180,6 +180,57 @@ export type Database = {
           },
         ]
       }
+      campaigns: {
+        Row: {
+          auto_approve: boolean | null
+          auto_best_time: boolean | null
+          created_at: string
+          duration_type: string
+          end_date: string
+          id: string
+          post_count: number
+          research_mode: boolean | null
+          start_date: string
+          status: string
+          tone_type: string | null
+          topic: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          auto_approve?: boolean | null
+          auto_best_time?: boolean | null
+          created_at?: string
+          duration_type?: string
+          end_date: string
+          id?: string
+          post_count?: number
+          research_mode?: boolean | null
+          start_date: string
+          status?: string
+          tone_type?: string | null
+          topic: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          auto_approve?: boolean | null
+          auto_best_time?: boolean | null
+          created_at?: string
+          duration_type?: string
+          end_date?: string
+          id?: string
+          post_count?: number
+          research_mode?: boolean | null
+          start_date?: string
+          status?: string
+          tone_type?: string | null
+          topic?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       chat_messages: {
         Row: {
           agent_id: string | null
@@ -474,6 +525,60 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_log: {
+        Row: {
+          campaign_id: string | null
+          created_at: string
+          id: string
+          message: string
+          post_id: string | null
+          sent_at: string | null
+          status: string
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          campaign_id?: string | null
+          created_at?: string
+          id?: string
+          message: string
+          post_id?: string | null
+          sent_at?: string | null
+          status?: string
+          title: string
+          type?: string
+          user_id: string
+        }
+        Update: {
+          campaign_id?: string | null
+          created_at?: string
+          id?: string
+          message?: string
+          post_id?: string | null
+          sent_at?: string | null
+          status?: string
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_log_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notification_log_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           created_at: string
@@ -669,6 +774,7 @@ export type Database = {
           agent_id: string | null
           agent_name: string | null
           approved: boolean | null
+          campaign_id: string | null
           comments_count: number | null
           content: string
           content_with_tracking: string | null
@@ -700,6 +806,7 @@ export type Database = {
           agent_id?: string | null
           agent_name?: string | null
           approved?: boolean | null
+          campaign_id?: string | null
           comments_count?: number | null
           content: string
           content_with_tracking?: string | null
@@ -731,6 +838,7 @@ export type Database = {
           agent_id?: string | null
           agent_name?: string | null
           approved?: boolean | null
+          campaign_id?: string | null
           comments_count?: number | null
           content?: string
           content_with_tracking?: string | null
@@ -766,6 +874,13 @@ export type Database = {
             referencedRelation: "agents"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "posts_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
         ]
       }
       user_profiles: {
@@ -798,6 +913,10 @@ export type Database = {
           linkedin_verified_at: string | null
           location: string | null
           name: string | null
+          notify_before_post: boolean | null
+          notify_campaign_complete: boolean | null
+          notify_daily_digest: boolean | null
+          notify_hours_before: number | null
           onboarding_completed: boolean | null
           phone_number: string | null
           post_frequency: string | null
@@ -844,6 +963,10 @@ export type Database = {
           linkedin_verified_at?: string | null
           location?: string | null
           name?: string | null
+          notify_before_post?: boolean | null
+          notify_campaign_complete?: boolean | null
+          notify_daily_digest?: boolean | null
+          notify_hours_before?: number | null
           onboarding_completed?: boolean | null
           phone_number?: string | null
           post_frequency?: string | null
@@ -890,6 +1013,10 @@ export type Database = {
           linkedin_verified_at?: string | null
           location?: string | null
           name?: string | null
+          notify_before_post?: boolean | null
+          notify_campaign_complete?: boolean | null
+          notify_daily_digest?: boolean | null
+          notify_hours_before?: number | null
           onboarding_completed?: boolean | null
           phone_number?: string | null
           post_frequency?: string | null
@@ -930,6 +1057,63 @@ export type Database = {
         }
         Relationships: []
       }
+      user_writing_profiles: {
+        Row: {
+          avg_post_length: number | null
+          avg_sentence_length: string | null
+          created_at: string
+          emoji_frequency: string | null
+          hook_style: string | null
+          id: string
+          sample_posts: Json | null
+          signature_phrases: string[] | null
+          tone_type: string | null
+          topics_history: string[] | null
+          updated_at: string
+          user_id: string
+          uses_bullet_points: boolean | null
+          uses_emojis: boolean | null
+          uses_numbered_lists: boolean | null
+          voice_tags: Json | null
+        }
+        Insert: {
+          avg_post_length?: number | null
+          avg_sentence_length?: string | null
+          created_at?: string
+          emoji_frequency?: string | null
+          hook_style?: string | null
+          id?: string
+          sample_posts?: Json | null
+          signature_phrases?: string[] | null
+          tone_type?: string | null
+          topics_history?: string[] | null
+          updated_at?: string
+          user_id: string
+          uses_bullet_points?: boolean | null
+          uses_emojis?: boolean | null
+          uses_numbered_lists?: boolean | null
+          voice_tags?: Json | null
+        }
+        Update: {
+          avg_post_length?: number | null
+          avg_sentence_length?: string | null
+          created_at?: string
+          emoji_frequency?: string | null
+          hook_style?: string | null
+          id?: string
+          sample_posts?: Json | null
+          signature_phrases?: string[] | null
+          tone_type?: string | null
+          topics_history?: string[] | null
+          updated_at?: string
+          user_id?: string
+          uses_bullet_points?: boolean | null
+          uses_emojis?: boolean | null
+          uses_numbered_lists?: boolean | null
+          voice_tags?: Json | null
+        }
+        Relationships: []
+      }
       user_writing_style: {
         Row: {
           avg_post_length: number | null
@@ -964,6 +1148,36 @@ export type Database = {
           id?: string
           tone_analysis?: Json | null
           total_posts_analyzed?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      voice_notes: {
+        Row: {
+          created_at: string
+          generated_post: string | null
+          id: string
+          status: string
+          transcript: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          generated_post?: string | null
+          id?: string
+          status?: string
+          transcript?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          generated_post?: string | null
+          id?: string
+          status?: string
+          transcript?: string | null
           updated_at?: string
           user_id?: string
         }
