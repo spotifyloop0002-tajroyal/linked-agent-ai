@@ -18,6 +18,8 @@ const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Agents = lazy(() => import("./pages/Agents"));
 const AgentChat = lazy(() => import("./pages/AgentChat"));
 const CalendarPage = lazy(() => import("./pages/CalendarPage"));
+const CampaignsPage = lazy(() => import("./pages/CampaignsPage"));
+const WritingDNAPage = lazy(() => import("./pages/WritingDNAPage"));
 const Analytics = lazy(() => import("./pages/Analytics"));
 const LinkedInConnection = lazy(() => import("./pages/LinkedInConnection"));
 const LinkedInCallback = lazy(() => import("./pages/LinkedInCallback"));
@@ -94,6 +96,8 @@ const AppContent = () => {
               <Route path="agents" element={<Agents />} />
               <Route path="agents/chat" element={<AgentChat />} />
               <Route path="calendar" element={<CalendarPage />} />
+              <Route path="campaigns" element={<CampaignsPage />} />
+              <Route path="writing-dna" element={<WritingDNAPage />} />
               <Route path="analytics" element={<Analytics />} />
               <Route path="linkedin" element={<LinkedInConnection />} />
               <Route path="profile" element={<LinkedInProfile />} />

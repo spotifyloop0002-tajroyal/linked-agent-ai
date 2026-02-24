@@ -14,6 +14,8 @@ import {
   X,
   ChevronDown,
   User,
+  Rocket,
+  Dna,
 } from "lucide-react";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { useDashboardProfile } from "@/contexts/DashboardContext";
@@ -34,10 +36,12 @@ interface DashboardLayoutProps {
 
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
+  { icon: Rocket, label: "Campaigns", path: "/dashboard/campaigns" },
   { icon: Calendar, label: "Calendar", path: "/dashboard/calendar" },
   { icon: Bot, label: "Agents", path: "/dashboard/agents" },
+  { icon: Dna, label: "Writing DNA", path: "/dashboard/writing-dna" },
   { icon: BarChart3, label: "Analytics", path: "/dashboard/analytics" },
-  { icon: Linkedin, label: "LinkedIn Connection", path: "/dashboard/linkedin" },
+  { icon: Linkedin, label: "LinkedIn", path: "/dashboard/linkedin" },
   { icon: Settings, label: "Settings", path: "/dashboard/settings" },
   { icon: CreditCard, label: "Billing", path: "/dashboard/billing" },
 ];
@@ -45,8 +49,10 @@ const navItems = [
 // Route-to-import map for prefetching on hover
 const routeImports: Record<string, () => Promise<unknown>> = {
   "/dashboard": () => import("@/pages/Dashboard"),
+  "/dashboard/campaigns": () => import("@/pages/CampaignsPage"),
   "/dashboard/calendar": () => import("@/pages/CalendarPage"),
   "/dashboard/agents": () => import("@/pages/Agents"),
+  "/dashboard/writing-dna": () => import("@/pages/WritingDNAPage"),
   "/dashboard/analytics": () => import("@/pages/Analytics"),
   "/dashboard/linkedin": () => import("@/pages/LinkedInConnection"),
   "/dashboard/settings": () => import("@/pages/Settings"),
