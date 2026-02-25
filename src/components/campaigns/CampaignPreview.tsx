@@ -10,6 +10,10 @@ import {
   Loader2,
   Calendar,
   Save,
+  Rocket,
+  Clock,
+  Search,
+  FileText,
 } from "lucide-react";
 import { format } from "date-fns";
 
@@ -17,6 +21,20 @@ interface CampaignPost {
   id: string;
   content: string;
   scheduled_time: string;
+  status: string;
+}
+
+interface CampaignDetails {
+  id: string;
+  topic: string;
+  tone_type: string;
+  duration_type: string;
+  start_date: string;
+  end_date: string;
+  post_count: number;
+  research_mode: boolean;
+  auto_best_time: boolean;
+  auto_approve: boolean;
   status: string;
 }
 
@@ -28,24 +46,35 @@ interface CampaignPreviewProps {
 
 export function CampaignPreview({ campaignId, onClose, onApproveAll }: CampaignPreviewProps) {
   const [posts, setPosts] = useState<CampaignPost[]>([]);
+  const [campaign, setCampaign] = useState<CampaignDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState("");
 
   useEffect(() => {
-    const fetchPosts = async () => {
-      const { data, error } = await supabase
-        .from("posts")
-        .select("id, content, scheduled_time, status")
-        .eq("campaign_id", campaignId)
-        .order("scheduled_time", { ascending: true });
+    const fetchData = async () => {
+      const [postsRes, campaignRes] = await Promise.all([
+        supabase
+          .from("posts")
+          .select("id, content, scheduled_time, status")
+          .eq("campaign_id", campaignId)
+          .order("scheduled_time", { ascending: true }),
+        supabase
+          .from("campaigns")
+          .select("*")
+          .eq("id", campaignId)
+          .single(),
+      ]);
 
-      if (!error && data) {
-        setPosts(data as CampaignPost[]);
+      if (!postsRes.error && postsRes.data) {
+        setPosts(postsRes.data as CampaignPost[]);
+      }
+      if (!campaignRes.error && campaignRes.data) {
+        setCampaign(campaignRes.data as unknown as CampaignDetails);
       }
       setIsLoading(false);
     };
-    fetchPosts();
+    fetchData();
   }, [campaignId]);
 
   const handleSaveEdit = async (postId: string) => {
@@ -72,12 +101,21 @@ export function CampaignPreview({ campaignId, onClose, onApproveAll }: CampaignP
     }
   };
 
+  const durationLabel = (type: string) => {
+    switch (type) {
+      case "7_days": return "Next 7 Days";
+      case "alternate": return "Alternate Days";
+      case "custom": return "Custom Range";
+      default: return type;
+    }
+  };
+
   const hasDrafts = posts.some((p) => p.status === "draft");
 
   return (
     <div className="bg-card rounded-2xl border border-border shadow-lg p-6 animate-fade-in">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-semibold">Campaign Posts Preview</h2>
+        <h2 className="text-xl font-semibold">Campaign Details</h2>
         <div className="flex items-center gap-2">
           {hasDrafts && (
             <Button onClick={onApproveAll} className="gap-2 gradient-bg text-primary-foreground">
@@ -91,6 +129,49 @@ export function CampaignPreview({ campaignId, onClose, onApproveAll }: CampaignP
         </div>
       </div>
 
+      {/* Campaign Summary */}
+      {campaign && (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6 p-4 rounded-xl bg-muted/30 border border-border">
+          <div className="flex items-start gap-2">
+            <Rocket className="w-4 h-4 text-primary mt-0.5" />
+            <div>
+              <p className="text-xs text-muted-foreground">Topic</p>
+              <p className="text-sm font-medium">{campaign.topic}</p>
+            </div>
+          </div>
+          <div className="flex items-start gap-2">
+            <Calendar className="w-4 h-4 text-primary mt-0.5" />
+            <div>
+              <p className="text-xs text-muted-foreground">Duration</p>
+              <p className="text-sm font-medium">{durationLabel(campaign.duration_type)}</p>
+              <p className="text-xs text-muted-foreground">
+                {format(new Date(campaign.start_date), "MMM d")} – {format(new Date(campaign.end_date), "MMM d")}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-start gap-2">
+            <FileText className="w-4 h-4 text-primary mt-0.5" />
+            <div>
+              <p className="text-xs text-muted-foreground">Tone / Posts</p>
+              <p className="text-sm font-medium capitalize">{campaign.tone_type || "Auto"}</p>
+              <p className="text-xs text-muted-foreground">{campaign.post_count} posts</p>
+            </div>
+          </div>
+          <div className="flex items-start gap-2">
+            <Clock className="w-4 h-4 text-primary mt-0.5" />
+            <div>
+              <p className="text-xs text-muted-foreground">Settings</p>
+              <div className="flex flex-wrap gap-1 mt-1">
+                {campaign.auto_best_time && <Badge variant="outline" className="text-[10px] px-1.5 py-0">Auto Time</Badge>}
+                {campaign.research_mode && <Badge variant="outline" className="text-[10px] px-1.5 py-0"><Search className="w-2.5 h-2.5 mr-0.5" />Research</Badge>}
+                {campaign.auto_approve && <Badge variant="outline" className="text-[10px] px-1.5 py-0">Auto-Approve</Badge>}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Posts */}
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -99,6 +180,7 @@ export function CampaignPreview({ campaignId, onClose, onApproveAll }: CampaignP
         <p className="text-muted-foreground text-center py-8">No posts generated yet.</p>
       ) : (
         <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
+          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Generated Posts</h3>
           {posts.map((post, index) => (
             <div
               key={post.id}

@@ -42,6 +42,7 @@ export function CampaignSetupForm({ onSubmit, onCancel, isGenerating }: Campaign
   const [researchMode, setResearchMode] = useState(false);
   const [autoBestTime, setAutoBestTime] = useState(true);
   const [autoApprove, setAutoApprove] = useState(false);
+  const [postingTime, setPostingTime] = useState("09:00");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -205,6 +206,20 @@ export function CampaignSetupForm({ onSubmit, onCancel, isGenerating }: Campaign
             </div>
             <Switch checked={autoBestTime} onCheckedChange={setAutoBestTime} />
           </div>
+
+          {!autoBestTime && (
+            <div className="space-y-2 p-4 rounded-xl bg-muted/50 border border-border">
+              <Label htmlFor="postingTime" className="font-medium text-sm">Preferred Posting Time</Label>
+              <Input
+                id="postingTime"
+                type="time"
+                value={postingTime}
+                onChange={(e) => setPostingTime(e.target.value)}
+                className="w-full max-w-[200px]"
+              />
+              <p className="text-xs text-muted-foreground">All posts will be scheduled at this time</p>
+            </div>
+          )}
 
           <div className="flex items-center justify-between p-4 rounded-xl bg-muted/50 border border-border">
             <div>

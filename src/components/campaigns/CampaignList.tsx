@@ -105,7 +105,11 @@ export function CampaignList({ campaigns, isLoading, onPreview, onPause, onResum
                   variant="ghost"
                   size="icon"
                   className="text-destructive hover:text-destructive"
-                  onClick={() => onDelete(campaign.id)}
+                  onClick={() => {
+                    if (window.confirm("Are you sure you want to delete this campaign and all its posts?")) {
+                      onDelete(campaign.id);
+                    }
+                  }}
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>
