@@ -53,8 +53,8 @@ const Footer = forwardRef<HTMLElement>((_, ref) => {
                 </button>
               </li>
               <li>
-                <button onClick={() => handleNavClick("/extension")} className="hover:text-sidebar-foreground transition-colors">
-                  Chrome Extension
+                <button onClick={() => handleNavClick("/how-it-works")} className="hover:text-sidebar-foreground transition-colors">
+                  How It Works
                 </button>
               </li>
               <li>

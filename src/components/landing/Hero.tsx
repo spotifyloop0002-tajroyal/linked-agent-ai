@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Bot, Sparkles, Calendar, BarChart3, Chrome } from "lucide-react";
+import { Bot, Sparkles, Calendar, BarChart3, Linkedin } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 const dashboardPreview = "/images/dashboard-preview.webp";
 
@@ -71,7 +71,7 @@ const Hero = () => {
               { icon: Bot, label: "AI Content Generation" },
               { icon: Calendar, label: "Smart Scheduling" },
               { icon: BarChart3, label: "Analytics Dashboard" },
-              { icon: Chrome, label: "Chrome Extension" },
+              { icon: Linkedin, label: "LinkedIn API Posting" },
             ].map((feature, index) => (
               <div
                 key={index}
