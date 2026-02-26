@@ -30,6 +30,8 @@ import {
   FileText,
   X,
   Image as ImageIcon,
+  RotateCcw,
+  Send,
 } from "lucide-react";
 import {
   Dialog,
@@ -107,20 +109,48 @@ const DashboardPage = () => {
   // Delete post handler
   const handleDeletePost = async (postId: string) => {
     if (!confirm('Are you sure you want to delete this post?')) return;
-    
     try {
-      const { error } = await supabase
-        .from('posts')
-        .delete()
-        .eq('id', postId);
-      
+      const { error } = await supabase.from('posts').delete().eq('id', postId);
       if (error) throw error;
-      
       toast.success('Post deleted');
       refetchData();
     } catch (err) {
       console.error('Failed to delete post:', err);
       toast.error('Failed to delete post');
+    }
+  };
+
+  // Retry a failed post
+  const handleRetryPost = async (postId: string) => {
+    try {
+      const retryTime = new Date();
+      retryTime.setMinutes(retryTime.getMinutes() + 1);
+      const { error } = await supabase.from('posts').update({
+        status: 'pending', retry_count: 0, last_error: null,
+        scheduled_time: retryTime.toISOString(),
+      }).eq('id', postId);
+      if (error) throw error;
+      toast.success('Post queued for retry — will post in ~1 minute');
+      refetchData();
+    } catch (err) {
+      console.error('Failed to retry post:', err);
+      toast.error('Failed to retry post');
+    }
+  };
+
+  // Post now — schedule immediately
+  const handlePostNow = async (postId: string) => {
+    try {
+      const { error } = await supabase.from('posts').update({
+        status: 'pending', retry_count: 0, last_error: null,
+        scheduled_time: new Date().toISOString(),
+      }).eq('id', postId);
+      if (error) throw error;
+      toast.success('Post will be published within the next minute!');
+      refetchData();
+    } catch (err) {
+      console.error('Failed to trigger post:', err);
+      toast.error('Failed to trigger post');
     }
   };
 
@@ -446,6 +476,32 @@ const DashboardPage = () => {
                       </td>
                       <td className="p-4">
                         <div className="flex items-center justify-end gap-2">
+                          {/* Retry button for failed posts */}
+                          {post.status === 'failed' && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-8 text-xs gap-1 border-destructive/30 text-destructive hover:bg-destructive/10"
+                              onClick={() => handleRetryPost(post.id)}
+                              title="Retry this post"
+                            >
+                              <RotateCcw className="w-3 h-3" />
+                              Retry
+                            </Button>
+                          )}
+                          {/* Post Now button for pending/queued posts */}
+                          {post.status === 'pending' && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-8 text-xs gap-1 border-primary/30 text-primary hover:bg-primary/10"
+                              onClick={() => handlePostNow(post.id)}
+                              title="Post immediately"
+                            >
+                              <Send className="w-3 h-3" />
+                              Post Now
+                            </Button>
+                          )}
                           {/* Mark as Posted fallback button */}
                           {post.linkedin_post_url && post.status !== 'posted' && (
                             <Button 
