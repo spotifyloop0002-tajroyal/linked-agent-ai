@@ -60,15 +60,16 @@ serve(async (req) => {
           continue;
         }
 
-        // Post to LinkedIn using the linkedin-post edge function
+        // Post to LinkedIn using the linkedin-post edge function (service-role key for server-to-server)
         const linkedinResponse = await fetch(`${supabaseUrl}/functions/v1/linkedin-post`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${Deno.env.get("SUPABASE_ANON_KEY")}`,
+            Authorization: `Bearer ${serviceKey}`,
           },
           body: JSON.stringify({
             userId: post.user_id,
+            postId: post.id,
             content: post.content,
             imageUrl: post.photo_url || undefined,
           }),
