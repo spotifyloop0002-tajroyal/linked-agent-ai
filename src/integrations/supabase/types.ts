@@ -184,11 +184,18 @@ export type Database = {
         Row: {
           auto_approve: boolean | null
           auto_best_time: boolean | null
+          content_length: string | null
           created_at: string
           duration_type: string
+          emoji_level: string | null
           end_date: string
+          fixed_hashtags: string[] | null
+          footer_text: string | null
+          hashtag_mode: string | null
           id: string
+          image_option: string | null
           post_count: number
+          posting_time: string | null
           research_mode: boolean | null
           start_date: string
           status: string
@@ -200,11 +207,18 @@ export type Database = {
         Insert: {
           auto_approve?: boolean | null
           auto_best_time?: boolean | null
+          content_length?: string | null
           created_at?: string
           duration_type?: string
+          emoji_level?: string | null
           end_date: string
+          fixed_hashtags?: string[] | null
+          footer_text?: string | null
+          hashtag_mode?: string | null
           id?: string
+          image_option?: string | null
           post_count?: number
+          posting_time?: string | null
           research_mode?: boolean | null
           start_date: string
           status?: string
@@ -216,11 +230,18 @@ export type Database = {
         Update: {
           auto_approve?: boolean | null
           auto_best_time?: boolean | null
+          content_length?: string | null
           created_at?: string
           duration_type?: string
+          emoji_level?: string | null
           end_date?: string
+          fixed_hashtags?: string[] | null
+          footer_text?: string | null
+          hashtag_mode?: string | null
           id?: string
+          image_option?: string | null
           post_count?: number
+          posting_time?: string | null
           research_mode?: boolean | null
           start_date?: string
           status?: string
