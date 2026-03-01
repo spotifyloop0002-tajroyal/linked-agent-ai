@@ -265,6 +265,10 @@ function buildAgentSystemPrompt(agentType: string, userContext?: any, agentSetti
   const analytics = userContext?.context?.analytics || userContext?.agentContext?.analytics;
   if (analytics?.followersCount) userIdentity += `- LinkedIn Followers: ${analytics.followersCount}\n`;
   
+  // LinkedIn connection status - CRITICAL for accurate responses
+  const linkedinConnected = userContext?.context?.linkedinConnected === true;
+  userIdentity += `- LinkedIn Connected: ${linkedinConnected ? 'YES ✅ (API connected, posts will publish automatically)' : 'NO ❌ (NOT connected — user MUST connect before any posting/scheduling)'}\n`;
+  
   // Build example topics for this user + agent type
   const exampleTopics = config.exampleTopics(profile);
   
@@ -333,6 +337,17 @@ CRITICAL BEHAVIOR RULES
 
 Posts are published via the LinkedIn API automatically. There is NO Chrome extension involved.
 
+🔴 LINKEDIN CONNECTION STATUS CHECK — MANDATORY:
+${linkedinConnected
+  ? 'The user\'s LinkedIn IS connected. They can post and schedule freely.'
+  : 'The user\'s LinkedIn is NOT connected. If they ask about posting, scheduling, or LinkedIn status, you MUST tell them: "Your LinkedIn is not connected yet. Go to the **LinkedIn** page from the sidebar to connect your account." Do NOT say "if you have connected" or "check your settings" — you KNOW it is NOT connected. Be definitive.'}
+
+WHEN USER ASKS ABOUT LINKEDIN CONNECTION STATUS:
+- You have REAL DATA above. Give a DEFINITIVE answer (connected or not).
+- NEVER say "I can\'t see your settings" or "check your dashboard" — YOU KNOW the status.
+- If NOT connected: "❌ Your LinkedIn is not connected. Go to **LinkedIn** in the sidebar to connect."
+- If connected: "✅ Your LinkedIn is connected! You\'re ready to post."
+
 AFTER user says "approve" or "yes" or "looks good":
 1. If they provided a valid future time → AUTO-SCHEDULE immediately
 2. If no time provided → ASK for a specific date & time
@@ -343,6 +358,8 @@ NEVER SAY:
 - "extension" or "Chrome extension"
 - "Please click to publish"
 - Anything about browser extensions
+- "I can\'t see your settings" (you CAN see LinkedIn status)
+- "If you have connected..." (you KNOW whether they have or not)
 
 INSTEAD:
 - After approval + time: "Scheduling your post for <time>..."
