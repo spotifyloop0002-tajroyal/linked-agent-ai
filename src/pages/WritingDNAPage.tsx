@@ -1,11 +1,13 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useWritingDNA } from "@/hooks/useWritingDNA";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
 import {
   Dna,
   Plus,
@@ -20,6 +22,10 @@ import {
   ListOrdered,
   Smile,
   Type,
+  Upload,
+  FileText,
+  Image as ImageIcon,
+  CheckCircle2,
 } from "lucide-react";
 
 const WritingDNAPage = () => {
@@ -27,6 +33,9 @@ const WritingDNAPage = () => {
   const { dna, isLoading, isAnalyzing, analyzePosts } = useWritingDNA();
   const [samplePosts, setSamplePosts] = useState<string[]>(["", "", ""]);
   const [showImport, setShowImport] = useState(false);
+  const [isExtracting, setIsExtracting] = useState(false);
+  const [extractedData, setExtractedData] = useState<any>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleAnalyze = async () => {
     const validPosts = samplePosts.filter((p) => p.trim().length > 20);
@@ -42,6 +51,52 @@ const WritingDNAPage = () => {
   const addSample = () => {
     if (samplePosts.length < 10) {
       setSamplePosts((prev) => [...prev, ""]);
+    }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (file.size > maxSize) {
+      toast.error("File too large. Maximum 10MB allowed.");
+      return;
+    }
+
+    const allowedTypes = ["application/pdf", "image/jpeg", "image/png", "image/webp", "text/plain"];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error("Unsupported file type. Use PDF, JPG, PNG, WebP, or TXT.");
+      return;
+    }
+
+    setIsExtracting(true);
+    setExtractedData(null);
+
+    try {
+      // Read file as base64
+      const buffer = await file.arrayBuffer();
+      const bytes = new Uint8Array(buffer);
+      let binary = "";
+      for (let i = 0; i < bytes.length; i++) {
+        binary += String.fromCharCode(bytes[i]);
+      }
+      const base64 = btoa(binary);
+
+      const { data, error } = await supabase.functions.invoke("extract-document", {
+        body: { fileData: base64, fileType: file.type, fileName: file.name },
+      });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      setExtractedData(data.extracted);
+      toast.success("Document extracted and saved as reference material!");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to extract document");
+    } finally {
+      setIsExtracting(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 
@@ -85,10 +140,32 @@ const WritingDNAPage = () => {
               Your unique writing style profile for AI-powered content personalization
             </p>
           </div>
-          <Button onClick={() => setShowImport(true)} className="gap-2" variant="outline">
-            <Plus className="w-4 h-4" />
-            {dna ? "Re-analyze" : "Import Posts"}
-          </Button>
+          <div className="flex gap-2">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".pdf,.jpg,.jpeg,.png,.webp,.txt"
+              onChange={handleFileUpload}
+              className="hidden"
+            />
+            <Button
+              variant="outline"
+              className="gap-2"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isExtracting}
+            >
+              {isExtracting ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Upload className="w-4 h-4" />
+              )}
+              Upload PDF/Image
+            </Button>
+            <Button onClick={() => setShowImport(true)} className="gap-2" variant="outline">
+              <Plus className="w-4 h-4" />
+              {dna ? "Re-analyze" : "Import Posts"}
+            </Button>
+          </div>
         </div>
 
         {/* DNA Profile Card */}
@@ -187,14 +264,61 @@ const WritingDNAPage = () => {
             </div>
             <h3 className="text-xl font-semibold mb-2">Create Your Writing DNA</h3>
             <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-              Paste 3–10 of your best LinkedIn posts and our AI will analyze your unique writing style to personalize all future content.
+              Paste posts, upload PDFs, or upload images — our AI will analyze your unique writing style.
             </p>
-            <Button onClick={() => setShowImport(true)} className="gap-2 gradient-bg text-primary-foreground">
-              <Plus className="w-4 h-4" />
-              Import Your Posts
-            </Button>
+            <div className="flex justify-center gap-3">
+              <Button onClick={() => setShowImport(true)} className="gap-2 gradient-bg text-primary-foreground">
+                <Plus className="w-4 h-4" />
+                Import Your Posts
+              </Button>
+              <Button variant="outline" className="gap-2" onClick={() => fileInputRef.current?.click()} disabled={isExtracting}>
+                {isExtracting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                Upload PDF/Image
+              </Button>
+            </div>
           </div>
         ) : null}
+
+        {/* Extracted Document Results */}
+        {extractedData && (
+          <div className="bg-card rounded-2xl border border-primary/20 p-6 shadow-sm animate-fade-in">
+            <div className="flex items-center gap-3 mb-4">
+              <CheckCircle2 className="w-5 h-5 text-primary" />
+              <h3 className="font-semibold">Extracted Content</h3>
+              <Badge variant="secondary" className="capitalize">{extractedData.type?.replace("_", " ")}</Badge>
+            </div>
+            <p className="text-sm font-medium mb-2">{extractedData.title}</p>
+            <p className="text-sm text-muted-foreground line-clamp-4 mb-4">{extractedData.content?.substring(0, 500)}...</p>
+            
+            {extractedData.key_topics?.length > 0 && (
+              <div className="mb-4">
+                <p className="text-xs font-medium text-muted-foreground mb-2">Key Topics</p>
+                <div className="flex flex-wrap gap-2">
+                  {extractedData.key_topics.map((t: string, i: number) => (
+                    <Badge key={i} variant="outline">{t}</Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {extractedData.post_suggestions?.length > 0 && (
+              <div>
+                <p className="text-xs font-medium text-muted-foreground mb-2">Post Ideas from this Document</p>
+                <div className="space-y-2">
+                  {extractedData.post_suggestions.map((s: string, i: number) => (
+                    <div key={i} className="text-sm p-3 bg-muted/50 rounded-lg border border-border">
+                      💡 {s}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <Button variant="ghost" size="sm" className="mt-4" onClick={() => setExtractedData(null)}>
+              Dismiss
+            </Button>
+          </div>
+        )}
 
         {/* Import UI */}
         {showImport && (
