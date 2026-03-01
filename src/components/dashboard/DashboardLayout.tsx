@@ -62,7 +62,7 @@ const routeImports: Record<string, () => Promise<unknown>> = {
 
 const prefetchedRoutes = new Set<string>();
 
-const DashboardLayout = ({ children }: DashboardLayoutProps) => {
+const DashboardLayout = ({ children, headerContent }: DashboardLayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
