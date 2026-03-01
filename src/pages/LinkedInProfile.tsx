@@ -42,7 +42,6 @@ const LinkedInProfile = () => {
   }, [profile]);
 
   const handleRefresh = async () => {
-    if (!isScrapingImplemented) return;
     const result = await syncProfileData(profile?.linkedin_profile_url || undefined);
     if (result.success && result.data) {
       setProfileData(result.data);
@@ -132,15 +131,12 @@ const LinkedInProfile = () => {
             <CardTitle className="flex items-center justify-between">
               <span>Profile Data</span>
               <div className="flex items-center gap-2">
-                {!isScrapingImplemented && (
-                  <Badge variant="secondary" className="text-xs">Coming Soon</Badge>
-                )}
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={handleRefresh}
-                  disabled={!isScrapingImplemented || isRefreshing || !isConnected || !hasProfileUrl}
-                  title={!isScrapingImplemented ? "Profile sync coming soon" : !hasProfileUrl ? "Add your LinkedIn URL first" : undefined}
+                  disabled={isRefreshing || !isConnected || !hasProfileUrl}
+                  title={!hasProfileUrl ? "Add your LinkedIn URL first" : undefined}
                 >
                   <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
                   {isRefreshing ? "Refreshing..." : "Refresh Data"}
@@ -225,27 +221,11 @@ const LinkedInProfile = () => {
                 </div>
               ) : (
                 <div className="text-center py-8">
-                  {!isScrapingImplemented ? (
-                    <div className="space-y-3">
-                      <div className="w-14 h-14 rounded-full bg-blue-500/10 flex items-center justify-center mx-auto">
-                        <Clock className="w-7 h-7 text-blue-500" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-foreground">Profile Sync Coming Soon</h3>
-                        <p className="text-sm text-muted-foreground mt-1 max-w-sm mx-auto">
-                          Profile data scraping is currently under development. Post analytics is available in the Analytics section. Profile sync feature will be available soon.
-                        </p>
-                      </div>
-                    </div>
-                  ) : (
-                    <>
-                      <User className="w-12 h-12 mx-auto text-muted-foreground/50 mb-3" />
-                      <p className="text-muted-foreground">No profile data available</p>
-                      <p className="text-sm text-muted-foreground/70 mt-1">
-                        Click "Refresh Data" to sync your LinkedIn profile
-                      </p>
-                    </>
-                  )}
+                  <User className="w-12 h-12 mx-auto text-muted-foreground/50 mb-3" />
+                  <p className="text-muted-foreground">No profile data available</p>
+                  <p className="text-sm text-muted-foreground/70 mt-1">
+                    {hasProfileUrl ? 'Click "Refresh Data" to sync your LinkedIn profile' : 'Connect your LinkedIn account to see your profile data here'}
+                  </p>
                 </div>
               )}
             </CardContent>
