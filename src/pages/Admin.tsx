@@ -640,6 +640,32 @@ const AdminPage = () => {
                   </div>
                 </div>
 
+                {/* Storage Usage */}
+                <div className="bg-muted/50 rounded-lg p-4">
+                  <h4 className="font-medium mb-3 flex items-center gap-2">
+                    <HardDrive className="w-4 h-4" />
+                    Storage Usage
+                  </h4>
+                  {storageData[selectedUser.user_id] ? (
+                    <div className="grid grid-cols-2 gap-4 text-center">
+                      <div>
+                        <p className="text-2xl font-bold">
+                          {formatBytes(storageData[selectedUser.user_id].totalBytes)}
+                        </p>
+                        <p className="text-xs text-muted-foreground">Total Size</p>
+                      </div>
+                      <div>
+                        <p className="text-2xl font-bold">
+                          {storageData[selectedUser.user_id].fileCount}
+                        </p>
+                        <p className="text-xs text-muted-foreground">Files</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground text-center">No files uploaded</p>
+                  )}
+                </div>
+
                 {/* Dates */}
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
