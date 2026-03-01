@@ -952,6 +952,7 @@ function detectIntent(message: string, uploadedImages?: string[]): { type: strin
   }
 
   // Multi-post request (needs confirmation first)
+  const multiPostPatterns = [
     /create\s+posts?\s+for\s+(?:the\s+)?(?:next\s+)?\d+\s*days?/i,
     /generate\s+\d+\s*posts?/i,
     /(?:a\s+)?week(?:'s)?\s+(?:worth\s+)?(?:of\s+)?content/i,
