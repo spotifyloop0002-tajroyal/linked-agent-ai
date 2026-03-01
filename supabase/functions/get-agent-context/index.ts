@@ -20,73 +20,55 @@ serve(async (req) => {
       );
     }
 
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_ANON_KEY")!,
-      { global: { headers: { Authorization: authHeader } } }
-    );
+    // Use service role for broader access (user scoping done manually)
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
 
-    const token = authHeader.replace("Bearer ", "");
-    const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
-    
-    if (claimsError || !claimsData?.claims) {
+    // First get user ID from the auth token
+    const userClient = createClient(supabaseUrl, anonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: { user }, error: userError } = await userClient.auth.getUser();
+    if (userError || !user) {
       return new Response(
         JSON.stringify({ error: "Unauthorized" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const userId = claimsData.claims.sub;
-    console.log("📊 Fetching agent context for user:", userId);
+    const userId = user.id;
+    console.log("📊 Fetching ALL agent context for user:", userId);
 
-    // Fetch user profile
-    const { data: profile, error: profileError } = await supabase
-      .from("user_profiles")
-      .select("*")
-      .eq("user_id", userId)
-      .maybeSingle();
+    const supabase = createClient(supabaseUrl, serviceKey);
 
-    if (profileError) {
-      console.error("Profile fetch error:", profileError);
-    }
+    // Fetch ALL data in parallel — single round-trip
+    const [profileRes, writingStyleRes, writingDnaRes, recentPostsRes, analyticsRes, referenceMaterialsRes] = await Promise.all([
+      supabase.from("user_profiles").select("*").eq("user_id", userId).maybeSingle(),
+      supabase.from("user_writing_style").select("*").eq("user_id", userId).maybeSingle(),
+      supabase.from("user_writing_profiles").select("*").eq("user_id", userId).maybeSingle(),
+      supabase.from("linkedin_post_history")
+        .select("post_content, post_date, views, likes, comments, shares")
+        .eq("user_id", userId)
+        .order("post_date", { ascending: false })
+        .limit(20),
+      supabase.from("linkedin_analytics").select("*").eq("user_id", userId)
+        .order("created_at", { ascending: false }).limit(1).maybeSingle(),
+      supabase.from("agent_reference_materials")
+        .select("title, content, type")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false })
+        .limit(10),
+    ]);
 
-    // Fetch writing style
-    const { data: writingStyle, error: styleError } = await supabase
-      .from("user_writing_style")
-      .select("*")
-      .eq("user_id", userId)
-      .maybeSingle();
+    const profile = profileRes.data;
+    const writingStyle = writingStyleRes.data;
+    const writingDna = writingDnaRes.data;
+    const recentPosts = recentPostsRes.data;
+    const analytics = analyticsRes.data;
+    const referenceMaterials = referenceMaterialsRes.data;
 
-    if (styleError) {
-      console.error("Writing style fetch error:", styleError);
-    }
-
-    // Fetch recent posts (last 20)
-    const { data: recentPosts, error: postsError } = await supabase
-      .from("linkedin_post_history")
-      .select("post_content, post_date, views, likes, comments, shares")
-      .eq("user_id", userId)
-      .order("post_date", { ascending: false })
-      .limit(20);
-
-    if (postsError) {
-      console.error("Recent posts fetch error:", postsError);
-    }
-
-    // Fetch analytics summary
-    const { data: analytics, error: analyticsError } = await supabase
-      .from("linkedin_analytics")
-      .select("*")
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
-    if (analyticsError) {
-      console.error("Analytics fetch error:", analyticsError);
-    }
-
-    // Build AI context object
+    // Build context object
     const agentContext = {
       profile: profile ? {
         name: profile.name,
@@ -110,6 +92,20 @@ serve(async (req) => {
         hashtagStyle: writingStyle.hashtag_style,
         totalPostsAnalyzed: writingStyle.total_posts_analyzed,
       } : null,
+      writingDna: writingDna ? {
+        toneType: writingDna.tone_type,
+        avgPostLength: writingDna.avg_post_length,
+        usesEmojis: writingDna.uses_emojis,
+        emojiFrequency: writingDna.emoji_frequency,
+        hookStyle: writingDna.hook_style,
+        avgSentenceLength: writingDna.avg_sentence_length,
+        usesBulletPoints: writingDna.uses_bullet_points,
+        usesNumberedLists: writingDna.uses_numbered_lists,
+        signaturePhrases: writingDna.signature_phrases,
+        topicsHistory: writingDna.topics_history,
+        samplePosts: writingDna.sample_posts,
+        voiceTags: writingDna.voice_tags,
+      } : null,
       recentPosts: recentPosts?.map(p => ({
         content: p.post_content?.substring(0, 500),
         date: p.post_date,
@@ -125,13 +121,18 @@ serve(async (req) => {
         connectionsCount: analytics.connections_count,
         lastSynced: analytics.last_synced,
       } : null,
+      referenceMaterials: referenceMaterials?.map(m => ({
+        title: m.title,
+        content: m.content?.substring(0, 500),
+        type: m.type,
+      })) || [],
       timestamp: new Date().toISOString(),
     };
 
-    // Build AI instructions based on user data
+    // Build AI instructions
     const aiInstructions = buildAIInstructions(agentContext);
 
-    console.log("✅ Agent context compiled successfully");
+    console.log("✅ Agent context compiled (profile + style + DNA + refs + analytics)");
 
     return new Response(
       JSON.stringify({
@@ -155,16 +156,14 @@ serve(async (req) => {
 });
 
 function buildAIInstructions(context: any): string {
-  const { profile, writingStyle, recentPosts } = context;
-
+  const { profile, writingStyle, writingDna, recentPosts, referenceMaterials } = context;
   let instructions = "";
 
-  // Add profile context
+  // Profile context
   if (profile) {
     instructions += `USER PROFILE:\n`;
     instructions += `- Name: ${profile.name || "Unknown"}\n`;
     instructions += `- Type: ${profile.userType === "company" ? "Company Account" : "Personal Brand"}\n`;
-    
     if (profile.userType === "company") {
       instructions += `- Company: ${profile.companyName || "N/A"}\n`;
       instructions += `- Industry: ${profile.industry || "N/A"}\n`;
@@ -173,34 +172,39 @@ function buildAIInstructions(context: any): string {
       instructions += `- Role: ${profile.role || "N/A"}\n`;
       instructions += `- Background: ${profile.background || "N/A"}\n`;
     }
-    
     instructions += `- Target Audience: ${profile.targetAudience || "General professional audience"}\n`;
     instructions += `- Posting Goals: ${profile.postingGoals?.join(", ") || "Build presence"}\n`;
-    instructions += `- Default Topics: ${profile.defaultTopics?.join(", ") || "General professional topics"}\n`;
-    instructions += `\n`;
+    instructions += `- Default Topics: ${profile.defaultTopics?.join(", ") || "General professional topics"}\n\n`;
   }
 
-  // Add writing style context
+  // Writing style from analyzed posts
   if (writingStyle) {
     instructions += `WRITING STYLE ANALYSIS:\n`;
     instructions += `- Average post length: ${writingStyle.avgPostLength || 150} words\n`;
     instructions += `- Tone: ${writingStyle.toneAnalysis?.tone || "professional"}\n`;
-    instructions += `- Uses emojis: ${writingStyle.emojiUsage ? "Yes, include emojis naturally" : "No, avoid emojis"}\n`;
-    instructions += `- Hashtag style: ${writingStyle.hashtagStyle || "moderate"} (${
-      writingStyle.hashtagStyle === "frequent" ? "Include 3-5 hashtags" :
-      writingStyle.hashtagStyle === "rare" ? "Use 0-1 hashtags" :
-      "Include 1-3 hashtags"
-    })\n`;
-    
+    instructions += `- Uses emojis: ${writingStyle.emojiUsage ? "Yes" : "No"}\n`;
+    instructions += `- Hashtag style: ${writingStyle.hashtagStyle || "moderate"}\n`;
     if (writingStyle.commonTopics?.length > 0) {
-      instructions += `- Common topics/hashtags: ${writingStyle.commonTopics.slice(0, 8).join(", ")}\n`;
+      instructions += `- Common topics: ${writingStyle.commonTopics.slice(0, 8).join(", ")}\n`;
     }
-    
-    instructions += `- Based on ${writingStyle.totalPostsAnalyzed || 0} analyzed posts\n`;
+    instructions += `- Based on ${writingStyle.totalPostsAnalyzed || 0} analyzed posts\n\n`;
+  }
+
+  // Writing DNA profile
+  if (writingDna) {
+    instructions += `WRITING DNA PROFILE:\n`;
+    instructions += `- Tone type: ${writingDna.toneType || "auto"}\n`;
+    instructions += `- Hook style: ${writingDna.hookStyle || "question"}\n`;
+    instructions += `- Avg sentence length: ${writingDna.avgSentenceLength || "medium"}\n`;
+    instructions += `- Uses bullet points: ${writingDna.usesBulletPoints ? "Yes" : "No"}\n`;
+    instructions += `- Uses numbered lists: ${writingDna.usesNumberedLists ? "Yes" : "No"}\n`;
+    if (writingDna.signaturePhrases?.length > 0) {
+      instructions += `- Signature phrases: ${writingDna.signaturePhrases.join(", ")}\n`;
+    }
     instructions += `\n`;
   }
 
-  // Add example posts
+  // Recent post examples
   if (recentPosts?.length > 0) {
     instructions += `RECENT POST EXAMPLES (match this style):\n`;
     recentPosts.slice(0, 5).forEach((post: any, idx: number) => {
@@ -210,14 +214,20 @@ function buildAIInstructions(context: any): string {
     instructions += `\n`;
   }
 
-  // Add general instructions
+  // Reference materials
+  if (referenceMaterials?.length > 0) {
+    instructions += `USER REFERENCE MATERIALS (Use these to match their style):\n`;
+    referenceMaterials.forEach((m: any) => {
+      instructions += `[${m.type?.toUpperCase()}] ${m.title}:\n${m.content}\n\n`;
+    });
+  }
+
+  // Requirements
   instructions += `REQUIREMENTS:\n`;
   instructions += `- Match the user's writing style and voice\n`;
-  
   if (writingStyle?.avgPostLength) {
     instructions += `- Target length: around ${writingStyle.avgPostLength} words\n`;
   }
-  
   if (profile?.targetAudience) {
     instructions += `- Write for audience: ${profile.targetAudience}\n`;
   }
