@@ -21,6 +21,13 @@ const LinkedInProfile = () => {
   
   const [profileData, setProfileData] = useState<LinkedInProfileData | null>(null);
   const [lastSynced, setLastSynced] = useState<Date | null>(null);
+  const [analyticsData, setAnalyticsData] = useState<{
+    followers_count: number | null;
+    connections_count: number | null;
+    username: string | null;
+    profile_url: string | null;
+    last_synced: string | null;
+  } | null>(null);
 
   // Fetch linkedin_analytics data for followers/connections
   useEffect(() => {
