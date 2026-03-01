@@ -314,41 +314,33 @@ const AgentChatPage = () => {
 
   return (
     <DashboardLayout>
-      <div className="-mx-6 -mb-6 px-4 md:px-6 lg:px-8 h-[calc(100vh-56px-1.5rem)] flex flex-col overflow-hidden">
-        {/* Header - compact */}
-        <div className="flex items-center justify-between py-3 border-b border-border flex-shrink-0 animate-fade-in">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={handleBack} className="h-8 w-8">
+      <div className="-mx-6 -mb-6 px-4 md:px-6 lg:px-8 flex flex-col overflow-hidden" style={{ height: 'calc(100vh - 56px - 1.5rem)' }}>
+        {/* Header - compact, inside white content area */}
+        <div className="flex items-center justify-between py-2 border-b border-border flex-shrink-0">
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon" onClick={handleBack} className="h-7 w-7">
               <ArrowLeft className="w-4 h-4" />
             </Button>
-            <div>
-              <h1 className="text-lg font-bold flex items-center gap-2">
-                <Bot className="w-5 h-5 text-primary" />
-                {displayAgentName}
-              </h1>
-              <p className="text-xs text-muted-foreground">
-                Chat with your AI agent to create LinkedIn posts
-              </p>
-            </div>
+            <Bot className="w-4 h-4 text-primary" />
+            <h1 className="text-sm font-semibold">{displayAgentName}</h1>
           </div>
           <div className="flex items-center gap-2">
-            {/* Posting Limits - inline in header */}
             {limitsStatus && (
               <div className="hidden md:flex items-center gap-3 mr-2 text-xs text-muted-foreground">
                 <span>
-                  Posts today: <strong className="text-foreground">{limitsStatus.postsToday}/{limitsStatus.dailyLimit}</strong>
+                  Today: <strong className="text-foreground">{limitsStatus.postsToday}/{limitsStatus.dailyLimit}</strong>
                 </span>
                 <span>
-                  This month: <strong className="text-foreground">{limitsStatus.postsThisMonth}/{limitsStatus.monthlyLimit}</strong>
+                  Month: <strong className="text-foreground">{limitsStatus.postsThisMonth}/{limitsStatus.monthlyLimit}</strong>
                 </span>
               </div>
             )}
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-medium capitalize">
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-medium capitalize">
               {displayAgentType.replace("-", " ")}
             </span>
-            <Button variant="outline" size="sm" onClick={handleClearChat} className="gap-1.5 h-7 text-xs">
+            <Button variant="outline" size="sm" onClick={handleClearChat} className="gap-1 h-6 text-xs px-2">
               <RefreshCw className="w-3 h-3" />
-              Clear Chat
+              Clear
             </Button>
           </div>
         </div>
