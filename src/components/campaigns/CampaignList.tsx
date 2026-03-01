@@ -10,6 +10,7 @@ import {
   Calendar,
   Search,
   Loader2,
+  CheckCircle,
 } from "lucide-react";
 import { format } from "date-fns";
 
@@ -20,6 +21,7 @@ interface CampaignListProps {
   onPause: (id: string) => void;
   onResume: (id: string) => void;
   onDelete: (id: string) => void;
+  onActivate?: (id: string) => void;
 }
 
 const statusColors: Record<string, string> = {
@@ -31,7 +33,7 @@ const statusColors: Record<string, string> = {
   failed: "bg-destructive/10 text-destructive",
 };
 
-export function CampaignList({ campaigns, isLoading, onPreview, onPause, onResume, onDelete }: CampaignListProps) {
+export function CampaignList({ campaigns, isLoading, onPreview, onPause, onResume, onDelete, onActivate }: CampaignListProps) {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -85,6 +87,12 @@ export function CampaignList({ campaigns, isLoading, onPreview, onPause, onResum
                 </div>
               </div>
               <div className="flex items-center gap-2">
+                {campaign.status === "draft" && onActivate && (
+                  <Button size="sm" onClick={() => onActivate(campaign.id)} className="gap-1 gradient-bg text-primary-foreground">
+                    <CheckCircle className="w-4 h-4" />
+                    Activate
+                  </Button>
+                )}
                 <Button variant="outline" size="sm" onClick={() => onPreview(campaign.id)}>
                   <Eye className="w-4 h-4 mr-1" />
                   Preview
