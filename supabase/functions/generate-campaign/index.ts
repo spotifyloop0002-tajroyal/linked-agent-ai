@@ -300,23 +300,22 @@ Generate exactly ${postDates.length} LinkedIn posts. Separate each with "---POST
         ({ hour, minute } = parsePostingTime(campaign.posting_time || "09:00"));
       }
 
-      // Create scheduled time: postDate at hour:minute IST
-      // IST = UTC + 5:30, so subtract 5h30m to get UTC
+      // Create scheduled time: postDate at hour:minute IST → UTC
+      // IST is UTC+5:30 (330 minutes). Convert by subtracting offset in ms.
       const scheduledTime = new Date(postDate);
-      const utcHour = hour - 5;
-      const utcMinute = minute - 30;
-      scheduledTime.setUTCHours(utcHour, utcMinute, 0, 0);
-      
-      // Handle minute underflow
-      if (utcMinute < 0) {
-        scheduledTime.setUTCHours(utcHour - 1, utcMinute + 60, 0, 0);
-      }
+      scheduledTime.setUTCHours(0, 0, 0, 0); // Reset to midnight UTC
+      const istOffsetMs = 5.5 * 60 * 60 * 1000; // 5h30m in milliseconds
+      const timeOfDayMs = (hour * 60 + minute) * 60 * 1000;
+      const finalMs = scheduledTime.getTime() + timeOfDayMs - istOffsetMs;
+      const finalScheduledTime = new Date(finalMs);
+
+      console.log(`[TZ] Post ${i}: ${hour}:${String(minute).padStart(2, '0')} IST → ${finalScheduledTime.toISOString()} UTC`);
 
       return {
         user_id: user.id,
         campaign_id: campaignId,
         content,
-        scheduled_time: scheduledTime.toISOString(),
+        scheduled_time: finalScheduledTime.toISOString(),
         status: campaign.auto_approve ? "pending" : "draft",
         retry_count: 0,
       };
