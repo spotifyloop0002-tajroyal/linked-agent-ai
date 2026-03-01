@@ -314,61 +314,62 @@ const AgentChatPage = () => {
 
   return (
     <DashboardLayout>
-      <div className="h-[calc(100vh-120px)] flex flex-col">
-        {/* Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-border flex-shrink-0 animate-fade-in">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={handleBack}>
-              <ArrowLeft className="w-5 h-5" />
+      <div className="-m-6 px-4 md:px-6 lg:px-8 h-[calc(100vh-64px)] flex flex-col">
+        {/* Header - compact */}
+        <div className="flex items-center justify-between py-3 border-b border-border flex-shrink-0 animate-fade-in">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" onClick={handleBack} className="h-8 w-8">
+              <ArrowLeft className="w-4 h-4" />
             </Button>
             <div>
-              <h1 className="text-2xl font-bold flex items-center gap-2">
-                <Bot className="w-6 h-6 text-primary" />
+              <h1 className="text-lg font-bold flex items-center gap-2">
+                <Bot className="w-5 h-5 text-primary" />
                 {displayAgentName}
               </h1>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 Chat with your AI agent to create LinkedIn posts
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <span className="inline-flex items-center px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium capitalize">
+          <div className="flex items-center gap-2">
+            {/* Posting Limits - inline in header */}
+            {limitsStatus && (
+              <div className="hidden md:flex items-center gap-3 mr-2 text-xs text-muted-foreground">
+                <span>
+                  Posts today: <strong className="text-foreground">{limitsStatus.postsToday}/{limitsStatus.dailyLimit}</strong>
+                </span>
+                <span>
+                  This month: <strong className="text-foreground">{limitsStatus.postsThisMonth}/{limitsStatus.monthlyLimit}</strong>
+                </span>
+              </div>
+            )}
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-medium capitalize">
               {displayAgentType.replace("-", " ")}
             </span>
-            <Button variant="outline" size="sm" onClick={handleClearChat} className="gap-2">
-              <RefreshCw className="w-4 h-4" />
+            <Button variant="outline" size="sm" onClick={handleClearChat} className="gap-1.5 h-7 text-xs">
+              <RefreshCw className="w-3 h-3" />
               Clear Chat
             </Button>
           </div>
         </div>
 
-        {/* Posting Limits Banner */}
-        {limitsStatus && (
-          <div className="flex items-center gap-4 py-2 px-4 bg-muted/50 rounded-lg mt-2 text-sm">
-            <span className="text-muted-foreground">
-              Posts today: <strong>{limitsStatus.postsToday}/{limitsStatus.dailyLimit}</strong>
-            </span>
-            <span className="text-muted-foreground">
-              This month: <strong>{limitsStatus.postsThisMonth}/{limitsStatus.monthlyLimit}</strong>
-            </span>
-            {!canPost && (
-              <Alert variant="destructive" className="py-1 px-3 flex-1">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription className="text-xs ml-2">
-                  {limitMessage}
-                </AlertDescription>
-              </Alert>
-            )}
-          </div>
+        {/* Limit warning banner - only when can't post */}
+        {!canPost && limitsStatus && (
+          <Alert variant="destructive" className="py-1.5 px-3 mt-2 flex-shrink-0">
+            <AlertCircle className="h-3.5 w-3.5" />
+            <AlertDescription className="text-xs ml-2">
+              {limitMessage}
+            </AlertDescription>
+          </Alert>
         )}
 
-        {/* Main content area */}
-        <div className="flex-1 flex gap-6 min-h-0 pt-4">
+        {/* Main content area - full width grid */}
+        <div className="flex-1 grid grid-cols-1 lg:grid-cols-[1fr_380px] xl:grid-cols-[1fr_420px] gap-0 min-h-0 pt-3">
           {/* Chat Section */}
-          <div className="flex-1 flex flex-col min-h-0">
+          <div className="flex flex-col min-h-0 lg:pr-6 lg:border-r lg:border-border">
             {/* Chat messages */}
-            <ScrollArea className="flex-1 pr-4">
-              <div className="space-y-4 pb-4">
+            <ScrollArea className="flex-1 pr-2">
+              <div className="space-y-4 pb-4 max-w-4xl">
                 {messages.map((message, index) => (
                   <div
                     key={index}
@@ -377,7 +378,7 @@ const AgentChatPage = () => {
                     }`}
                   >
                     <div
-                      className={`max-w-[80%] p-4 rounded-2xl ${
+                      className={`max-w-[85%] p-4 rounded-2xl ${
                         message.role === "user"
                           ? "gradient-bg text-primary-foreground"
                           : "bg-muted"
@@ -413,7 +414,7 @@ const AgentChatPage = () => {
             </ScrollArea>
 
             {/* Chat input */}
-            <div className="flex-shrink-0 border-t border-border pt-4 space-y-3">
+            <div className="flex-shrink-0 border-t border-border pt-3 pb-2 space-y-2">
               {/* Image Upload Panel */}
               {showImageUpload && (
                 <div className="animate-fade-in">
@@ -463,7 +464,7 @@ const AgentChatPage = () => {
                   onChange={(e) => setChatInput(e.target.value)}
                   onKeyPress={handleKeyPress}
                   placeholder={uploadedImages.length > 0 ? "Describe posts for your images..." : "Say hi or ask me to create posts..."}
-                  className="flex-1"
+                  className="flex-1 h-11 px-4 text-sm"
                   disabled={isLoading}
                 />
                 <Button 
@@ -471,6 +472,7 @@ const AgentChatPage = () => {
                   size="icon" 
                   onClick={handleSendMessage}
                   disabled={isLoading || isUploadingImages || (!chatInput.trim() && uploadedImages.length === 0)}
+                  className="h-11 w-11"
                 >
                   {isLoading ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
@@ -482,11 +484,11 @@ const AgentChatPage = () => {
             </div>
           </div>
 
-          {/* Generated Posts Section - always visible */}
-          <div className="w-[340px] flex-shrink-0 border-l border-border pl-6 flex flex-col">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-lg">Generated Posts</h3>
-              <span className="text-sm text-muted-foreground">
+          {/* Generated Posts Section */}
+          <div className="hidden lg:flex flex-col min-h-0 pl-6">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-semibold">Generated Posts</h3>
+              <span className="text-xs text-muted-foreground">
                 {generatedPosts.length} post{generatedPosts.length !== 1 ? "s" : ""}
               </span>
             </div>
@@ -494,7 +496,7 @@ const AgentChatPage = () => {
             {generatedPosts.length === 0 ? (
               <div className="flex-1 flex items-center justify-center">
                 <div className="text-center text-muted-foreground">
-                  <Bot className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                  <Bot className="w-10 h-10 mx-auto mb-2 opacity-30" />
                   <p className="text-sm">No posts generated yet.</p>
                   <p className="text-xs mt-1">Ask your agent to create a post!</p>
                 </div>
@@ -502,7 +504,7 @@ const AgentChatPage = () => {
             ) : (
               <>
                 <ScrollArea className="flex-1 min-h-0">
-                  <div className="space-y-4 pr-4">
+                  <div className="space-y-4 pr-2">
                     {generatedPosts.map((post, index) => (
                       <PostPreviewCard
                         key={post.id}
@@ -521,7 +523,7 @@ const AgentChatPage = () => {
                   </div>
                 </ScrollArea>
 
-                {/* Extension Status Indicator with real-time updates */}
+                {/* Extension Status */}
                 <div className="border-t border-border pt-3 mt-3">
                   <ExtensionStatusIndicator
                     connected={isExtensionConnected || extensionStatus.connected}
@@ -532,16 +534,13 @@ const AgentChatPage = () => {
                 </div>
 
                 {/* Extension Activity Log */}
-                <div className="border-t border-border pt-3 mt-3 h-[140px]">
+                <div className="border-t border-border pt-3 mt-3 h-[120px]">
                   <ExtensionActivityLog entries={activityEntries} onClear={clearActivityLog} />
                 </div>
-
               </>
             )}
           </div>
         </div>
-
-        {/* SchedulingDialog removed - scheduling is now fully agent-driven */}
       </div>
     </DashboardLayout>
   );
