@@ -60,6 +60,9 @@ const CampaignsPage = () => {
             campaignId={previewCampaignId}
             onClose={() => setPreviewCampaignId(null)}
             onApproveAll={() => approveCampaignPosts(previewCampaignId)}
+            onRegenerate={async () => {
+              await generateCampaignPosts(previewCampaignId);
+            }}
           />
         )}
 
