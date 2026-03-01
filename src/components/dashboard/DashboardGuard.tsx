@@ -13,6 +13,7 @@ import { Loader2 } from "lucide-react";
 const DashboardGuard = () => {
   const [authChecked, setAuthChecked] = useState(false);
   const [authorized, setAuthorized] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const navigate = useNavigate();
   const profileHook = useUserProfile();
   const checkedRef = useRef(false);
@@ -45,6 +46,7 @@ const DashboardGuard = () => {
         }
 
         if (!cancelled) {
+          setCurrentUserId(session.user.id);
           setAuthorized(true);
           setAuthChecked(true);
         }
@@ -56,10 +58,28 @@ const DashboardGuard = () => {
 
     checkAuth();
 
-    // Listen for sign out
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+    // Listen for auth changes — handle sign out AND user switch
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === "SIGNED_OUT") {
+        // Clear all cached state to prevent data leakage
+        setAuthorized(false);
+        setAuthChecked(false);
+        setCurrentUserId(null);
         navigate("/login", { replace: true });
+        return;
+      }
+
+      // Handle user switch (different user signed in)
+      if (event === "SIGNED_IN" && session) {
+        if (currentUserId && session.user.id !== currentUserId) {
+          console.log("🔄 User switch detected, resetting dashboard state");
+          setAuthorized(false);
+          setAuthChecked(false);
+          checkedRef.current = false;
+          setCurrentUserId(session.user.id);
+          // Re-run auth check for new user
+          checkAuth();
+        }
       }
     });
 
@@ -67,7 +87,7 @@ const DashboardGuard = () => {
       cancelled = true;
       subscription.unsubscribe();
     };
-  }, [navigate]);
+  }, [navigate, currentUserId]);
 
   if (!authChecked || !authorized) {
     return (

@@ -133,13 +133,17 @@ export const useAgents = () => {
 
   const updateAgent = useCallback(async (agentId: string, updates: Partial<Omit<Agent, 'settings'>> & { settings?: Json }): Promise<boolean> => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return false;
+
       const { error: updateError } = await supabase
         .from("agents")
         .update({
           ...updates,
           updated_at: new Date().toISOString(),
         })
-        .eq("id", agentId);
+        .eq("id", agentId)
+        .eq("user_id", user.id);
 
       if (updateError) throw updateError;
 
@@ -165,10 +169,14 @@ export const useAgents = () => {
 
   const deleteAgent = useCallback(async (agentId: string): Promise<boolean> => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return false;
+
       const { error: deleteError } = await supabase
         .from("agents")
         .delete()
-        .eq("id", agentId);
+        .eq("id", agentId)
+        .eq("user_id", user.id);
 
       if (deleteError) throw deleteError;
 

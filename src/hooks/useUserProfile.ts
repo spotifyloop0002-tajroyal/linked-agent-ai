@@ -227,6 +227,19 @@ export const useUserProfile = () => {
 
   useEffect(() => {
     fetchProfile();
+
+    // Re-fetch profile on auth state change (user switch, sign in/out)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_IN") {
+        // New user signed in — re-fetch their profile
+        fetchProfile();
+      } else if (event === "SIGNED_OUT") {
+        setProfile(null);
+        setIsLoading(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   // Update last active on mount

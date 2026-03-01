@@ -200,13 +200,17 @@ export const usePosts = () => {
 
   const updatePost = useCallback(async (postId: string, updates: Partial<Post>): Promise<boolean> => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return false;
+
       const { error: updateError } = await supabase
         .from("posts")
         .update({
           ...updates,
           updated_at: new Date().toISOString(),
         })
-        .eq("id", postId);
+        .eq("id", postId)
+        .eq("user_id", user.id);
 
       if (updateError) throw updateError;
 
@@ -232,10 +236,14 @@ export const usePosts = () => {
 
   const deletePost = useCallback(async (postId: string): Promise<boolean> => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return false;
+
       const { error: deleteError } = await supabase
         .from("posts")
         .delete()
-        .eq("id", postId);
+        .eq("id", postId)
+        .eq("user_id", user.id);
 
       if (deleteError) throw deleteError;
 
