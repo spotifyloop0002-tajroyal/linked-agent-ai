@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-import { RefreshCw, MapPin, Briefcase, User, Clock, AlertCircle, ExternalLink, Linkedin } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { RefreshCw, MapPin, Briefcase, User, Clock, AlertCircle, ExternalLink, Linkedin, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -10,6 +9,7 @@ import { useLinkedBotExtension } from "@/hooks/useLinkedBotExtension";
 import { useDashboardProfile } from "@/contexts/DashboardContext";
 import type { LinkedInProfileData } from "@/hooks/useUserProfile";
 import { useProfileSync } from "@/hooks/useProfileSync";
+import { supabase } from "@/integrations/supabase/client";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { formatDistanceToNow } from "date-fns";
 import { Link } from "react-router-dom";
