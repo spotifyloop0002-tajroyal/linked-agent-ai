@@ -116,10 +116,30 @@ const AdminPaymentsPage = () => {
       if (error) throw error;
       
       const paymentsData = data || [];
-      setPayments(paymentsData);
+      
+      // Fetch user profiles for all payment user_ids
+      const userIds = [...new Set(paymentsData.map(p => p.user_id))];
+      const { data: profiles } = await supabase
+        .from("user_profiles_safe")
+        .select("user_id, name, email, phone_number, linkedin_id")
+        .in("user_id", userIds);
+      
+      const profileMap = new Map<string, any>();
+      (profiles || []).forEach(p => profileMap.set(p.user_id, p));
+      
+      // Enrich payments with user info
+      const enrichedPayments: Payment[] = paymentsData.map(p => ({
+        ...p,
+        user_name: profileMap.get(p.user_id)?.name || null,
+        user_email: profileMap.get(p.user_id)?.email || null,
+        user_phone: profileMap.get(p.user_id)?.phone_number || null,
+        user_linkedin_id: profileMap.get(p.user_id)?.linkedin_id || null,
+      }));
+      
+      setPayments(enrichedPayments);
       
       // Calculate stats
-      const successful = paymentsData.filter(p => p.status === "success");
+      const successful = enrichedPayments.filter(p => p.status === "success");
       const couponPayments = successful.filter(p => p.coupon_code && p.final_amount === 0);
       const fullPayments = successful.filter(p => p.final_amount > 0);
       
@@ -127,13 +147,13 @@ const AdminPaymentsPage = () => {
         ...prev,
         totalRevenue: successful.reduce((acc, p) => acc + (p.final_amount || 0), 0),
         successfulPayments: successful.length,
-        pendingPayments: paymentsData.filter(p => p.status === "pending").length,
-        failedPayments: paymentsData.filter(p => p.status === "failed").length,
+        pendingPayments: enrichedPayments.filter(p => p.status === "pending").length,
+        failedPayments: enrichedPayments.filter(p => p.status === "failed").length,
         couponUsers: couponPayments.length,
         paidUsers: fullPayments.length,
       }));
       
-      return paymentsData;
+      return enrichedPayments;
     } catch (err: any) {
       toast.error("Failed to fetch payments");
       console.error(err);
