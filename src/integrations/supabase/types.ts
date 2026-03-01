@@ -1358,26 +1358,39 @@ export type Database = {
       get_admin_users_data: {
         Args: never
         Returns: {
+          background: string
           city: string
+          company_description: string
           company_name: string
           country: string
           created_at: string
+          default_topics: string[]
           email: string
           followers_count: number
           id: string
           industry: string
           last_active_at: string
+          linkedin_id: string
+          linkedin_profile_confirmed: boolean
           linkedin_profile_url: string
+          linkedin_username: string
+          linkedin_verified: boolean
+          location: string
           name: string
           onboarding_completed: boolean
           phone_number: string
+          post_frequency: string
+          posting_goals: string[]
           posts_created_count: number
           posts_published_count: number
           posts_scheduled_count: number
+          preferred_tone: string
           role: string
           subscription_expires_at: string
           subscription_plan: string
+          target_audience: string
           user_id: string
+          user_type: string
         }[]
       }
       has_role: {
