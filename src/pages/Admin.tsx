@@ -462,7 +462,6 @@ const AdminPage = () => {
                 <TableHead className="text-center">Followers</TableHead>
                 <TableHead>Joined</TableHead>
                 <TableHead>Actions</TableHead>
-                <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
