@@ -47,12 +47,21 @@ import {
   Crown,
   AlertCircle,
   Bot,
+  HardDrive,
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { format } from "date-fns";
 import { AdminNotificationSender } from "@/components/admin/AdminNotificationSender";
 import { AdminAlertsDashboard } from "@/components/admin/AdminAlertsDashboard";
 import { AdminScheduledPosts } from "@/components/admin/AdminScheduledPosts";
+
+const formatBytes = (bytes: number): string => {
+  if (bytes === 0) return "0 B";
+  const k = 1024;
+  const sizes = ["B", "KB", "MB", "GB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
+};
 
 interface AdminUser {
   id: string;
@@ -89,6 +98,9 @@ const AdminPage = () => {
   const [countryFilter, setCountryFilter] = useState("all");
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
   const [totalAgents, setTotalAgents] = useState(0);
+  const [storageData, setStorageData] = useState<Record<string, { fileCount: number; totalBytes: number }>>({});
+  const [totalStorage, setTotalStorage] = useState(0);
+  const [totalFiles, setTotalFiles] = useState(0);
 
   // Check if current user is admin
   useEffect(() => {
@@ -130,7 +142,6 @@ const AdminPage = () => {
 
   const fetchAdminData = async () => {
     try {
-      // Fetch users and agents count in parallel
       const [usersRes, agentsRes] = await Promise.all([
         supabase.rpc('get_admin_users_data'),
         supabase.from('agents').select('*', { count: 'exact', head: true }),
@@ -149,6 +160,18 @@ const AdminPage = () => {
       setUsers(usersRes.data || []);
       setFilteredUsers(usersRes.data || []);
       setTotalAgents(agentsRes.count || 0);
+
+      // Fetch storage usage
+      try {
+        const { data: storageRes, error: storageErr } = await supabase.functions.invoke("admin-storage-usage");
+        if (!storageErr && storageRes) {
+          setStorageData(storageRes.perUser || {});
+          setTotalStorage(storageRes.totalBytes || 0);
+          setTotalFiles(storageRes.totalFiles || 0);
+        }
+      } catch {
+        console.log("Storage usage fetch skipped");
+      }
     } catch (err) {
       console.error("Fetch error:", err);
     }
@@ -243,7 +266,7 @@ const AdminPage = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="grid grid-cols-2 lg:grid-cols-6 gap-4"
+          className="grid grid-cols-2 lg:grid-cols-7 gap-4"
         >
           <Card>
             <CardHeader className="pb-2">
@@ -309,6 +332,18 @@ const AdminPage = () => {
                 <Clock className="w-5 h-5 text-primary" />
                 <span className="text-2xl font-bold">{totalScheduled}</span>
               </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Storage Used</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-2">
+                <HardDrive className="w-5 h-5 text-muted-foreground" />
+                <span className="text-2xl font-bold">{formatBytes(totalStorage)}</span>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">{totalFiles} files</p>
             </CardContent>
           </Card>
         </motion.div>
@@ -404,15 +439,17 @@ const AdminPage = () => {
                 <TableHead>Location</TableHead>
                 <TableHead>Plan</TableHead>
                 <TableHead className="text-center">Posts</TableHead>
+                <TableHead className="text-center">Storage</TableHead>
                 <TableHead className="text-center">Followers</TableHead>
                 <TableHead>Joined</TableHead>
+                <TableHead>Actions</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredUsers.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8">
+                  <TableCell colSpan={8} className="text-center py-8">
                     <div className="flex flex-col items-center gap-2">
                       <Users className="w-8 h-8 text-muted-foreground" />
                       <p className="text-muted-foreground">No users found</p>
@@ -458,6 +495,16 @@ const AdminPage = () => {
                           {user.posts_scheduled_count || 0} scheduled
                         </span>
                       </div>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {storageData[user.user_id] ? (
+                        <div className="flex flex-col text-sm">
+                          <span>{formatBytes(storageData[user.user_id].totalBytes)}</span>
+                          <span className="text-xs text-muted-foreground">{storageData[user.user_id].fileCount} files</span>
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground text-sm">0 B</span>
+                      )}
                     </TableCell>
                     <TableCell className="text-center">
                       {user.followers_count || 0}
@@ -603,6 +650,32 @@ const AdminPage = () => {
                       <p className="text-xs text-muted-foreground">Followers</p>
                     </div>
                   </div>
+                </div>
+
+                {/* Storage Usage */}
+                <div className="bg-muted/50 rounded-lg p-4">
+                  <h4 className="font-medium mb-3 flex items-center gap-2">
+                    <HardDrive className="w-4 h-4" />
+                    Storage Usage
+                  </h4>
+                  {storageData[selectedUser.user_id] ? (
+                    <div className="grid grid-cols-2 gap-4 text-center">
+                      <div>
+                        <p className="text-2xl font-bold">
+                          {formatBytes(storageData[selectedUser.user_id].totalBytes)}
+                        </p>
+                        <p className="text-xs text-muted-foreground">Total Size</p>
+                      </div>
+                      <div>
+                        <p className="text-2xl font-bold">
+                          {storageData[selectedUser.user_id].fileCount}
+                        </p>
+                        <p className="text-xs text-muted-foreground">Files</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground text-center">No files uploaded</p>
+                  )}
                 </div>
 
                 {/* Dates */}
