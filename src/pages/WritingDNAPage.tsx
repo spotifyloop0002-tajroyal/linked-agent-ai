@@ -1,10 +1,11 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useWritingDNA } from "@/hooks/useWritingDNA";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
@@ -24,9 +25,22 @@ import {
   Type,
   Upload,
   FileText,
-  Image as ImageIcon,
   CheckCircle2,
+  Trash2,
+  Pencil,
+  Eye,
+  X,
+  Save,
+  BookOpen,
 } from "lucide-react";
+
+interface SavedMaterial {
+  id: string;
+  title: string;
+  content: string;
+  type: string;
+  created_at: string;
+}
 
 const WritingDNAPage = () => {
   usePageTitle("Writing DNA");
@@ -36,6 +50,82 @@ const WritingDNAPage = () => {
   const [isExtracting, setIsExtracting] = useState(false);
   const [extractedData, setExtractedData] = useState<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Saved materials state
+  const [materials, setMaterials] = useState<SavedMaterial[]>([]);
+  const [materialsLoading, setMaterialsLoading] = useState(true);
+  const [viewingMaterial, setViewingMaterial] = useState<SavedMaterial | null>(null);
+  const [editingMaterial, setEditingMaterial] = useState<SavedMaterial | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editContent, setEditContent] = useState("");
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
+
+  const fetchMaterials = useCallback(async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from("agent_reference_materials")
+        .select("id, title, content, type, created_at")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setMaterials(data || []);
+    } catch (err) {
+      console.error("Failed to load materials:", err);
+    } finally {
+      setMaterialsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchMaterials();
+  }, [fetchMaterials]);
+
+  const handleDeleteMaterial = async (id: string) => {
+    if (!confirm("Delete this reference material?")) return;
+    try {
+      const { error } = await supabase
+        .from("agent_reference_materials")
+        .delete()
+        .eq("id", id);
+      if (error) throw error;
+      setMaterials((prev) => prev.filter((m) => m.id !== id));
+      toast.success("Material deleted");
+      if (viewingMaterial?.id === id) setViewingMaterial(null);
+      if (editingMaterial?.id === id) setEditingMaterial(null);
+    } catch {
+      toast.error("Failed to delete");
+    }
+  };
+
+  const handleStartEdit = (material: SavedMaterial) => {
+    setEditingMaterial(material);
+    setEditTitle(material.title);
+    setEditContent(material.content);
+    setViewingMaterial(null);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingMaterial || !editTitle.trim() || !editContent.trim()) return;
+    setIsSavingEdit(true);
+    try {
+      const { error } = await supabase
+        .from("agent_reference_materials")
+        .update({ title: editTitle.trim(), content: editContent.trim() })
+        .eq("id", editingMaterial.id);
+      if (error) throw error;
+      toast.success("Material updated");
+      setEditingMaterial(null);
+      fetchMaterials();
+    } catch {
+      toast.error("Failed to update");
+    } finally {
+      setIsSavingEdit(false);
+    }
+  };
 
   const handleAnalyze = async () => {
     const validPosts = samplePosts.filter((p) => p.trim().length > 20);
@@ -58,7 +148,7 @@ const WritingDNAPage = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const maxSize = 10 * 1024 * 1024; // 10MB
+    const maxSize = 10 * 1024 * 1024;
     if (file.size > maxSize) {
       toast.error("File too large. Maximum 10MB allowed.");
       return;
@@ -74,7 +164,6 @@ const WritingDNAPage = () => {
     setExtractedData(null);
 
     try {
-      // Read file as base64
       const buffer = await file.arrayBuffer();
       const bytes = new Uint8Array(buffer);
       let binary = "";
@@ -92,12 +181,23 @@ const WritingDNAPage = () => {
 
       setExtractedData(data.extracted);
       toast.success("Document extracted and saved as reference material!");
+      fetchMaterials(); // Refresh list
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to extract document");
     } finally {
       setIsExtracting(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
+  };
+
+  const typeLabels: Record<string, string> = {
+    writing_sample: "✍️ Writing Sample",
+    brand_guidelines: "📋 Brand Guidelines",
+    topic_notes: "📝 Topic Notes",
+    text: "📄 General Text",
+    company_info: "🏢 Company Info",
+    product_info: "📦 Product Info",
+    general: "📄 General",
   };
 
   const toneIcons: Record<string, React.ReactNode> = {
@@ -234,7 +334,7 @@ const WritingDNAPage = () => {
               <div className="bg-card rounded-2xl border border-border p-6 shadow-sm">
                 <h3 className="font-semibold mb-4">Signature Phrases</h3>
                 <div className="flex flex-wrap gap-2">
-                  {dna.signature_phrases.map((phrase, i) => (
+                  {dna.signature_phrases.map((phrase: string, i: number) => (
                     <Badge key={i} variant="secondary" className="text-sm">
                       "{phrase}"
                     </Badge>
@@ -248,7 +348,7 @@ const WritingDNAPage = () => {
               <div className="bg-card rounded-2xl border border-border p-6 shadow-sm">
                 <h3 className="font-semibold mb-4">Topic History</h3>
                 <div className="flex flex-wrap gap-2">
-                  {dna.topics_history.map((topic, i) => (
+                  {dna.topics_history.map((topic: string, i: number) => (
                     <Badge key={i} variant="outline">
                       {topic}
                     </Badge>
@@ -306,6 +406,163 @@ const WritingDNAPage = () => {
             <Button variant="ghost" size="sm" className="mt-4" onClick={() => setExtractedData(null)}>
               Dismiss
             </Button>
+          </div>
+        )}
+
+        {/* ═══════════════════════════════════════ */}
+        {/* SAVED REFERENCE MATERIALS SECTION */}
+        {/* ═══════════════════════════════════════ */}
+        <div className="bg-card rounded-2xl border border-border p-6 shadow-sm">
+          <div className="flex items-center justify-between mb-5">
+            <div className="flex items-center gap-3">
+              <BookOpen className="w-5 h-5 text-primary" />
+              <h3 className="text-lg font-semibold">Saved Reference Materials</h3>
+              <Badge variant="secondary" className="text-xs">{materials.length}</Badge>
+            </div>
+          </div>
+
+          {materialsLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+            </div>
+          ) : materials.length === 0 ? (
+            <div className="text-center py-8">
+              <FileText className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
+              <p className="text-sm text-muted-foreground">
+                No reference materials yet. Upload a PDF/image or add materials via the Agent training panel.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {materials.map((m) => (
+                <div
+                  key={m.id}
+                  className="flex items-start gap-3 p-4 rounded-xl bg-muted/30 border border-border/50 hover:border-border transition-colors"
+                >
+                  <FileText className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">{m.title}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Badge variant="outline" className="text-xs">
+                        {typeLabels[m.type] || m.type}
+                      </Badge>
+                      <span className="text-xs text-muted-foreground">
+                        {m.content.length.toLocaleString()} chars
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        · {new Date(m.created_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1.5 line-clamp-2">
+                      {m.content.substring(0, 150)}...
+                    </p>
+                  </div>
+                  <div className="flex gap-1 flex-shrink-0">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7"
+                      onClick={() => { setViewingMaterial(m); setEditingMaterial(null); }}
+                      title="View full content"
+                    >
+                      <Eye className="w-3.5 h-3.5" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7"
+                      onClick={() => handleStartEdit(m)}
+                      title="Edit"
+                    >
+                      <Pencil className="w-3.5 h-3.5" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 text-destructive/60 hover:text-destructive"
+                      onClick={() => handleDeleteMaterial(m.id)}
+                      title="Delete"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* View Material Modal */}
+        {viewingMaterial && (
+          <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-card border border-border rounded-2xl shadow-lg max-w-2xl w-full max-h-[80vh] flex flex-col">
+              <div className="flex items-center justify-between p-6 border-b border-border">
+                <div>
+                  <h3 className="font-semibold">{viewingMaterial.title}</h3>
+                  <Badge variant="outline" className="mt-1 text-xs">
+                    {typeLabels[viewingMaterial.type] || viewingMaterial.type}
+                  </Badge>
+                </div>
+                <Button variant="ghost" size="icon" onClick={() => setViewingMaterial(null)}>
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+              <div className="p-6 overflow-y-auto flex-1">
+                <pre className="text-sm whitespace-pre-wrap text-foreground font-sans leading-relaxed">
+                  {viewingMaterial.content}
+                </pre>
+              </div>
+              <div className="flex justify-end gap-2 p-4 border-t border-border">
+                <Button variant="outline" size="sm" onClick={() => handleStartEdit(viewingMaterial)} className="gap-1.5">
+                  <Pencil className="w-3.5 h-3.5" />
+                  Edit
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => setViewingMaterial(null)}>
+                  Close
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Edit Material Modal */}
+        {editingMaterial && (
+          <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-card border border-border rounded-2xl shadow-lg max-w-2xl w-full max-h-[80vh] flex flex-col">
+              <div className="flex items-center justify-between p-6 border-b border-border">
+                <h3 className="font-semibold">Edit Reference Material</h3>
+                <Button variant="ghost" size="icon" onClick={() => setEditingMaterial(null)}>
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+              <div className="p-6 space-y-4 overflow-y-auto flex-1">
+                <div>
+                  <Label className="text-sm">Title</Label>
+                  <Input
+                    value={editTitle}
+                    onChange={(e) => setEditTitle(e.target.value)}
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label className="text-sm">Content</Label>
+                  <Textarea
+                    value={editContent}
+                    onChange={(e) => setEditContent(e.target.value)}
+                    className="mt-1 min-h-[300px] text-sm font-mono"
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end gap-2 p-4 border-t border-border">
+                <Button variant="ghost" size="sm" onClick={() => setEditingMaterial(null)}>
+                  Cancel
+                </Button>
+                <Button size="sm" onClick={handleSaveEdit} disabled={isSavingEdit} className="gap-1.5">
+                  {isSavingEdit ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+                  Save Changes
+                </Button>
+              </div>
+            </div>
           </div>
         )}
 
