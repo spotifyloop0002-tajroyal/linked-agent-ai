@@ -314,7 +314,7 @@ const AgentChatPage = () => {
 
   return (
     <DashboardLayout>
-      <div className="-m-6 px-4 md:px-6 lg:px-8 h-[calc(100vh-56px)] flex flex-col overflow-hidden">
+      <div className="-mx-6 -mb-6 px-4 md:px-6 lg:px-8 h-[calc(100vh-56px-1.5rem)] flex flex-col overflow-hidden">
         {/* Header - compact */}
         <div className="flex items-center justify-between py-3 border-b border-border flex-shrink-0 animate-fade-in">
           <div className="flex items-center gap-3">
