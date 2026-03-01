@@ -243,31 +243,52 @@ const AnalyticsPage = () => {
       });
       return;
     }
-    const ext = window.LinkedBotExtension as any;
-    if (!ext?.scrapeAnalytics) {
-      toast({
-        title: "Feature not available",
-        description: "Please update your extension.",
-        variant: "destructive",
-      });
-      return;
-    }
-    try {
-      if (userProfile?.linkedin_profile_url && ext?.saveProfileUrl) {
-        try { await ext.saveProfileUrl(userProfile.linkedin_profile_url); } catch {}
+
+    toast({ title: "Syncing analytics", description: "Scraping your LinkedIn analytics..." });
+
+    // Try window.LinkedBotExtension API first, fallback to postMessage
+    const ext = window.LinkedBotExtension;
+    if (ext?.scrapeAnalytics) {
+      try {
+        if (userProfile?.linkedin_profile_url && (ext as any)?.saveProfileUrl) {
+          try { await (ext as any).saveProfileUrl(userProfile.linkedin_profile_url); } catch {}
+        }
+        const result = await ext.scrapeAnalytics();
+        if (!result?.success) throw new Error(result?.error || "Failed to scrape");
+        const data = result.data || {};
+        await syncAnalytics({ profile: data.profile || null, posts: data.posts || [] });
+        await fetchPosts();
+        return;
+      } catch (err) {
+        console.warn("Direct API failed, trying postMessage:", err);
       }
-      toast({ title: "Syncing analytics", description: "Scraping your LinkedIn analytics..." });
-      const result = await ext.scrapeAnalytics();
-      if (!result?.success) throw new Error(result?.error || "Failed to scrape");
-      const data = result.data || {};
-      await syncAnalytics({ profile: data.profile || null, posts: data.posts || [] });
-      await fetchPosts();
+    }
+
+    // Fallback: use postMessage (works with all extension versions)
+    window.postMessage({ type: 'SCRAPE_ANALYTICS' }, '*');
+    
+    // Also trigger bulk analytics for posted posts
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        const { data: postedPosts } = await supabase
+          .from('posts')
+          .select('linkedin_post_url')
+          .eq('user_id', session.user.id)
+          .eq('status', 'posted')
+          .not('linkedin_post_url', 'is', null)
+          .order('posted_at', { ascending: false })
+          .limit(30);
+
+        if (postedPosts && postedPosts.length > 0) {
+          const urls = postedPosts.map(p => p.linkedin_post_url).filter(Boolean);
+          if (urls.length > 0) {
+            window.postMessage({ type: 'SCRAPE_BULK_ANALYTICS', postUrls: urls }, '*');
+          }
+        }
+      }
     } catch (err) {
-      toast({
-        title: "Sync failed",
-        description: err instanceof Error ? err.message : "Failed to sync",
-        variant: "destructive",
-      });
+      console.warn("Bulk analytics request failed:", err);
     }
   };
 
