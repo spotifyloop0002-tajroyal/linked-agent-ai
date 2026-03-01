@@ -125,6 +125,22 @@ serve(async (req) => {
         );
       }
 
+      // ✅ CRITICAL: Check if this LinkedIn account is already linked to ANOTHER user
+      const { data: existingMapping } = await supabaseAdmin
+        .from("user_profiles")
+        .select("user_id")
+        .eq("linkedin_id", linkedinId)
+        .neq("user_id", user.id)
+        .maybeSingle();
+
+      if (existingMapping) {
+        console.error("LinkedIn account already linked to another user:", existingMapping.user_id);
+        return new Response(
+          JSON.stringify({ error: "This LinkedIn account is already connected to another LinkedBot account. Each LinkedIn account can only be linked to one LinkedBot account." }),
+          { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
       // Calculate token expiry
       const tokenExpiresAt = new Date(Date.now() + expiresIn * 1000).toISOString();
 

@@ -67,7 +67,7 @@ export interface UserContext {
   industry?: string;
 }
 
-// Storage keys for persistence - now user-specific
+// Storage keys for persistence - now user-specific with actual user ID
 const CHAT_STORAGE_PREFIX = "linkedbot_chat_history_";
 const POSTS_STORAGE_PREFIX = "linkedbot_generated_posts_";
 const MAX_STORED_MESSAGES = 30;
@@ -89,12 +89,29 @@ function generateImagePromptFromContent(content: string): string {
   return `Professional LinkedIn image: ${clean}, ${themeStr}, modern clean design, high quality`;
 }
 
-// Get user-specific storage keys
+// Get user-specific storage keys — include user ID to prevent cross-user leakage
+function getUserIdForStorage(): string {
+  try {
+    // Read from supabase session in localStorage
+    const keys = Object.keys(localStorage);
+    const sessionKey = keys.find(k => k.startsWith('sb-') && k.endsWith('-auth-token'));
+    if (sessionKey) {
+      const session = JSON.parse(localStorage.getItem(sessionKey) || '{}');
+      return session?.user?.id || 'anonymous';
+    }
+  } catch {
+    // ignore
+  }
+  return 'anonymous';
+}
+
 function getChatStorageKey(agentId?: string | null): string {
-  return `${CHAT_STORAGE_PREFIX}${agentId || 'default'}`;
+  const uid = getUserIdForStorage();
+  return `${CHAT_STORAGE_PREFIX}${uid}_${agentId || 'default'}`;
 }
 function getPostsStorageKey(agentId?: string | null): string {
-  return `${POSTS_STORAGE_PREFIX}${agentId || 'default'}`;
+  const uid = getUserIdForStorage();
+  return `${POSTS_STORAGE_PREFIX}${uid}_${agentId || 'default'}`;
 }
 
 // Agent type specific welcome messages

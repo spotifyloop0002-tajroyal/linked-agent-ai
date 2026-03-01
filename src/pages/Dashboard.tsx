@@ -106,11 +106,13 @@ const DashboardPage = () => {
   const [selectedPost, setSelectedPost] = useState<DashboardScheduledPost | null>(null);
   const [showPostModal, setShowPostModal] = useState(false);
 
-  // Delete post handler
+  // Delete post handler — always scope to current user
   const handleDeletePost = async (postId: string) => {
     if (!confirm('Are you sure you want to delete this post?')) return;
     try {
-      const { error } = await supabase.from('posts').delete().eq('id', postId);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { error } = await supabase.from('posts').delete().eq('id', postId).eq('user_id', user.id);
       if (error) throw error;
       toast.success('Post deleted');
       refetchData();
@@ -120,15 +122,17 @@ const DashboardPage = () => {
     }
   };
 
-  // Retry a failed post
+  // Retry a failed post — always scope to current user
   const handleRetryPost = async (postId: string) => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
       const retryTime = new Date();
       retryTime.setMinutes(retryTime.getMinutes() + 1);
       const { error } = await supabase.from('posts').update({
         status: 'pending', retry_count: 0, last_error: null,
         scheduled_time: retryTime.toISOString(),
-      }).eq('id', postId);
+      }).eq('id', postId).eq('user_id', user.id);
       if (error) throw error;
       toast.success('Post queued for retry — will post in ~1 minute');
       refetchData();
@@ -138,13 +142,15 @@ const DashboardPage = () => {
     }
   };
 
-  // Post now — schedule immediately
+  // Post now — schedule immediately, scoped to current user
   const handlePostNow = async (postId: string) => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
       const { error } = await supabase.from('posts').update({
         status: 'pending', retry_count: 0, last_error: null,
         scheduled_time: new Date().toISOString(),
-      }).eq('id', postId);
+      }).eq('id', postId).eq('user_id', user.id);
       if (error) throw error;
       toast.success('Post will be published within the next minute!');
       refetchData();
