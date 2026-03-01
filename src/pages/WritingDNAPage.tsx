@@ -140,10 +140,32 @@ const WritingDNAPage = () => {
               Your unique writing style profile for AI-powered content personalization
             </p>
           </div>
-          <Button onClick={() => setShowImport(true)} className="gap-2" variant="outline">
-            <Plus className="w-4 h-4" />
-            {dna ? "Re-analyze" : "Import Posts"}
-          </Button>
+          <div className="flex gap-2">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".pdf,.jpg,.jpeg,.png,.webp,.txt"
+              onChange={handleFileUpload}
+              className="hidden"
+            />
+            <Button
+              variant="outline"
+              className="gap-2"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isExtracting}
+            >
+              {isExtracting ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Upload className="w-4 h-4" />
+              )}
+              Upload PDF/Image
+            </Button>
+            <Button onClick={() => setShowImport(true)} className="gap-2" variant="outline">
+              <Plus className="w-4 h-4" />
+              {dna ? "Re-analyze" : "Import Posts"}
+            </Button>
+          </div>
         </div>
 
         {/* DNA Profile Card */}
