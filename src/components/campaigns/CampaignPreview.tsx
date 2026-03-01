@@ -207,7 +207,15 @@ export function CampaignPreview({ campaignId, onClose, onApproveAll, onRegenerat
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
       ) : posts.length === 0 ? (
-        <p className="text-muted-foreground text-center py-8">No posts generated yet.</p>
+        <div className="text-center py-8 space-y-3">
+          <p className="text-muted-foreground">No posts generated yet. The generation may have timed out.</p>
+          {onRegenerate && (
+            <Button onClick={onRegenerate} variant="outline" className="gap-2">
+              <RefreshCw className="w-4 h-4" />
+              Regenerate Posts
+            </Button>
+          )}
+        </div>
       ) : (
         <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
           <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Generated Posts</h3>
