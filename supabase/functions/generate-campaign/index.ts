@@ -109,11 +109,22 @@ serve(async (req) => {
       });
     }
 
+    // Check LinkedIn connection before generating campaign posts
+    const ctx = unifiedContext?.context || {};
+    const linkedinConnected = ctx.linkedinConnected === true;
+    if (!linkedinConnected) {
+      return new Response(JSON.stringify({ 
+        error: "LinkedIn is not connected. Please connect your LinkedIn account from the LinkedIn page before creating a campaign." 
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     // Update campaign status to generating
     await supabase.from("campaigns").update({ status: "generating" }).eq("id", campaignId);
 
     // Extract data from unified context
-    const ctx = unifiedContext?.context || {};
     const profile = ctx.profile || {};
     const writingDna = ctx.writingDna || null;
     const aiInstructions = unifiedContext?.aiInstructions || "";
