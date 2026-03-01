@@ -126,6 +126,7 @@ serve(async (req) => {
         content: m.content?.substring(0, 500),
         type: m.type,
       })) || [],
+      linkedinConnected: !!(profile?.linkedin_access_token && profile?.linkedin_id),
       timestamp: new Date().toISOString(),
     };
 

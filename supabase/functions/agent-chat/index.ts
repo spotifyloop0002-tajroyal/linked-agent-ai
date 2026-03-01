@@ -1313,6 +1313,13 @@ Or would you prefer different topics/timing?`;
           console.log("📋 First post content preview:", generatedPosts[0]?.content?.substring(0, 100));
         }
         
+        // Check LinkedIn connection
+        const isLinkedInConnectedPostNow = userContext?.context?.linkedinConnected === true;
+        if (!isLinkedInConnectedPostNow) {
+          response = "⚠️ **LinkedIn is not connected!**\n\nYou need to connect your LinkedIn account before I can post or schedule anything.\n\n👉 Go to **LinkedIn** page from the sidebar to connect your account.\n\nOnce connected, come back and I'll post this for you!";
+          break;
+        }
+        
         if (!generatedPosts || generatedPosts.length === 0) {
           response = "I don't have any posts ready to publish. Would you like me to create one first?\n\nJust say 'write a post about [topic]' 📝";
         } else {
@@ -1346,6 +1353,13 @@ Or would you prefer different topics/timing?`;
 
       case "schedule_post":
       case "auto_schedule": {
+        // Check LinkedIn connection
+        const isLinkedInConnectedSchedule = userContext?.context?.linkedinConnected === true;
+        if (!isLinkedInConnectedSchedule) {
+          response = "⚠️ **LinkedIn is not connected!**\n\nYou need to connect your LinkedIn account before I can schedule posts.\n\n👉 Go to **LinkedIn** page from the sidebar to connect your account.\n\nOnce connected, come back and I'll schedule this for you!";
+          break;
+        }
+        
         if (!generatedPosts || generatedPosts.length === 0) {
           response = "I don't have any posts to schedule. Would you like me to create one first?\n\nJust say 'write a post about [topic]' 📝";
         } else {
