@@ -285,6 +285,32 @@ const AnalyticsPage = () => {
         {/* Missing Profile Banner */}
         {!profileLoading && !hasProfileUrl && isConnected && <MissingProfileBanner />}
 
+        {/* Extension Install Banner */}
+        {!isInstalled && (
+          <Alert className="border-primary/30 bg-primary/5">
+            <Chrome className="w-4 h-4 text-primary" />
+            <AlertDescription className="flex items-center justify-between flex-wrap gap-3">
+              <span>
+                Install the <strong>LinkedBot Chrome Extension</strong> to scrape and sync your LinkedIn analytics automatically.
+              </span>
+              <Button size="sm" asChild className="gap-1.5">
+                <a href="https://chromewebstore.google.com/detail/linkedbot" target="_blank" rel="noopener noreferrer">
+                  <Download className="w-3.5 h-3.5" />
+                  Install Extension
+                </a>
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
+        {isInstalled && isConnected && (
+          <Alert className="border-emerald-500/30 bg-emerald-500/5">
+            <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+            <AlertDescription className="text-sm">
+              Extension installed & connected. Your analytics will sync automatically.
+            </AlertDescription>
+          </Alert>
+        )}
+
         {/* Header */}
         <div className="animate-fade-up flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
