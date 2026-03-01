@@ -503,7 +503,104 @@ const SettingsPage = () => {
           </div>
         )}
 
-        {/* Subscription moved to Billing page */}
+        {/* Delete Account */}
+        <div className="animate-fade-up [animation-delay:200ms]">
+          <Card className="border-destructive/30">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-destructive">
+                <Trash2 className="w-5 h-5" />
+                Delete Account
+              </CardTitle>
+              <CardDescription>
+                Permanently delete your account and all associated data. This action cannot be undone.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button
+                variant="destructive"
+                onClick={() => setShowDeleteDialog(true)}
+                className="gap-2"
+              >
+                <Trash2 className="w-4 h-4" />
+                Delete My Account
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Delete Confirmation Dialog */}
+        <Dialog open={showDeleteDialog} onOpenChange={(open) => {
+          setShowDeleteDialog(open);
+          if (!open) setDeleteConfirmation("");
+        }}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle className="text-destructive flex items-center gap-2">
+                <AlertCircle className="w-5 h-5" />
+                Delete Account Permanently
+              </DialogTitle>
+              <DialogDescription>
+                This will permanently delete:
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-3">
+              <ul className="text-sm space-y-1.5 text-muted-foreground list-disc pl-5">
+                <li>Your profile and personal data</li>
+                <li>All posts (drafts, scheduled, published)</li>
+                <li>Campaigns and analytics</li>
+                <li>LinkedIn tokens and connections</li>
+                <li>Subscription and payment history</li>
+                <li>All uploaded files and images</li>
+              </ul>
+              <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-3">
+                <p className="text-sm font-medium text-destructive">
+                  Type <strong>DELETE MY ACCOUNT</strong> to confirm:
+                </p>
+                <Input
+                  value={deleteConfirmation}
+                  onChange={(e) => setDeleteConfirmation(e.target.value)}
+                  placeholder="DELETE MY ACCOUNT"
+                  className="mt-2"
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                disabled={deleteConfirmation !== "DELETE MY ACCOUNT" || isDeleting}
+                onClick={async () => {
+                  setIsDeleting(true);
+                  try {
+                    const { error } = await supabase.functions.invoke("delete-account", {
+                      body: { confirmation: "DELETE MY ACCOUNT" },
+                    });
+                    if (error) throw error;
+                    toast({
+                      title: "Account deleted",
+                      description: "Your account has been permanently deleted.",
+                    });
+                    await supabase.auth.signOut();
+                    navigate("/");
+                  } catch (err) {
+                    toast({
+                      title: "Failed to delete account",
+                      description: "Please try again or contact support.",
+                      variant: "destructive",
+                    });
+                  } finally {
+                    setIsDeleting(false);
+                  }
+                }}
+              >
+                {isDeleting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                Delete Forever
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </DashboardLayout>
   );
