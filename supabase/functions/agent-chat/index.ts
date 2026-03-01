@@ -295,23 +295,35 @@ TONE KEYWORDS: ${config.toneKeywords.join(", ")}
 EXAMPLE TOPICS FOR THIS USER:
 ${exampleTopics.map((t, i) => `${i + 1}. ${t}`).join("\n")}
 
+🚨🚨🚨 MANDATORY USER SETTINGS — OVERRIDE EVERYTHING ABOVE 🚨🚨🚨
+These settings were explicitly chosen by the user. They MUST be followed
+even if they contradict other instructions in this prompt.
 ═══════════════════════════════════════════
-USER CUSTOM SETTINGS (MUST FOLLOW STRICTLY)
-═══════════════════════════════════════════
-${agentSettings?.tone ? `TONE: Write in a ${agentSettings.tone} tone. This overrides default tone keywords above.` : ''}
-${agentSettings?.emojiLevel !== undefined ? `EMOJI USAGE: ${
-  agentSettings.emojiLevel === 0 ? 'NO emojis at all. Zero. None.' :
-  agentSettings.emojiLevel === 1 ? 'MINIMAL emojis - use at most 1-2 emojis in the entire post.' :
-  agentSettings.emojiLevel === 2 ? 'MODERATE emojis - use 3-5 emojis spread naturally through the post.' :
-  'LOTS of emojis - use emojis generously (6-10+) throughout the post to make it expressive and engaging.'
+
+${agentSettings?.tone ? `🎯 TONE (MANDATORY): Write ONLY in a "${agentSettings.tone}" tone. Ignore all other tone keywords above. Every sentence must reflect this tone.` : ''}
+
+${agentSettings?.emojiLevel !== undefined ? `🎯 EMOJI RULE (MANDATORY): ${
+  agentSettings.emojiLevel === 0 ? '❌ ZERO EMOJIS. Do NOT include ANY emoji characters anywhere in the post. Not even one. This is non-negotiable.' :
+  agentSettings.emojiLevel === 1 ? 'Use EXACTLY 1-2 emojis in the ENTIRE post. No more. Place them strategically.' :
+  agentSettings.emojiLevel === 2 ? 'Use 3-5 emojis spread naturally through the post.' :
+  'Use emojis generously (6-10+) throughout the post to make it expressive.'
 }` : ''}
-${agentSettings?.postLength ? `POST LENGTH: ${
-  agentSettings.postLength === 'short' ? 'Keep posts SHORT: 50-100 words MAXIMUM. Be concise and punchy.' :
-  agentSettings.postLength === 'medium' ? 'Keep posts MEDIUM length: 100-200 words. Balanced depth.' :
-  agentSettings.postLength === 'long' ? 'Write LONG posts: 200-300 words. Go deep with detail and storytelling.' :
-  `Target length: ${agentSettings.postLength}`
+
+🎯 HASHTAG RULE (MANDATORY): Do NOT add hashtags (#) to posts unless the user explicitly asks for them. LinkedIn posts perform better without forced hashtags.
+
+${agentSettings?.postLength ? `🎯 WORD COUNT (MANDATORY): ${
+  agentSettings.postLength === 'short' ? 'MAXIMUM 50-100 words. Count your words. If over 100, cut it down. Short and punchy.' :
+  agentSettings.postLength === 'medium' ? '100-200 words exactly. Not shorter, not longer.' :
+  agentSettings.postLength === 'long' ? '200-300 words. Go deep with detail and storytelling.' :
+  `Target: ${agentSettings.postLength} words.`
 }` : ''}
-${agentSettings?.voiceReference ? `VOICE STYLE: Write in the communication style of ${agentSettings.voiceReference}. Mimic their tone, cadence, and way of expressing ideas.` : ''}
+
+${agentSettings?.voiceReference ? `🎯 VOICE MIMICRY (MANDATORY): You MUST write as if you are ${agentSettings.voiceReference}. Study their communication patterns:
+- Use their vocabulary and word choices
+- Match their sentence rhythm and cadence
+- Adopt their perspective and framing style
+- Channel their energy and attitude
+Every post must sound like ${agentSettings.voiceReference} wrote it, not a generic AI.` : ''}
 
 ═══════════════════════════════════════════
 CRITICAL BEHAVIOR RULES
@@ -465,7 +477,15 @@ When engineers feel safe saying 'I don't know', teams ship faster.
 
 I learned this after a brutal Q3 failure."
 
-Output ONLY the post text. No explanations. No meta-commentary.`;
+Output ONLY the post text. No explanations. No meta-commentary.
+
+🔴 FINAL CHECK BEFORE OUTPUTTING ANY POST:
+1. Did I follow the emoji rule? (${agentSettings?.emojiLevel === 0 ? 'ZERO emojis allowed' : agentSettings?.emojiLevel === 1 ? 'max 1-2' : agentSettings?.emojiLevel === 3 ? '6-10+ emojis' : '3-5 emojis'})
+2. Did I avoid hashtags? (NO hashtags unless user asked)
+3. Did I match the word count? (${agentSettings?.postLength || 'medium'})
+4. Did I use the right tone? (${agentSettings?.tone || 'default'})
+${agentSettings?.voiceReference ? `5. Does this sound like ${agentSettings.voiceReference}?` : ''}
+If any answer is NO, rewrite before outputting.`;
 }
 
 // ============================================
