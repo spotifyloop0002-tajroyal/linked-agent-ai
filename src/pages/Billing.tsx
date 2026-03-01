@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useSubscription, PLAN_LIMITS } from "@/hooks/useSubscription";
-import { usePayment, PLAN_PRICING } from "@/hooks/usePayment";
+import { usePayment, PLAN_PRICING, BillingPeriod } from "@/hooks/usePayment";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { 
   CreditCard, 
@@ -21,6 +21,8 @@ import {
   Loader2,
   X,
   Sparkles,
+  HelpCircle,
+  Mail,
 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
@@ -52,14 +54,13 @@ const BillingPage = () => {
   const [couponCode, setCouponCode] = useState("");
   const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<"pro" | "business" | null>(null);
+  const [billingPeriod, setBillingPeriod] = useState<BillingPeriod>("monthly");
 
   const handleApplyCoupon = async () => {
     if (!couponCode.trim()) return;
-    
     setIsApplyingCoupon(true);
     const result = await validateCoupon(couponCode);
     setIsApplyingCoupon(false);
-    
     if (result.valid) {
       toast.success("Coupon applied successfully!");
     } else {
@@ -75,7 +76,6 @@ const BillingPage = () => {
 
   const handleUpgrade = async (plan: "pro" | "business") => {
     setSelectedPlan(plan);
-    
     const result = await createPayment(
       plan,
       couponValidation?.valid ? couponValidation.code : undefined,
@@ -84,13 +84,12 @@ const BillingPage = () => {
         setSelectedPlan(null);
         clearCoupon();
         setCouponCode("");
-      }
+      },
+      billingPeriod
     );
-
     if (!result.success && result.error !== "Payment cancelled") {
       toast.error(result.error || "Payment failed");
     }
-    
     setSelectedPlan(null);
   };
 
@@ -162,10 +161,7 @@ const BillingPage = () => {
                   <span>{status?.postsToday || 0} used</span>
                   <span className="text-muted-foreground">{currentLimits.postsPerDay} limit</span>
                 </div>
-                <Progress 
-                  value={((status?.postsToday || 0) / currentLimits.postsPerDay) * 100} 
-                  className="h-2"
-                />
+                <Progress value={((status?.postsToday || 0) / currentLimits.postsPerDay) * 100} className="h-2" />
               </div>
             </CardContent>
           </Card>
@@ -183,10 +179,7 @@ const BillingPage = () => {
                   <span>{status?.postsThisMonth || 0} used</span>
                   <span className="text-muted-foreground">{currentLimits.postsPerMonth} limit</span>
                 </div>
-                <Progress 
-                  value={((status?.postsThisMonth || 0) / currentLimits.postsPerMonth) * 100} 
-                  className="h-2"
-                />
+                <Progress value={((status?.postsThisMonth || 0) / currentLimits.postsPerMonth) * 100} className="h-2" />
               </div>
             </CardContent>
           </Card>
@@ -206,10 +199,7 @@ const BillingPage = () => {
                     {currentLimits.agents === -1 ? "Unlimited" : `${currentLimits.agents} limit`}
                   </span>
                 </div>
-                <Progress 
-                  value={currentLimits.agents === -1 ? 10 : ((status?.agentsCount || 0) / currentLimits.agents) * 100} 
-                  className="h-2"
-                />
+                <Progress value={currentLimits.agents === -1 ? 10 : ((status?.agentsCount || 0) / currentLimits.agents) * 100} className="h-2" />
               </div>
             </CardContent>
           </Card>
@@ -244,18 +234,12 @@ const BillingPage = () => {
                         Remove
                       </Button>
                     ) : (
-                      <Button 
-                        onClick={handleApplyCoupon}
-                        disabled={!couponCode.trim() || isApplyingCoupon}
-                      >
-                        {isApplyingCoupon ? (
-                          <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                        ) : null}
+                      <Button onClick={handleApplyCoupon} disabled={!couponCode.trim() || isApplyingCoupon}>
+                        {isApplyingCoupon ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
                         Apply
                       </Button>
                     )}
                   </div>
-                  
                   {couponValidation?.valid && (
                     <div className="flex items-center gap-2 text-sm text-green-600 bg-green-50 dark:bg-green-950/30 px-3 py-2 rounded-lg">
                       <Check className="w-4 h-4" />
@@ -280,6 +264,31 @@ const BillingPage = () => {
             <CardHeader>
               <CardTitle>Choose Your Plan</CardTitle>
               <CardDescription>Select the plan that best fits your needs</CardDescription>
+              
+              {/* Billing Period Toggle */}
+              <div className="flex items-center justify-center gap-2 mt-4">
+                <span className={`text-sm font-medium ${billingPeriod === "monthly" ? "text-foreground" : "text-muted-foreground"}`}>Monthly</span>
+                <button
+                  onClick={() => setBillingPeriod(billingPeriod === "monthly" ? "yearly" : "monthly")}
+                  className={`relative inline-flex h-7 w-14 items-center rounded-full transition-colors ${
+                    billingPeriod === "yearly" ? "bg-primary" : "bg-muted"
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
+                      billingPeriod === "yearly" ? "translate-x-8" : "translate-x-1"
+                    }`}
+                  />
+                </button>
+                <span className={`text-sm font-medium ${billingPeriod === "yearly" ? "text-foreground" : "text-muted-foreground"}`}>
+                  Yearly
+                </span>
+                {billingPeriod === "yearly" && (
+                  <Badge variant="secondary" className="text-xs bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200">
+                    Save ~17%
+                  </Badge>
+                )}
+              </div>
             </CardHeader>
             <CardContent>
               <div className="grid md:grid-cols-3 gap-6">
@@ -287,8 +296,12 @@ const BillingPage = () => {
                   const limits = PLAN_LIMITS[plan];
                   const Icon = planIcons[plan];
                   const isCurrentPlan = status?.plan === plan;
-                  const pricing = plan !== "free" ? calculateFinalPrice(plan, couponValidation) : null;
+                  const pricing = plan !== "free" ? calculateFinalPrice(plan, couponValidation, billingPeriod) : null;
                   const isProcessing = selectedPlan === plan && paymentLoading;
+                  const periodLabel = billingPeriod === "yearly" ? "/year" : "/month";
+                  const usdPrice = plan !== "free" 
+                    ? billingPeriod === "yearly" ? PLAN_PRICING[plan].usdYearly : PLAN_PRICING[plan].usd
+                    : 0;
                   
                   return (
                     <div 
@@ -301,7 +314,6 @@ const BillingPage = () => {
                             : "border-border hover:border-primary/30"
                       }`}
                     >
-                      {/* Plan Header */}
                       <div className="flex items-center gap-2 mb-4">
                         <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
                           plan === "free" ? "bg-muted" : "gradient-bg"
@@ -316,7 +328,6 @@ const BillingPage = () => {
                         </div>
                       </div>
 
-                      {/* Pricing */}
                       <div className="mb-4">
                         {plan === "free" ? (
                           <div className="text-2xl font-bold">Free</div>
@@ -325,13 +336,9 @@ const BillingPage = () => {
                             {pricing.discount > 0 ? (
                               <>
                                 <div className="flex items-baseline gap-2">
-                                  <span className="text-2xl font-bold text-primary">
-                                    ₹{pricing.final}
-                                  </span>
-                                  <span className="text-sm text-muted-foreground line-through">
-                                    ₹{pricing.original}
-                                  </span>
-                                  <span className="text-xs text-muted-foreground">/month</span>
+                                  <span className="text-2xl font-bold text-primary">₹{pricing.final}</span>
+                                  <span className="text-sm text-muted-foreground line-through">₹{pricing.original}</span>
+                                  <span className="text-xs text-muted-foreground">{periodLabel}</span>
                                 </div>
                                 <div className="text-xs text-green-600 flex items-center gap-1">
                                   <Sparkles className="w-3 h-3" />
@@ -341,17 +348,16 @@ const BillingPage = () => {
                             ) : (
                               <div className="flex items-baseline gap-1">
                                 <span className="text-2xl font-bold">₹{pricing.original}</span>
-                                <span className="text-sm text-muted-foreground">/month</span>
+                                <span className="text-sm text-muted-foreground">{periodLabel}</span>
                               </div>
                             )}
                             <div className="text-xs text-muted-foreground">
-                              (${PLAN_PRICING[plan].usd} USD)
+                              (${usdPrice} USD)
                             </div>
                           </div>
                         ) : null}
                       </div>
 
-                      {/* Features */}
                       <ul className="space-y-2 text-sm mb-6">
                         <li className="flex items-center gap-2">
                           <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
@@ -379,7 +385,6 @@ const BillingPage = () => {
                         )}
                       </ul>
 
-                      {/* Action Button */}
                       {isCurrentPlan ? (
                         <Badge variant="outline" className="w-full justify-center py-2">
                           Current Plan
@@ -399,13 +404,46 @@ const BillingPage = () => {
                           ) : pricing?.final === 0 ? (
                             "Activate Free"
                           ) : (
-                            `Pay ₹${pricing?.final || PLAN_PRICING[plan].inr} →`
+                            `Pay ₹${pricing?.final || (billingPeriod === "yearly" ? PLAN_PRICING[plan].inrYearly : PLAN_PRICING[plan].inr)} →`
                           )}
                         </Button>
                       ) : null}
                     </div>
                   );
                 })}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Help & Support */}
+        <div className="animate-fade-up [animation-delay:450ms]">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <HelpCircle className="w-5 h-5 text-primary" />
+                Need Help with Payment?
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <p className="text-sm text-muted-foreground">
+                  Having trouble with your payment? We're here to help! Reach out to us and we'll get back to you as soon as possible.
+                </p>
+                <div className="flex flex-wrap gap-3">
+                  <Button variant="outline" asChild>
+                    <a href="mailto:contactlinkedbot@gmail.com?subject=Payment%20Support%20Request">
+                      <Mail className="w-4 h-4 mr-2" />
+                      Email Support
+                    </a>
+                  </Button>
+                  <Button variant="ghost" asChild>
+                    <a href="/resources/help">
+                      <HelpCircle className="w-4 h-4 mr-2" />
+                      Help Center
+                    </a>
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>

@@ -4,8 +4,8 @@ import { toast } from "sonner";
 
 // Plan pricing
 export const PLAN_PRICING = {
-  pro: { usd: 12, inr: 999 },
-  business: { usd: 22, inr: 1999 },
+  pro: { usd: 12, inr: 999, usdYearly: 120, inrYearly: 9999 },
+  business: { usd: 22, inr: 1999, usdYearly: 220, inrYearly: 19999 },
 };
 
 interface CouponValidation {
@@ -29,6 +29,7 @@ interface PaymentResult {
   originalAmount?: number;
   discountAmount?: number;
   keyId?: string;
+  billingPeriod?: string;
   error?: string;
 }
 
@@ -38,18 +39,18 @@ declare global {
   }
 }
 
+export type BillingPeriod = "monthly" | "yearly";
+
 export function usePayment() {
   const [isLoading, setIsLoading] = useState(false);
   const [couponValidation, setCouponValidation] = useState<CouponValidation | null>(null);
 
-  // Load Razorpay script
   const loadRazorpayScript = useCallback((): Promise<boolean> => {
     return new Promise((resolve) => {
       if (window.Razorpay) {
         resolve(true);
         return;
       }
-
       const script = document.createElement("script");
       script.src = "https://checkout.razorpay.com/v1/checkout.js";
       script.onload = () => resolve(true);
@@ -58,16 +59,13 @@ export function usePayment() {
     });
   }, []);
 
-  // Validate coupon
   const validateCoupon = useCallback(async (code: string): Promise<CouponValidation> => {
     setIsLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("razorpay-payment", {
         body: { action: "validate_coupon", couponCode: code },
       });
-
       if (error) throw error;
-      
       setCouponValidation(data);
       return data;
     } catch (err: any) {
@@ -79,53 +77,48 @@ export function usePayment() {
     }
   }, []);
 
-  // Clear coupon
   const clearCoupon = useCallback(() => {
     setCouponValidation(null);
   }, []);
 
-  // Create payment
   const createPayment = useCallback(async (
     plan: "pro" | "business",
     couponCode?: string,
-    onSuccess?: (result: PaymentResult) => void
+    onSuccess?: (result: PaymentResult) => void,
+    billingPeriod: BillingPeriod = "monthly"
   ): Promise<PaymentResult> => {
     setIsLoading(true);
 
     try {
-      // Step 1: Create order
       const { data: orderData, error: orderError } = await supabase.functions.invoke("razorpay-payment", {
-        body: { action: "create_order", plan, couponCode },
+        body: { action: "create_order", plan, couponCode, billingPeriod },
       });
 
       if (orderError) throw orderError;
       if (orderData.error) throw new Error(orderData.error);
 
-      // If free access (100% discount), return immediately
       if (orderData.type === "free_access") {
         toast.success("🎉 " + orderData.message);
         onSuccess?.(orderData);
         return orderData;
       }
 
-      // Step 2: Load Razorpay
       const scriptLoaded = await loadRazorpayScript();
       if (!scriptLoaded) {
         throw new Error("Failed to load payment gateway");
       }
 
-      // Step 3: Open Razorpay checkout
       return new Promise((resolve, reject) => {
+        const periodLabel = billingPeriod === "yearly" ? "Yearly" : "Monthly";
         const options = {
           key: orderData.keyId,
           amount: orderData.amount * 100,
           currency: orderData.currency,
           name: "LinkedBot",
-          description: `${plan.charAt(0).toUpperCase() + plan.slice(1)} Plan Subscription`,
+          description: `${plan.charAt(0).toUpperCase() + plan.slice(1)} Plan – ${periodLabel}`,
           order_id: orderData.orderId,
           handler: async (response: any) => {
             try {
-              // Verify payment
               const { data: verifyData, error: verifyError } = await supabase.functions.invoke("razorpay-payment", {
                 body: {
                   action: "verify_payment",
@@ -133,6 +126,7 @@ export function usePayment() {
                     orderId: orderData.orderId,
                     paymentId: response.razorpay_payment_id,
                     signature: response.razorpay_signature,
+                    billingPeriod,
                   },
                 },
               });
@@ -151,9 +145,7 @@ export function usePayment() {
             }
           },
           prefill: {},
-          theme: {
-            color: "#6366f1",
-          },
+          theme: { color: "#6366f1" },
           modal: {
             ondismiss: () => {
               setIsLoading(false);
@@ -178,16 +170,18 @@ export function usePayment() {
     }
   }, [loadRazorpayScript]);
 
-  // Calculate final price with coupon
   const calculateFinalPrice = useCallback((
     plan: "pro" | "business",
-    coupon?: CouponValidation | null
+    coupon?: CouponValidation | null,
+    billingPeriod: BillingPeriod = "monthly"
   ): { original: number; discount: number; final: number } => {
-    const original = PLAN_PRICING[plan].inr;
+    const pricing = PLAN_PRICING[plan];
+    const original = billingPeriod === "yearly" ? pricing.inrYearly : pricing.inr;
     let discount = 0;
 
     if (coupon?.valid && coupon.discounts) {
-      discount = coupon.discounts[plan] || 0;
+      const key = billingPeriod === "yearly" ? `${plan}_yearly` : plan;
+      discount = coupon.discounts[key] || 0;
     }
 
     return {

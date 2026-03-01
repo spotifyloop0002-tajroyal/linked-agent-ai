@@ -57,6 +57,11 @@ interface Payment {
   final_amount: number;
   payment_method: string | null;
   created_at: string;
+  // Joined user info
+  user_name?: string | null;
+  user_email?: string | null;
+  user_phone?: string | null;
+  user_linkedin_id?: string | null;
 }
 
 interface UserWithBilling {
@@ -111,10 +116,30 @@ const AdminPaymentsPage = () => {
       if (error) throw error;
       
       const paymentsData = data || [];
-      setPayments(paymentsData);
+      
+      // Fetch user profiles for all payment user_ids
+      const userIds = [...new Set(paymentsData.map(p => p.user_id))];
+      const { data: profiles } = await supabase
+        .from("user_profiles_safe")
+        .select("user_id, name, email, phone_number, linkedin_id")
+        .in("user_id", userIds);
+      
+      const profileMap = new Map<string, any>();
+      (profiles || []).forEach(p => profileMap.set(p.user_id, p));
+      
+      // Enrich payments with user info
+      const enrichedPayments: Payment[] = paymentsData.map(p => ({
+        ...p,
+        user_name: profileMap.get(p.user_id)?.name || null,
+        user_email: profileMap.get(p.user_id)?.email || null,
+        user_phone: profileMap.get(p.user_id)?.phone_number || null,
+        user_linkedin_id: profileMap.get(p.user_id)?.linkedin_id || null,
+      }));
+      
+      setPayments(enrichedPayments);
       
       // Calculate stats
-      const successful = paymentsData.filter(p => p.status === "success");
+      const successful = enrichedPayments.filter(p => p.status === "success");
       const couponPayments = successful.filter(p => p.coupon_code && p.final_amount === 0);
       const fullPayments = successful.filter(p => p.final_amount > 0);
       
@@ -122,13 +147,13 @@ const AdminPaymentsPage = () => {
         ...prev,
         totalRevenue: successful.reduce((acc, p) => acc + (p.final_amount || 0), 0),
         successfulPayments: successful.length,
-        pendingPayments: paymentsData.filter(p => p.status === "pending").length,
-        failedPayments: paymentsData.filter(p => p.status === "failed").length,
+        pendingPayments: enrichedPayments.filter(p => p.status === "pending").length,
+        failedPayments: enrichedPayments.filter(p => p.status === "failed").length,
         couponUsers: couponPayments.length,
         paidUsers: fullPayments.length,
       }));
       
-      return paymentsData;
+      return enrichedPayments;
     } catch (err: any) {
       toast.error("Failed to fetch payments");
       console.error(err);
@@ -330,7 +355,10 @@ const AdminPaymentsPage = () => {
     const matchesSearch = 
       payment.razorpay_order_id?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       payment.razorpay_payment_id?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      payment.coupon_code?.toLowerCase().includes(searchQuery.toLowerCase());
+      payment.coupon_code?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      payment.user_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      payment.user_email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      payment.user_phone?.toLowerCase().includes(searchQuery.toLowerCase());
     
     return matchesSearch;
   });
@@ -559,6 +587,7 @@ const AdminPaymentsPage = () => {
                       <TableHeader>
                         <TableRow>
                           <TableHead>Date</TableHead>
+                          <TableHead>User</TableHead>
                           <TableHead>Order ID</TableHead>
                           <TableHead>Plan</TableHead>
                           <TableHead>Amount</TableHead>
@@ -573,6 +602,20 @@ const AdminPaymentsPage = () => {
                           <TableRow key={payment.id}>
                             <TableCell className="text-sm">
                               {format(new Date(payment.created_at), "MMM d, yyyy h:mm a")}
+                            </TableCell>
+                            <TableCell>
+                              <div className="space-y-0.5">
+                                <p className="font-medium text-sm">{payment.user_name || 'Unknown'}</p>
+                                <p className="text-xs text-muted-foreground">{payment.user_email || '-'}</p>
+                                {payment.user_phone && (
+                                  <p className="text-xs text-muted-foreground">📱 {payment.user_phone}</p>
+                                )}
+                                {payment.user_linkedin_id && (
+                                  <p className="text-xs text-muted-foreground truncate max-w-[120px]" title={payment.user_linkedin_id}>
+                                    🔗 {payment.user_linkedin_id}
+                                  </p>
+                                )}
+                              </div>
                             </TableCell>
                             <TableCell>
                               <code className="text-xs bg-muted px-2 py-1 rounded">

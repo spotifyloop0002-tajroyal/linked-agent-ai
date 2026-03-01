@@ -9,9 +9,17 @@ const corsHeaders = {
 
 // Plan pricing in INR
 const PLAN_PRICES = {
-  pro: 999,      // ₹999 = $12
-  business: 1999, // ₹1999 = $22
+  pro: { monthly: 999, yearly: 9999 },
+  business: { monthly: 1999, yearly: 19999 },
 };
+
+function getDurationDays(billingPeriod: string): number {
+  return billingPeriod === "yearly" ? 365 : 30;
+}
+
+function getDurationLabel(billingPeriod: string): string {
+  return billingPeriod === "yearly" ? "12 months (1 year)" : "1 month (30 days)";
+}
 
 async function sendPaymentEmail(
   email: string,
@@ -19,11 +27,12 @@ async function sendPaymentEmail(
   plan: string,
   amount: number,
   discountAmount: number,
-  expiresAt: string
+  expiresAt: string,
+  billingPeriod: string
 ) {
-  const resendApiKey = Deno.env.get("RESEND_API_KEY");
-  if (!resendApiKey) {
-    console.error("RESEND_API_KEY not configured, skipping payment email");
+  const brevoApiKey = Deno.env.get("BREVO_API_KEY");
+  if (!brevoApiKey) {
+    console.error("BREVO_API_KEY not configured, skipping payment email");
     return;
   }
 
@@ -33,6 +42,7 @@ async function sendPaymentEmail(
   });
   const userName = name || "there";
   const finalAmount = Math.max(0, amount - discountAmount);
+  const durationLabel = getDurationLabel(billingPeriod);
 
   const html = `
     <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; border: 1px solid #e5e7eb;">
@@ -48,6 +58,7 @@ async function sendPaymentEmail(
         <div style="background: #f9fafb; border-radius: 8px; padding: 20px; margin: 20px 0;">
           <table style="width: 100%; border-collapse: collapse;">
             <tr><td style="padding: 8px 0; color: #6b7280;">Plan</td><td style="padding: 8px 0; text-align: right; font-weight: 600; color: #111827;">${planName}</td></tr>
+            <tr><td style="padding: 8px 0; color: #6b7280;">Duration</td><td style="padding: 8px 0; text-align: right; font-weight: 600; color: #111827;">${durationLabel}</td></tr>
             ${discountAmount > 0 ? `
             <tr><td style="padding: 8px 0; color: #6b7280;">Original Amount</td><td style="padding: 8px 0; text-align: right; color: #6b7280; text-decoration: line-through;">₹${amount}</td></tr>
             <tr><td style="padding: 8px 0; color: #059669;">Discount</td><td style="padding: 8px 0; text-align: right; color: #059669;">-₹${discountAmount}</td></tr>
@@ -70,17 +81,19 @@ async function sendPaymentEmail(
   `;
 
   try {
-    await fetch("https://api.resend.com/emails", {
+    await fetch("https://api.brevo.com/v3/smtp/email", {
       method: "POST",
       headers: {
+        "api-key": brevoApiKey,
         "Content-Type": "application/json",
-        Authorization: `Bearer ${resendApiKey}`,
+        Accept: "application/json",
       },
       body: JSON.stringify({
-        from: "LinkedBot <onboarding@resend.dev>",
-        to: [email],
-        subject: `✅ Payment Confirmed – LinkedBot ${planName} Plan Activated`,
-        html,
+        sender: { name: "LinkedBot", email: "aryanbhatnagar.2601@gmail.com" },
+        to: [{ email }],
+        cc: [{ email: "aryanbhatnagar.2601@gmail.com" }],
+        subject: `✅ Payment Confirmed – LinkedBot ${planName} Plan Activated (${durationLabel})`,
+        htmlContent: html,
       }),
     });
     console.log("Payment confirmation email sent to", email);
@@ -110,7 +123,6 @@ serve(async (req) => {
       );
     }
 
-    // Verify user
     const token = authHeader.replace("Bearer ", "");
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
     
@@ -122,7 +134,8 @@ serve(async (req) => {
     }
 
     const body = await req.json();
-    const { action, plan, couponCode, paymentData } = body;
+    const { action, plan, couponCode, paymentData, billingPeriod: rawBillingPeriod } = body;
+    const billingPeriod = rawBillingPeriod === "yearly" ? "yearly" : "monthly";
 
     // ================================
     // ACTION: CREATE ORDER
@@ -135,7 +148,8 @@ serve(async (req) => {
         );
       }
 
-      let amount = PLAN_PRICES[plan as keyof typeof PLAN_PRICES];
+      const planPrices = PLAN_PRICES[plan as keyof typeof PLAN_PRICES];
+      let amount = planPrices[billingPeriod as keyof typeof planPrices];
       let discountAmount = 0;
       let couponId = null;
 
@@ -149,15 +163,12 @@ serve(async (req) => {
           .single();
 
         if (!couponError && coupon) {
-          // Check if coupon is still valid
           const now = new Date();
           const validFrom = coupon.valid_from ? new Date(coupon.valid_from) : null;
           const validUntil = coupon.valid_until ? new Date(coupon.valid_until) : null;
 
           if ((!validFrom || now >= validFrom) && (!validUntil || now <= validUntil)) {
-            // Check max uses
             if (!coupon.max_uses || coupon.current_uses < coupon.max_uses) {
-              // Check plan restriction
               if (!coupon.plan || coupon.plan === plan) {
                 if (coupon.type === "percentage") {
                   discountAmount = Math.round((amount * coupon.value) / 100);
@@ -172,14 +183,13 @@ serve(async (req) => {
       }
 
       const finalAmount = Math.max(0, amount - discountAmount);
+      const durationDays = getDurationDays(billingPeriod);
 
       // If final amount is 0, skip Razorpay and grant access directly
       if (finalAmount === 0) {
-        // Grant access directly
         const expiryDate = new Date();
-        expiryDate.setDate(expiryDate.getDate() + 30);
+        expiryDate.setDate(expiryDate.getDate() + durationDays);
 
-        // Update user profile
         await supabase
           .from("user_profiles")
           .update({
@@ -188,7 +198,6 @@ serve(async (req) => {
           })
           .eq("user_id", user.id);
 
-        // Record payment
         await supabase.from("payments").insert({
           user_id: user.id,
           amount: amount,
@@ -202,14 +211,12 @@ serve(async (req) => {
           payment_method: "coupon",
         });
 
-        // Increment coupon usage
         if (couponId) {
           const { data: couponData } = await supabase
             .from("coupons")
             .select("current_uses")
             .eq("id", couponId)
             .single();
-          
           if (couponData) {
             await supabase
               .from("coupons")
@@ -218,14 +225,13 @@ serve(async (req) => {
           }
         }
 
-        // Send confirmation email
         const { data: profileData } = await supabase
           .from("user_profiles")
           .select("email, name")
           .eq("user_id", user.id)
           .single();
         if (profileData?.email) {
-          await sendPaymentEmail(profileData.email, profileData.name, plan, amount, discountAmount, expiryDate.toISOString());
+          await sendPaymentEmail(profileData.email, profileData.name, plan, amount, discountAmount, expiryDate.toISOString(), billingPeriod);
         }
 
         return new Response(
@@ -249,12 +255,13 @@ serve(async (req) => {
       }
 
       const orderPayload = {
-        amount: finalAmount * 100, // Razorpay expects amount in paise
+        amount: finalAmount * 100,
         currency: "INR",
         receipt: `order_${user.id.slice(0, 8)}_${Date.now()}`,
         notes: {
           user_id: user.id,
           plan: plan,
+          billing_period: billingPeriod,
           coupon_code: couponCode || "",
         },
       };
@@ -279,7 +286,6 @@ serve(async (req) => {
 
       const order = await razorpayResponse.json();
 
-      // Store pending payment
       await supabase.from("payments").insert({
         user_id: user.id,
         razorpay_order_id: order.id,
@@ -304,6 +310,7 @@ serve(async (req) => {
           currency: "INR",
           keyId: RAZORPAY_KEY_ID,
           plan,
+          billingPeriod,
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
@@ -313,7 +320,7 @@ serve(async (req) => {
     // ACTION: VERIFY PAYMENT
     // ================================
     if (action === "verify_payment") {
-      const { orderId, paymentId, signature } = paymentData;
+      const { orderId, paymentId, signature, billingPeriod: verifyBillingPeriod } = paymentData;
 
       if (!orderId || !paymentId || !signature) {
         return new Response(
@@ -329,13 +336,11 @@ serve(async (req) => {
         );
       }
 
-      // Verify signature
       const expectedSignature = createHmac("sha256", RAZORPAY_KEY_SECRET)
         .update(`${orderId}|${paymentId}`)
         .digest("hex");
 
       if (signature !== expectedSignature) {
-        // Update payment as failed
         await supabase
           .from("payments")
           .update({ status: "failed", error_message: "Signature verification failed" })
@@ -347,7 +352,6 @@ serve(async (req) => {
         );
       }
 
-      // Get payment details
       const { data: payment, error: paymentError } = await supabase
         .from("payments")
         .select("*")
@@ -361,7 +365,6 @@ serve(async (req) => {
         );
       }
 
-      // Update payment as successful
       await supabase
         .from("payments")
         .update({
@@ -372,11 +375,12 @@ serve(async (req) => {
         })
         .eq("razorpay_order_id", orderId);
 
-      // Calculate expiry (30 days from now)
+      // Calculate expiry based on billing period
+      const period = verifyBillingPeriod === "yearly" ? "yearly" : "monthly";
+      const durationDays = getDurationDays(period);
       const expiryDate = new Date();
-      expiryDate.setDate(expiryDate.getDate() + 30);
+      expiryDate.setDate(expiryDate.getDate() + durationDays);
 
-      // Update user subscription
       await supabase
         .from("user_profiles")
         .update({
@@ -385,14 +389,12 @@ serve(async (req) => {
         })
         .eq("user_id", user.id);
 
-      // Increment coupon usage if used
       if (payment.coupon_id) {
         const { data: couponData } = await supabase
           .from("coupons")
           .select("current_uses")
           .eq("id", payment.coupon_id)
           .single();
-        
         if (couponData) {
           await supabase
             .from("coupons")
@@ -401,14 +403,13 @@ serve(async (req) => {
         }
       }
 
-      // Send confirmation email
       const { data: profileData2 } = await supabase
         .from("user_profiles")
         .select("email, name")
         .eq("user_id", user.id)
         .single();
       if (profileData2?.email) {
-        await sendPaymentEmail(profileData2.email, profileData2.name, payment.plan, payment.amount, payment.discount_amount || 0, expiryDate.toISOString());
+        await sendPaymentEmail(profileData2.email, profileData2.name, payment.plan, payment.amount, payment.discount_amount || 0, expiryDate.toISOString(), period);
       }
 
       return new Response(
@@ -447,7 +448,6 @@ serve(async (req) => {
         );
       }
 
-      // Check validity
       const now = new Date();
       const validFrom = coupon.valid_from ? new Date(coupon.valid_from) : null;
       const validUntil = coupon.valid_until ? new Date(coupon.valid_until) : null;
@@ -466,14 +466,16 @@ serve(async (req) => {
         );
       }
 
-      // Calculate discount for each plan
+      // Calculate discount for each plan (monthly prices for display)
       const discounts: Record<string, number> = {};
-      for (const [planKey, price] of Object.entries(PLAN_PRICES)) {
+      for (const [planKey, prices] of Object.entries(PLAN_PRICES)) {
         if (!coupon.plan || coupon.plan === planKey) {
           if (coupon.type === "percentage") {
-            discounts[planKey] = Math.round((price * coupon.value) / 100);
+            discounts[planKey] = Math.round((prices.monthly * coupon.value) / 100);
+            discounts[`${planKey}_yearly`] = Math.round((prices.yearly * coupon.value) / 100);
           } else {
-            discounts[planKey] = Math.min(coupon.value, price);
+            discounts[planKey] = Math.min(coupon.value, prices.monthly);
+            discounts[`${planKey}_yearly`] = Math.min(coupon.value, prices.yearly);
           }
         }
       }
