@@ -22,17 +22,38 @@ const LinkedInProfile = () => {
   const [profileData, setProfileData] = useState<LinkedInProfileData | null>(null);
   const [lastSynced, setLastSynced] = useState<Date | null>(null);
 
+  // Fetch linkedin_analytics data for followers/connections
+  useEffect(() => {
+    const fetchAnalytics = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      
+      const { data } = await supabase
+        .from('linkedin_analytics')
+        .select('followers_count, connections_count, username, profile_url, last_synced')
+        .eq('user_id', user.id)
+        .order('updated_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (data) {
+        setAnalyticsData(data);
+      }
+    };
+    fetchAnalytics();
+  }, []);
+
   useEffect(() => {
     if (profile) {
       const savedData = profile.linkedin_profile_data;
       if (savedData) {
         setProfileData(savedData);
       } else if (profile.linkedin_profile_url || profile.linkedin_username || profile.name) {
-        // Build profile data from existing user_profiles fields
         setProfileData({
           fullName: profile.name || undefined,
           username: profile.linkedin_username || undefined,
           profileUrl: profile.linkedin_profile_url || undefined,
+          location: profile.location || profile.city || undefined,
         });
       }
       if (profile.profile_last_scraped) {
