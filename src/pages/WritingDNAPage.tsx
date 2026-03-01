@@ -264,14 +264,61 @@ const WritingDNAPage = () => {
             </div>
             <h3 className="text-xl font-semibold mb-2">Create Your Writing DNA</h3>
             <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-              Paste 3–10 of your best LinkedIn posts and our AI will analyze your unique writing style to personalize all future content.
+              Paste posts, upload PDFs, or upload images — our AI will analyze your unique writing style.
             </p>
-            <Button onClick={() => setShowImport(true)} className="gap-2 gradient-bg text-primary-foreground">
-              <Plus className="w-4 h-4" />
-              Import Your Posts
-            </Button>
+            <div className="flex justify-center gap-3">
+              <Button onClick={() => setShowImport(true)} className="gap-2 gradient-bg text-primary-foreground">
+                <Plus className="w-4 h-4" />
+                Import Your Posts
+              </Button>
+              <Button variant="outline" className="gap-2" onClick={() => fileInputRef.current?.click()} disabled={isExtracting}>
+                {isExtracting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                Upload PDF/Image
+              </Button>
+            </div>
           </div>
         ) : null}
+
+        {/* Extracted Document Results */}
+        {extractedData && (
+          <div className="bg-card rounded-2xl border border-primary/20 p-6 shadow-sm animate-fade-in">
+            <div className="flex items-center gap-3 mb-4">
+              <CheckCircle2 className="w-5 h-5 text-primary" />
+              <h3 className="font-semibold">Extracted Content</h3>
+              <Badge variant="secondary" className="capitalize">{extractedData.type?.replace("_", " ")}</Badge>
+            </div>
+            <p className="text-sm font-medium mb-2">{extractedData.title}</p>
+            <p className="text-sm text-muted-foreground line-clamp-4 mb-4">{extractedData.content?.substring(0, 500)}...</p>
+            
+            {extractedData.key_topics?.length > 0 && (
+              <div className="mb-4">
+                <p className="text-xs font-medium text-muted-foreground mb-2">Key Topics</p>
+                <div className="flex flex-wrap gap-2">
+                  {extractedData.key_topics.map((t: string, i: number) => (
+                    <Badge key={i} variant="outline">{t}</Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {extractedData.post_suggestions?.length > 0 && (
+              <div>
+                <p className="text-xs font-medium text-muted-foreground mb-2">Post Ideas from this Document</p>
+                <div className="space-y-2">
+                  {extractedData.post_suggestions.map((s: string, i: number) => (
+                    <div key={i} className="text-sm p-3 bg-muted/50 rounded-lg border border-border">
+                      💡 {s}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <Button variant="ghost" size="sm" className="mt-4" onClick={() => setExtractedData(null)}>
+              Dismiss
+            </Button>
+          </div>
+        )}
 
         {/* Import UI */}
         {showImport && (
