@@ -32,18 +32,8 @@ export const ExtensionStatus: React.FC<ExtensionStatusProps> = ({ isConnected, i
     }
   };
 
-  if (isLoading) {
-    return (
-      <Card className="bg-card border-border">
-        <CardContent className="p-6">
-          <div className="flex items-center justify-center">
-            <Loader2 className="w-5 h-5 animate-spin text-primary" />
-            <span className="ml-2 text-muted-foreground">Checking LinkedIn connection...</span>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
+  // Don't show a blocking loading card — let the dashboard render immediately
+  if (isLoading) return null;
 
   if (!isConnected) {
     return (
