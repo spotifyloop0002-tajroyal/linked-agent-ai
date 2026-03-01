@@ -16,6 +16,7 @@ import {
   Tag,
   CreditCard,
   Key,
+  Activity,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -36,6 +37,7 @@ interface AdminLayoutProps {
 const adminNavItems = [
   { icon: LayoutDashboard, label: "Overview", path: "/admin" },
   { icon: Users, label: "Users", path: "/admin/users" },
+  { icon: Activity, label: "Activity Feed", path: "/admin/activity" },
   { icon: Bell, label: "Notifications", path: "/admin/notifications" },
   { icon: BarChart3, label: "Analytics", path: "/admin/analytics" },
   { icon: Tag, label: "Coupons", path: "/admin/coupons" },
