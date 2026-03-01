@@ -35,7 +35,7 @@ const statusColors: Record<string, string> = {
   failed: "bg-destructive/10 text-destructive",
 };
 
-export function CampaignList({ campaigns, isLoading, onPreview, onPause, onResume, onDelete, onActivate }: CampaignListProps) {
+export function CampaignList({ campaigns, isLoading, onPreview, onPause, onResume, onDelete, onActivate, onRegenerate }: CampaignListProps) {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
