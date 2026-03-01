@@ -301,18 +301,7 @@ const WritingDNAPage = () => {
               </div>
             )}
 
-            {extractedData.post_suggestions?.length > 0 && (
-              <div>
-                <p className="text-xs font-medium text-muted-foreground mb-2">Post Ideas from this Document</p>
-                <div className="space-y-2">
-                  {extractedData.post_suggestions.map((s: string, i: number) => (
-                    <div key={i} className="text-sm p-3 bg-muted/50 rounded-lg border border-border">
-                      💡 {s}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            <p className="text-xs text-muted-foreground mt-2">✅ Saved to your reference materials. Ask the AI Agent to generate posts based on this content.</p>
 
             <Button variant="ghost" size="sm" className="mt-4" onClick={() => setExtractedData(null)}>
               Dismiss
