@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX IF NOT EXISTS idx_user_profiles_linkedin_id_unique ON public.user_profiles (linkedin_id) WHERE linkedin_id IS NOT NULL;
