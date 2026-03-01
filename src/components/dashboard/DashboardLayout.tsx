@@ -32,6 +32,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
+  headerContent?: React.ReactNode;
 }
 
 const navItems = [
@@ -61,7 +62,7 @@ const routeImports: Record<string, () => Promise<unknown>> = {
 
 const prefetchedRoutes = new Set<string>();
 
-const DashboardLayout = ({ children }: DashboardLayoutProps) => {
+const DashboardLayout = ({ children, headerContent }: DashboardLayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
@@ -260,7 +261,11 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
               <Menu className="w-6 h-6" />
             </button>
 
-            <div className="flex-1" />
+            {headerContent ? (
+              <div className="flex-1 flex items-center">{headerContent}</div>
+            ) : (
+              <div className="flex-1" />
+            )}
 
             <div className="flex items-center gap-4">
               <NotificationBell />

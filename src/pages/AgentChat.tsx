@@ -313,37 +313,33 @@ const AgentChatPage = () => {
   };
 
   return (
-    <DashboardLayout>
-      <div className="-mx-6 -mb-6 px-4 md:px-6 lg:px-8 flex flex-col overflow-hidden" style={{ height: 'calc(100vh - 56px - 1.5rem)' }}>
-        {/* Header - compact, inside white content area */}
-        <div className="flex items-center justify-between py-2 border-b border-border flex-shrink-0">
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" onClick={handleBack} className="h-7 w-7">
-              <ArrowLeft className="w-4 h-4" />
-            </Button>
-            <Bot className="w-4 h-4 text-primary" />
-            <h1 className="text-sm font-semibold">{displayAgentName}</h1>
-          </div>
-          <div className="flex items-center gap-2">
-            {limitsStatus && (
-              <div className="hidden md:flex items-center gap-3 mr-2 text-xs text-muted-foreground">
-                <span>
-                  Today: <strong className="text-foreground">{limitsStatus.postsToday}/{limitsStatus.dailyLimit}</strong>
-                </span>
-                <span>
-                  Month: <strong className="text-foreground">{limitsStatus.postsThisMonth}/{limitsStatus.monthlyLimit}</strong>
-                </span>
-              </div>
-            )}
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-medium capitalize">
-              {displayAgentType.replace("-", " ")}
-            </span>
-            <Button variant="outline" size="sm" onClick={handleClearChat} className="gap-1 h-6 text-xs px-2">
-              <RefreshCw className="w-3 h-3" />
-              Clear
-            </Button>
-          </div>
+    <DashboardLayout headerContent={
+      <div className="flex items-center justify-between w-full">
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="icon" onClick={handleBack} className="h-7 w-7">
+            <ArrowLeft className="w-4 h-4" />
+          </Button>
+          <Bot className="w-4 h-4 text-primary" />
+          <span className="text-sm font-semibold">{displayAgentName}</span>
         </div>
+        <div className="flex items-center gap-2">
+          {limitsStatus && (
+            <div className="hidden md:flex items-center gap-3 mr-2 text-xs text-muted-foreground">
+              <span>Today: <strong className="text-foreground">{limitsStatus.postsToday}/{limitsStatus.dailyLimit}</strong></span>
+              <span>Month: <strong className="text-foreground">{limitsStatus.postsThisMonth}/{limitsStatus.monthlyLimit}</strong></span>
+            </div>
+          )}
+          <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-medium capitalize">
+            {displayAgentType.replace("-", " ")}
+          </span>
+          <Button variant="outline" size="sm" onClick={handleClearChat} className="gap-1 h-6 text-xs px-2">
+            <RefreshCw className="w-3 h-3" />
+            Clear
+          </Button>
+        </div>
+      </div>
+    }>
+      <div className="-m-6 px-4 md:px-6 lg:px-8 flex flex-col overflow-hidden" style={{ height: 'calc(100vh - 56px)' }}>
 
         {/* Limit warning banner - only when can't post */}
         {!canPost && limitsStatus && (
