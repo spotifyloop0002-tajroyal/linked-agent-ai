@@ -67,17 +67,17 @@ export const usePostingLimits = () => {
         .from('posts')
         .select('*', { count: 'exact', head: true })
         .eq('user_id', user.id)
-        .eq('status', 'posted') // Only count successfully posted!
-        .gte('created_at', todayStart.toISOString())
-        .lte('created_at', todayEnd.toISOString());
+        .eq('status', 'posted')
+        .gte('posted_at', todayStart.toISOString())
+        .lte('posted_at', todayEnd.toISOString());
 
       // Count posts SUCCESSFULLY POSTED this month (only 'posted' status counts)
       const { count: postsThisMonth } = await supabase
         .from('posts')
         .select('*', { count: 'exact', head: true })
         .eq('user_id', user.id)
-        .eq('status', 'posted') // Only count successfully posted!
-        .gte('created_at', monthStart.toISOString());
+        .eq('status', 'posted')
+        .gte('posted_at', monthStart.toISOString());
 
       const todayCount = postsToday || 0;
       const monthCount = postsThisMonth || 0;

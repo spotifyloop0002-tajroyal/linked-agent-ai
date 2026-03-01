@@ -77,16 +77,18 @@ export const useSubscription = () => {
         .from("posts")
         .select("*", { count: "exact", head: true })
         .eq("user_id", user.id)
-        .gte("created_at", today.toISOString());
+        .eq("status", "posted")
+        .gte("posted_at", today.toISOString());
 
-      // Get posts created this month
+      // Get posts posted this month
       const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
       
       const { count: postsThisMonth } = await supabase
         .from("posts")
         .select("*", { count: "exact", head: true })
         .eq("user_id", user.id)
-        .gte("created_at", monthStart.toISOString());
+        .eq("status", "posted")
+        .gte("posted_at", monthStart.toISOString());
 
       // Count agents (mock - you'd have an agents table)
       const agentsCount = 2; // Placeholder
