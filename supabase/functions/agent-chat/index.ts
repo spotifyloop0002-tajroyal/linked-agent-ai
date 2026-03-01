@@ -477,7 +477,15 @@ When engineers feel safe saying 'I don't know', teams ship faster.
 
 I learned this after a brutal Q3 failure."
 
-Output ONLY the post text. No explanations. No meta-commentary.`;
+Output ONLY the post text. No explanations. No meta-commentary.
+
+🔴 FINAL CHECK BEFORE OUTPUTTING ANY POST:
+1. Did I follow the emoji rule? (${agentSettings?.emojiLevel === 0 ? 'ZERO emojis allowed' : agentSettings?.emojiLevel === 1 ? 'max 1-2' : agentSettings?.emojiLevel === 3 ? '6-10+ emojis' : '3-5 emojis'})
+2. Did I avoid hashtags? (NO hashtags unless user asked)
+3. Did I match the word count? (${agentSettings?.postLength || 'medium'})
+4. Did I use the right tone? (${agentSettings?.tone || 'default'})
+${agentSettings?.voiceReference ? `5. Does this sound like ${agentSettings.voiceReference}?` : ''}
+If any answer is NO, rewrite before outputting.`;
 }
 
 // ============================================
