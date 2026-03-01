@@ -36,13 +36,27 @@ const DashboardGuard = () => {
         // Check onboarding status
         const { data: profile } = await supabase
           .from("user_profiles_safe")
-          .select("onboarding_completed")
+          .select("onboarding_completed, name, user_type")
           .eq("user_id", session.user.id)
           .maybeSingle();
 
-        if (!profile?.onboarding_completed) {
+        // Old users may not have onboarding_completed set — treat them as onboarded
+        // if they have basic profile data (name or user_type)
+        const isOnboarded = profile?.onboarding_completed || 
+          (profile && (profile.name || profile.user_type));
+
+        if (!profile || !isOnboarded) {
           navigate("/onboarding", { replace: true });
           return;
+        }
+
+        // Backfill onboarding_completed for old users
+        if (!profile.onboarding_completed && isOnboarded) {
+          supabase
+            .from("user_profiles")
+            .update({ onboarding_completed: true })
+            .eq("user_id", session.user.id)
+            .then(() => console.log("✅ Backfilled onboarding_completed for old user"));
         }
 
         if (!cancelled) {
