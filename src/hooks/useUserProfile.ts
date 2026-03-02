@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -87,7 +87,7 @@ export const useUserProfile = () => {
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const fetchProfile = async () => {
+  const fetchProfile = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
@@ -125,9 +125,9 @@ export const useUserProfile = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  const saveProfile = async (profileData: ProfileData): Promise<boolean> => {
+  const saveProfile = useCallback(async (profileData: ProfileData): Promise<boolean> => {
     try {
       // Try getUser first, fall back to getSession if it fails
       let userId: string | undefined;
@@ -186,16 +186,16 @@ export const useUserProfile = () => {
       });
       return false;
     }
-  };
+  }, [profile, toast]);
 
-  const completeOnboarding = async (profileData: ProfileData): Promise<boolean> => {
+  const completeOnboarding = useCallback(async (profileData: ProfileData): Promise<boolean> => {
     return await saveProfile({
       ...profileData,
       onboarding_completed: true,
     });
-  };
+  }, [saveProfile]);
 
-  const updateLastActive = async () => {
+  const updateLastActive = useCallback(async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
@@ -207,9 +207,9 @@ export const useUserProfile = () => {
     } catch (err) {
       console.error("Error updating last active:", err);
     }
-  };
+  }, []);
 
-  const incrementPostCount = async (type: 'created' | 'scheduled' | 'published') => {
+  const incrementPostCount = useCallback(async (type: 'created' | 'scheduled' | 'published') => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user || !profile) return;
@@ -236,7 +236,7 @@ export const useUserProfile = () => {
     } catch (err) {
       console.error("Error incrementing post count:", err);
     }
-  };
+  }, [profile]);
 
   useEffect(() => {
     fetchProfile();
@@ -262,7 +262,7 @@ export const useUserProfile = () => {
     }
   }, [profile?.id]);
 
-  return {
+  return useMemo(() => ({
     profile,
     isLoading,
     error,
@@ -271,5 +271,5 @@ export const useUserProfile = () => {
     completeOnboarding,
     updateLastActive,
     incrementPostCount,
-  };
+  }), [profile, isLoading, error, fetchProfile, saveProfile, completeOnboarding, updateLastActive, incrementPostCount]);
 };

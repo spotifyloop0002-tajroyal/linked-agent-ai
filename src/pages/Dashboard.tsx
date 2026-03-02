@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 // framer-motion removed — using CSS animations for faster page load
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
@@ -265,18 +266,8 @@ const DashboardPage = () => {
     },
   ];
 
-  // Show dashboard immediately — only block on profile (comes from context, already loaded)
-  const isLoading = profileLoading;
-
-  if (isLoading) {
-    return (
-      <DashboardLayout>
-        <div className="flex items-center justify-center min-h-[400px]">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        </div>
-      </DashboardLayout>
-    );
-  }
+  // Never block the full page — show skeleton loaders for data sections instead
+  const showSkeletons = profileLoading || dataLoading;
 
   return (
     <DashboardLayout>
@@ -304,21 +295,27 @@ const DashboardPage = () => {
 
         {/* Stats grid */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {stats.map((stat, index) => (
-            <div
-              key={index}
-              className="animate-fade-up bg-card rounded-2xl border border-border p-6 shadow-sm hover:shadow-md transition-shadow"
-              style={{ animationDelay: `${200 + index * 80}ms` }}
-            >
-              <div className="flex items-start justify-between mb-4">
-                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center`}>
-                  <stat.icon className="w-6 h-6 text-primary-foreground" />
+          {showSkeletons ? (
+            Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-32 rounded-2xl" />
+            ))
+          ) : (
+            stats.map((stat, index) => (
+              <div
+                key={index}
+                className="animate-fade-up bg-card rounded-2xl border border-border p-6 shadow-sm hover:shadow-md transition-shadow"
+                style={{ animationDelay: `${200 + index * 80}ms` }}
+              >
+                <div className="flex items-start justify-between mb-4">
+                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center`}>
+                    <stat.icon className="w-6 h-6 text-primary-foreground" />
+                  </div>
                 </div>
+                <p className="text-2xl font-bold">{stat.value}</p>
+                <p className="text-sm text-muted-foreground">{stat.subtitle}</p>
               </div>
-              <p className="text-2xl font-bold">{stat.value}</p>
-              <p className="text-sm text-muted-foreground">{stat.subtitle}</p>
-            </div>
-          ))}
+            ))
+          )}
         </div>
 
         {/* Upcoming posts */}
@@ -326,7 +323,13 @@ const DashboardPage = () => {
           <div className="p-6 border-b border-border">
             <h2 className="text-xl font-semibold">Upcoming Scheduled Posts</h2>
           </div>
-          {scheduledPosts.length === 0 ? (
+          {showSkeletons ? (
+            <div className="p-6 space-y-4">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <Skeleton key={i} className="h-16 rounded-lg" />
+              ))}
+            </div>
+          ) : scheduledPosts.length === 0 ? (
             <div className="p-12 text-center">
               <Calendar className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
               <p className="text-muted-foreground mb-4">No scheduled posts yet</p>

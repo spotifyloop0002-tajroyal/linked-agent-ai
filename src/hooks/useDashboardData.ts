@@ -120,12 +120,8 @@ export const useDashboardData = (): DashboardData => {
     fetchAll();
   }, [fetchAll]);
 
-  // Refetch on window focus
-  useEffect(() => {
-    const handleFocus = () => fetchAll();
-    window.addEventListener('focus', handleFocus);
-    return () => window.removeEventListener('focus', handleFocus);
-  }, [fetchAll]);
+  // Window focus refetch removed — QueryClient already has refetchOnWindowFocus: false
+  // and the dashboard-data edge function is expensive. Users can pull-to-refresh manually.
 
   return {
     analyticsProfile,
