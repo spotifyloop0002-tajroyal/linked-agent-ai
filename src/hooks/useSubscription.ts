@@ -124,10 +124,10 @@ export const useSubscription = () => {
         expiresAt: profile?.subscription_expires_at || null,
         postsThisMonth: monthlyPostsUsed,
         postsToday: dailyPostsUsed,
-        agentsCount,
+        agentsCount: agentsCount || 0,
         limits,
         canCreatePost: dailyPostsUsed < limits.postsPerDay && monthlyPostsUsed < limits.postsPerMonth,
-        canCreateAgent: limits.agents === -1 || agentsCount < limits.agents,
+        canCreateAgent: limits.agents === -1 || (agentsCount || 0) < limits.agents,
         remainingPostsToday: Math.max(0, limits.postsPerDay - dailyPostsUsed),
         remainingPostsThisMonth: Math.max(0, limits.postsPerMonth - monthlyPostsUsed),
       };
