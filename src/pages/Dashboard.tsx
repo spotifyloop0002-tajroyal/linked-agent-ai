@@ -45,6 +45,7 @@ import { format, formatDistanceToNow } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { validateLinkedInPostUrl } from "@/lib/linkedinUrlUtils";
+import { PostSourceBadge } from "@/components/posts/PostSourceBadge";
 
 interface PostAnalytics {
   views?: number;
@@ -338,11 +339,12 @@ const DashboardPage = () => {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-border">
-                    <th className="text-left p-4 text-sm font-medium text-muted-foreground">Post Preview</th>
-                    <th className="text-left p-4 text-sm font-medium text-muted-foreground">Scheduled</th>
-                    <th className="text-left p-4 text-sm font-medium text-muted-foreground">Status</th>
-                    <th className="text-left p-4 text-sm font-medium text-muted-foreground">Analytics</th>
+                   <tr className="border-b border-border">
+                     <th className="text-left p-4 text-sm font-medium text-muted-foreground">Post Preview</th>
+                     <th className="text-left p-4 text-sm font-medium text-muted-foreground">Source</th>
+                     <th className="text-left p-4 text-sm font-medium text-muted-foreground">Scheduled</th>
+                     <th className="text-left p-4 text-sm font-medium text-muted-foreground">Status</th>
+                     <th className="text-left p-4 text-sm font-medium text-muted-foreground">Analytics</th>
                     <th className="text-right p-4 text-sm font-medium text-muted-foreground">Actions</th>
                   </tr>
                 </thead>
@@ -376,7 +378,10 @@ const DashboardPage = () => {
                             ) : null}
                           </div>
                         </div>
-                      </td>
+                       </td>
+                       <td className="p-4">
+                         <PostSourceBadge agentName={post.agent_name} campaignId={post.campaign_id} />
+                       </td>
                       <td className="p-4">
                         <div className="flex items-center gap-2 text-sm">
                           <Clock className="w-4 h-4 text-muted-foreground" />

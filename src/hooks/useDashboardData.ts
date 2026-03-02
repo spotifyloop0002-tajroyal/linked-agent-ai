@@ -56,6 +56,8 @@ export interface DashboardScheduledPost {
   comments_count?: number;
   shares_count?: number;
   last_synced_at?: string;
+  agent_name?: string | null;
+  campaign_id?: string | null;
 }
 
 interface DashboardData {

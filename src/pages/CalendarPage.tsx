@@ -25,6 +25,7 @@ import { format, addMonths, subMonths, isSameDay } from "date-fns";
 import { usePosts } from "@/hooks/usePosts";
 import { useAgents } from "@/hooks/useAgents";
 import { usePageTitle } from "@/hooks/usePageTitle";
+import { PostSourceBadge } from "@/components/posts/PostSourceBadge";
 import { useNavigate } from "react-router-dom";
 
 // Color mapping for agent types
@@ -251,10 +252,7 @@ const CalendarPage = () => {
                       </div>
                       <p className="text-sm line-clamp-2 mb-3">{post.content}</p>
                       <div className="flex items-center justify-between">
-                        <span className="inline-flex items-center gap-1 text-xs text-primary">
-                          <Bot className="w-3 h-3" />
-                          {post.agent_name || "Manual"}
-                        </span>
+                        <PostSourceBadge agentName={post.agent_name} campaignId={(post as any).campaign_id} />
                         <div className="flex gap-1">
                           <Button 
                             variant="ghost" 
@@ -328,10 +326,7 @@ const CalendarPage = () => {
                     <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
                       <span>{post.scheduled_time ? format(new Date(post.scheduled_time), "MMM d, yyyy") : "No date"}</span>
                       <span>{post.scheduled_time ? format(new Date(post.scheduled_time), "h:mm a") : ""}</span>
-                      <span className="inline-flex items-center gap-1 text-primary">
-                        <Bot className="w-3 h-3" />
-                        {post.agent_name || "Manual"}
-                      </span>
+                      <PostSourceBadge agentName={post.agent_name} campaignId={(post as any).campaign_id} />
                     </div>
                   </div>
                   <div className="flex gap-1 flex-shrink-0">

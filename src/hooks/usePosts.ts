@@ -7,6 +7,7 @@ export interface Post {
   user_id: string;
   agent_id: string | null;
   agent_name: string | null;
+  campaign_id: string | null;
   content: string;
   photo_url: string | null;
   status: string;
