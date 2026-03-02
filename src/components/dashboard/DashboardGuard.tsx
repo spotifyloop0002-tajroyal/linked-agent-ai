@@ -1,14 +1,15 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate, Outlet } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useUserProfile } from "@/hooks/useUserProfile";
+import { useLinkedInAPI } from "@/hooks/useLinkedInAPI";
 import { DashboardContext } from "@/contexts/DashboardContext";
 import { Loader2 } from "lucide-react";
 
 /**
- * DashboardGuard v2: Wraps ALL dashboard routes as a layout route.
- * Auth check + profile fetch happens ONCE. Child routes render via <Outlet>.
- * Navigating between dashboard pages does NOT re-run auth or profile loading.
+ * DashboardGuard v3: Wraps ALL dashboard routes as a layout route.
+ * Auth check + profile fetch + LinkedIn check happens ONCE.
+ * Child routes render via <Outlet> — no re-fetching on navigation.
  */
 const DashboardGuard = () => {
   const [authChecked, setAuthChecked] = useState(false);
@@ -16,10 +17,10 @@ const DashboardGuard = () => {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const navigate = useNavigate();
   const profileHook = useUserProfile();
+  const linkedInHook = useLinkedInAPI();
   const checkedRef = useRef(false);
 
   useEffect(() => {
-    // Prevent double-check in StrictMode
     if (checkedRef.current) return;
     checkedRef.current = true;
 
@@ -33,15 +34,12 @@ const DashboardGuard = () => {
           return;
         }
 
-        // Check onboarding status
         const { data: profile } = await supabase
           .from("user_profiles_safe")
           .select("onboarding_completed, name, user_type")
           .eq("user_id", session.user.id)
           .maybeSingle();
 
-        // Old users may not have onboarding_completed set — treat them as onboarded
-        // if they have basic profile data (name or user_type)
         const isOnboarded = profile?.onboarding_completed || 
           (profile && (profile.name || profile.user_type));
 
@@ -50,7 +48,6 @@ const DashboardGuard = () => {
           return;
         }
 
-        // Backfill onboarding_completed for old users
         if (!profile.onboarding_completed && isOnboarded) {
           supabase
             .from("user_profiles")
@@ -72,10 +69,8 @@ const DashboardGuard = () => {
 
     checkAuth();
 
-    // Listen for auth changes — handle sign out AND user switch
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === "SIGNED_OUT") {
-        // Clear all cached state to prevent data leakage
         setAuthorized(false);
         setAuthChecked(false);
         setCurrentUserId(null);
@@ -83,7 +78,6 @@ const DashboardGuard = () => {
         return;
       }
 
-      // Handle user switch (different user signed in)
       if (event === "SIGNED_IN" && session) {
         if (currentUserId && session.user.id !== currentUserId) {
           console.log("🔄 User switch detected, resetting dashboard state");
@@ -91,7 +85,6 @@ const DashboardGuard = () => {
           setAuthChecked(false);
           checkedRef.current = false;
           setCurrentUserId(session.user.id);
-          // Re-run auth check for new user
           checkAuth();
         }
       }
@@ -103,6 +96,33 @@ const DashboardGuard = () => {
     };
   }, [navigate, currentUserId]);
 
+  // Memoize context value to prevent unnecessary re-renders
+  const contextValue = useMemo(() => ({
+    ...profileHook,
+    linkedin: {
+      isConnected: linkedInHook.isConnected,
+      isLoading: linkedInHook.isLoading,
+      linkedinId: linkedInHook.linkedinId,
+      tokenExpiry: linkedInHook.tokenExpiry,
+      checkConnection: linkedInHook.checkConnection,
+      getAuthUrl: linkedInHook.getAuthUrl,
+      exchangeToken: linkedInHook.exchangeToken,
+      disconnect: linkedInHook.disconnect,
+      postToLinkedIn: linkedInHook.postToLinkedIn,
+    },
+  }), [
+    profileHook,
+    linkedInHook.isConnected,
+    linkedInHook.isLoading,
+    linkedInHook.linkedinId,
+    linkedInHook.tokenExpiry,
+    linkedInHook.checkConnection,
+    linkedInHook.getAuthUrl,
+    linkedInHook.exchangeToken,
+    linkedInHook.disconnect,
+    linkedInHook.postToLinkedIn,
+  ]);
+
   if (!authChecked || !authorized) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -112,7 +132,7 @@ const DashboardGuard = () => {
   }
 
   return (
-    <DashboardContext.Provider value={profileHook}>
+    <DashboardContext.Provider value={contextValue}>
       <Outlet />
     </DashboardContext.Provider>
   );

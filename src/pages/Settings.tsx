@@ -50,13 +50,13 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useLinkedInAPI } from "@/hooks/useLinkedInAPI";
+import { useDashboardLinkedIn } from "@/contexts/DashboardContext";
 import { useNavigate } from "react-router-dom";
 
 const SettingsPage = () => {
   usePageTitle("Settings");
   const { profile, isLoading, saveProfile } = useDashboardProfile();
-  const { isConnected: linkedInConnected } = useLinkedInAPI();
+  const { isConnected: linkedInConnected } = useDashboardLinkedIn();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [isSaving, setIsSaving] = useState(false);
