@@ -904,6 +904,39 @@ export type Database = {
           },
         ]
       }
+      research_cache: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          insights: string
+          query_hash: string
+          query_text: string
+          source_count: number | null
+          suggested_topics: string[] | null
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          insights: string
+          query_hash: string
+          query_text: string
+          source_count?: number | null
+          suggested_topics?: string[] | null
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          insights?: string
+          query_hash?: string
+          query_text?: string
+          source_count?: number | null
+          suggested_topics?: string[] | null
+        }
+        Relationships: []
+      }
       user_profiles: {
         Row: {
           background: string | null
