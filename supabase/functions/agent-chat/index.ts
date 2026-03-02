@@ -6,6 +6,17 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Simple hash for cache key
+function simpleHash(str: string): string {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash |= 0;
+  }
+  return Math.abs(hash).toString(36);
+}
+
 // ============================================
 // FETCH USER CONTEXT FOR AI
 // ============================================
@@ -38,7 +49,7 @@ async function fetchUserContext(authHeader: string | null): Promise<any | null> 
 }
 
 // ============================================
-// TAVILY RESEARCH FUNCTION - ENHANCED
+// TAVILY RESEARCH WITH 24H CACHE
 // ============================================
 async function researchTopic(topic: string, userContext?: any): Promise<{ insights: string; suggestedTopics: string[] } | null> {
   const TAVILY_API_KEY = Deno.env.get("TAVILY_API_KEY");
@@ -48,14 +59,40 @@ async function researchTopic(topic: string, userContext?: any): Promise<{ insigh
     return null;
   }
 
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const supabase = createClient(supabaseUrl, serviceKey);
+
+  // Build query
+  let query = `Latest trends and insights about ${topic} for LinkedIn professional post`;
+  const industry = userContext?.agentContext?.profile?.industry || userContext?.context?.profile?.industry;
+  if (industry) {
+    query += ` in the ${industry} industry`;
+  }
+
+  const queryHash = simpleHash(query.toLowerCase().trim());
+
+  // Check cache first
   try {
-    console.log("🔍 Researching topic with Tavily:", topic);
-    
-    // Build context-aware query
-    let query = `Latest trends and insights about ${topic} for LinkedIn professional post`;
-    if (userContext?.agentContext?.profile?.industry) {
-      query += ` in the ${userContext.agentContext.profile.industry} industry`;
+    const { data: cached } = await supabase
+      .from("research_cache")
+      .select("insights, suggested_topics")
+      .eq("query_hash", queryHash)
+      .gt("expires_at", new Date().toISOString())
+      .limit(1)
+      .maybeSingle();
+
+    if (cached) {
+      console.log("✅ Research cache HIT for:", topic);
+      return { insights: cached.insights, suggestedTopics: cached.suggested_topics || [] };
     }
+  } catch (e) {
+    console.warn("Cache lookup failed:", e);
+  }
+
+  // Cache miss — call Tavily
+  try {
+    console.log("🔍 Researching topic with Tavily (cache MISS):", topic);
     
     const response = await fetch("https://api.tavily.com/search", {
       method: "POST",
@@ -72,11 +109,18 @@ async function researchTopic(topic: string, userContext?: any): Promise<{ insigh
     
     if (data.results && data.results.length > 0) {
       const insights = data.results.map((r: any) => `- ${r.content?.substring(0, 200)}`).join("\n");
-      
-      // Extract suggested topics from results
       const suggestedTopics = data.results
         .slice(0, 3)
         .map((r: any) => r.title?.substring(0, 60) || topic);
+      
+      // Store in cache (fire-and-forget)
+      supabase.from("research_cache").insert({
+        query_hash: queryHash,
+        query_text: query.substring(0, 500),
+        insights,
+        suggested_topics: suggestedTopics,
+        source_count: data.results.length,
+      }).then(() => console.log("✅ Research cached")).catch(() => {});
       
       console.log("✅ Research complete with", data.results.length, "results");
       return { insights, suggestedTopics };
