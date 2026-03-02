@@ -137,7 +137,21 @@ export function useCampaigns() {
         body: { campaignId },
       });
 
-      if (error) throw error;
+      if (error) {
+        // Extract the actual error message from the function response
+        let msg = "Failed to generate posts";
+        try {
+          const ctx = await (error as any)?.context?.json?.();
+          if (ctx?.error) msg = ctx.error;
+        } catch {
+          // If we can't parse the context, try the error message
+          if (error.message && error.message !== "Edge Function returned a non-2xx status code") {
+            msg = error.message;
+          }
+        }
+        toast.error(msg);
+        return false;
+      }
 
       if (data?.error) {
         toast.error(data.error);
