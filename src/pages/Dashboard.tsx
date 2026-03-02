@@ -3,8 +3,7 @@ import { useEffect, useState, useCallback } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { ExtensionStatus } from "@/components/ExtensionStatus";
-import { useLinkedInAPI } from "@/hooks/useLinkedInAPI";
-import { useDashboardProfile } from "@/contexts/DashboardContext";
+import { useDashboardProfile, useDashboardLinkedIn } from "@/contexts/DashboardContext";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import type { DashboardScheduledPost } from "@/hooks/useDashboardData";
 import { usePageTitle } from "@/hooks/usePageTitle";
@@ -91,7 +90,7 @@ function getPostDisplayStatus(post: DashboardScheduledPost): 'published' | 'post
 const DashboardPage = () => {
   usePageTitle("Dashboard");
   const navigate = useNavigate();
-  const { isConnected, isLoading: apiLoading, getAuthUrl, disconnect } = useLinkedInAPI();
+  const { isConnected, isLoading: apiLoading, getAuthUrl, disconnect } = useDashboardLinkedIn();
   const { profile, isLoading: profileLoading } = useDashboardProfile();
   
   // Single API call for all dashboard data (4 queries → 1 call)

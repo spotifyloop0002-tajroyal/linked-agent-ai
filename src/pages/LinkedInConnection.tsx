@@ -1,7 +1,6 @@
 import { useState } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { useLinkedInAPI } from "@/hooks/useLinkedInAPI";
-import { useDashboardProfile } from "@/contexts/DashboardContext";
+import { useDashboardProfile, useDashboardLinkedIn } from "@/contexts/DashboardContext";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,7 +24,7 @@ const LinkedInConnectionPage = () => {
     getAuthUrl,
     disconnect,
     checkConnection,
-  } = useLinkedInAPI();
+  } = useDashboardLinkedIn();
 
   const { profile, isLoading: profileLoading } = useDashboardProfile();
   const [connecting, setConnecting] = useState(false);
