@@ -46,8 +46,8 @@ export const usePosts = () => {
       setIsLoading(true);
       setError(null);
 
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
         setPosts([]);
         return;
       }
@@ -55,7 +55,7 @@ export const usePosts = () => {
       let query = supabase
         .from("posts")
         .select("*")
-        .eq("user_id", user.id)
+        .eq("user_id", session.user.id)
         .order("scheduled_time", { ascending: true, nullsFirst: false });
 
       if (filters?.status) {
@@ -81,8 +81,9 @@ export const usePosts = () => {
   // Set up realtime subscription for post status updates
   useEffect(() => {
     const setupRealtimeSubscription = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      const user = session.user;
 
       const channel = supabase
         .channel('posts-status-changes')
