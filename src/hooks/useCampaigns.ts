@@ -11,6 +11,7 @@ export interface Campaign {
   start_date: string;
   end_date: string;
   post_count: number;
+  posts_per_day: number;
   research_mode: boolean;
   auto_best_time: boolean;
   auto_approve: boolean;
@@ -33,6 +34,7 @@ export interface CampaignFormData {
   startDate: Date;
   endDate?: Date;
   postCount?: number;
+  postsPerDay: number;
   researchMode: boolean;
   autoBestTime: boolean;
   autoApprove: boolean;
@@ -108,6 +110,7 @@ export function useCampaigns() {
           auto_best_time: formData.autoBestTime,
           auto_approve: formData.autoApprove,
           posting_time: formData.postingTime || "09:00",
+          posts_per_day: formData.postsPerDay || 1,
           content_length: formData.contentLength,
           emoji_level: formData.emojiLevel,
           hashtag_mode: formData.hashtagMode,

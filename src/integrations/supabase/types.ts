@@ -196,6 +196,7 @@ export type Database = {
           image_option: string | null
           post_count: number
           posting_time: string | null
+          posts_per_day: number
           research_mode: boolean | null
           start_date: string
           status: string
@@ -219,6 +220,7 @@ export type Database = {
           image_option?: string | null
           post_count?: number
           posting_time?: string | null
+          posts_per_day?: number
           research_mode?: boolean | null
           start_date: string
           status?: string
@@ -242,6 +244,7 @@ export type Database = {
           image_option?: string | null
           post_count?: number
           posting_time?: string | null
+          posts_per_day?: number
           research_mode?: boolean | null
           start_date?: string
           status?: string

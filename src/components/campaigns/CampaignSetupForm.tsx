@@ -71,6 +71,7 @@ export function CampaignSetupForm({ onSubmit, onCancel, isGenerating }: Campaign
   const [autoBestTime, setAutoBestTime] = useState(true);
   const [autoApprove, setAutoApprove] = useState(false);
   const [postingTime, setPostingTime] = useState("09:00");
+  const [postsPerDay, setPostsPerDay] = useState(1);
 
   // Content controls
   const [contentLength, setContentLength] = useState("medium");
@@ -91,6 +92,7 @@ export function CampaignSetupForm({ onSubmit, onCancel, isGenerating }: Campaign
       startDate,
       endDate: durationType === "custom" ? endDate : undefined,
       postCount: durationType === "custom" ? postCount : undefined,
+      postsPerDay,
       researchMode,
       autoBestTime,
       autoApprove,
@@ -340,6 +342,32 @@ export function CampaignSetupForm({ onSubmit, onCancel, isGenerating }: Campaign
             className="text-sm"
           />
           <p className="text-xs text-muted-foreground">This text will be appended to the end of every generated post</p>
+        </div>
+
+        {/* Posts Per Day */}
+        <div className="space-y-2">
+          <Label className="flex items-center gap-2">📅 Posts Per Day</Label>
+          <div className="grid grid-cols-2 gap-3">
+            {[
+              { value: 1, label: "1 Post/Day", desc: "Recommended for most campaigns" },
+              { value: 2, label: "2 Posts/Day", desc: "Maximum allowed per day" },
+            ].map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => setPostsPerDay(opt.value)}
+                className={cn(
+                  "p-3 rounded-xl border text-left transition-all",
+                  postsPerDay === opt.value
+                    ? "border-primary bg-primary/5 ring-2 ring-primary/20"
+                    : "border-border hover:border-primary/40"
+                )}
+              >
+                <p className="font-medium text-sm">{opt.label}</p>
+                <p className="text-xs text-muted-foreground">{opt.desc}</p>
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Toggles */}

@@ -129,23 +129,41 @@ serve(async (req) => {
     const writingDna = ctx.writingDna || null;
     const aiInstructions = unifiedContext?.aiInstructions || "";
 
-    // Calculate posting dates
+    // Calculate posting dates — skip past dates
     const startDate = new Date(campaign.start_date);
     const endDate = new Date(campaign.end_date);
+    const today = new Date();
+    today.setUTCHours(0, 0, 0, 0);
     const postDates: Date[] = [];
+    const postsPerDay = campaign.posts_per_day || 1;
 
     if (campaign.duration_type === "alternate") {
       let current = new Date(startDate);
       while (current <= endDate && postDates.length < campaign.post_count) {
-        postDates.push(new Date(current));
+        if (current >= today) {
+          for (let p = 0; p < postsPerDay && postDates.length < campaign.post_count; p++) {
+            postDates.push(new Date(current));
+          }
+        }
         current.setDate(current.getDate() + 2);
       }
     } else {
       let current = new Date(startDate);
       while (current <= endDate && postDates.length < campaign.post_count) {
-        postDates.push(new Date(current));
+        if (current >= today) {
+          for (let p = 0; p < postsPerDay && postDates.length < campaign.post_count; p++) {
+            postDates.push(new Date(current));
+          }
+        }
         current.setDate(current.getDate() + 1);
       }
+    }
+
+    if (postDates.length === 0) {
+      await supabase.from("campaigns").update({ status: "failed" }).eq("id", campaignId);
+      return new Response(JSON.stringify({ error: "All campaign dates are in the past. Please update the start date." }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     // Research if enabled

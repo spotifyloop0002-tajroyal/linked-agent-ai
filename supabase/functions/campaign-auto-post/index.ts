@@ -18,7 +18,7 @@ serve(async (req) => {
 
     const now = new Date().toISOString();
 
-    // Find pending posts that are due
+    // Find pending posts that are due (limit 10 overall)
     const { data: duePosts, error: fetchErr } = await supabase
       .from("posts")
       .select("*, campaigns(*)")
@@ -34,9 +34,66 @@ serve(async (req) => {
       });
     }
 
+    // THROTTLE: For campaign posts, limit to posts_per_day per campaign per day
+    // Count how many posts were already posted today per campaign
+    const todayStart = new Date();
+    todayStart.setUTCHours(0, 0, 0, 0);
+    const todayEnd = new Date();
+    todayEnd.setUTCHours(23, 59, 59, 999);
+
+    const campaignIds = [...new Set(duePosts.filter(p => p.campaign_id).map(p => p.campaign_id))];
+    const campaignPostsToday: Record<string, number> = {};
+    const campaignLimits: Record<string, number> = {};
+
+    for (const campId of campaignIds) {
+      // Count already-posted today for this campaign
+      const { count } = await supabase
+        .from("posts")
+        .select("id", { count: "exact", head: true })
+        .eq("campaign_id", campId)
+        .eq("status", "posted")
+        .gte("posted_at", todayStart.toISOString())
+        .lte("posted_at", todayEnd.toISOString());
+
+      campaignPostsToday[campId] = count || 0;
+
+      // Get campaign's posts_per_day limit
+      const camp = duePosts.find(p => p.campaign_id === campId)?.campaigns;
+      campaignLimits[campId] = camp?.posts_per_day || 1;
+    }
+
+    // Filter: skip campaign posts that would exceed daily limit
+    // Also skip posts scheduled more than 24 hours in the past (stale)
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const filteredPosts = duePosts.filter(post => {
+      // Skip stale posts (>24h overdue)
+      if (post.scheduled_time < oneDayAgo) {
+        console.log(`⏭️ Skipping stale post ${post.id} (scheduled ${post.scheduled_time})`);
+        return false;
+      }
+
+      if (post.campaign_id) {
+        const limit = campaignLimits[post.campaign_id] || 1;
+        const alreadyPosted = campaignPostsToday[post.campaign_id] || 0;
+        if (alreadyPosted >= limit) {
+          console.log(`⏭️ Campaign ${post.campaign_id} daily limit reached (${alreadyPosted}/${limit})`);
+          return false;
+        }
+        // Reserve a slot
+        campaignPostsToday[post.campaign_id] = alreadyPosted + 1;
+      }
+      return true;
+    });
+
+    if (filteredPosts.length === 0) {
+      return new Response(JSON.stringify({ message: "No eligible posts (daily limits reached)" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const results: any[] = [];
 
-    for (const post of duePosts) {
+    for (const post of filteredPosts) {
       try {
         // Update status to 'posting'
         await supabase.from("posts").update({ status: "posting", updated_at: now }).eq("id", post.id);
@@ -151,8 +208,8 @@ serve(async (req) => {
     }
 
     // Check for completed campaigns
-    const campaignIds = [...new Set(duePosts.filter(p => p.campaign_id).map(p => p.campaign_id))];
-    for (const campId of campaignIds) {
+    const completionCampaignIds = [...new Set(filteredPosts.filter(p => p.campaign_id).map(p => p.campaign_id))];
+    for (const campId of completionCampaignIds) {
       const { data: remainingPosts } = await supabase
         .from("posts")
         .select("id")
