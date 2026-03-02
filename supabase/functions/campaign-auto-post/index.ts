@@ -208,8 +208,8 @@ serve(async (req) => {
     }
 
     // Check for completed campaigns
-    const campaignIds = [...new Set(duePosts.filter(p => p.campaign_id).map(p => p.campaign_id))];
-    for (const campId of campaignIds) {
+    const completionCampaignIds = [...new Set(filteredPosts.filter(p => p.campaign_id).map(p => p.campaign_id))];
+    for (const campId of completionCampaignIds) {
       const { data: remainingPosts } = await supabase
         .from("posts")
         .select("id")
