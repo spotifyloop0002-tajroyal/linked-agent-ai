@@ -26,10 +26,10 @@ serve(async (req) => {
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceKey);
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    const GOOGLE_GEMINI_API_KEY = Deno.env.get("GOOGLE_GEMINI_API_KEY");
     const TAVILY_API_KEY = Deno.env.get("TAVILY_API_KEY");
 
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
+    if (!GOOGLE_GEMINI_API_KEY) throw new Error("GOOGLE_GEMINI_API_KEY not configured");
 
     const today = new Date().toISOString().split("T")[0];
 
@@ -140,14 +140,14 @@ ${researchInsights ? `TODAY'S RESEARCH INSIGHTS:\n${researchInsights}` : "Use yo
 Write ONE LinkedIn post (100-250 words) based on today's fresh insights. Write as the user. No hashtags. Make it engaging and shareable.
 ${!researchInsights ? "\nNote: Based on general knowledge (research unavailable today)." : ""}`;
 
-        const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        const aiResponse = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${LOVABLE_API_KEY}`,
+            Authorization: `Bearer ${GOOGLE_GEMINI_API_KEY}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            model: "google/gemini-3-flash-preview",
+            model: "gemini-2.0-flash",
             messages: [
               { role: "system", content: systemPrompt },
               { role: "user", content: `Write today's LinkedIn post about "${campaign.topic}" using the latest insights.` },

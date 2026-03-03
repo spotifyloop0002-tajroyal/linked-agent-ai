@@ -75,7 +75,7 @@ serve(async (req) => {
     };
 
     const HUGGINGFACE_API_KEY = Deno.env.get("HUGGINGFACE_API_KEY");
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    const GOOGLE_GEMINI_API_KEY = Deno.env.get("GOOGLE_GEMINI_API_KEY");
     
     // ALWAYS generate image prompt from actual post content
     // Only use provided prompt as additional hint, not replacement
@@ -185,17 +185,17 @@ serve(async (req) => {
     }
 
     // Fallback to Lovable AI if Hugging Face didn't work
-    if (!imageUrl && LOVABLE_API_KEY) {
-      console.log("🔄 Falling back to Lovable AI Gateway...");
+    if (!imageUrl && GOOGLE_GEMINI_API_KEY) {
+      console.log("🔄 Falling back to Google Gemini API...");
       
-      const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      const response = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          Authorization: `Bearer ${GOOGLE_GEMINI_API_KEY}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "google/gemini-3-pro-image-preview",
+          model: "gemini-2.0-flash",
           messages: [
             {
               role: "user",

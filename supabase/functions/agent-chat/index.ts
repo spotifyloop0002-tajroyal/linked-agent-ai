@@ -553,25 +553,25 @@ If any answer is NO, rewrite before outputting.`;
 // REAL AI FUNCTION (via Lovable AI Gateway)
 // ============================================
 async function callAI(prompt: string, conversationHistory: any[] = [], userContext?: any, agentType?: string, agentSettings?: any): Promise<string> {
-  const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+  const GOOGLE_GEMINI_API_KEY = Deno.env.get("GOOGLE_GEMINI_API_KEY");
   
-  if (!LOVABLE_API_KEY) {
-    throw new Error("LOVABLE_API_KEY not configured");
+  if (!GOOGLE_GEMINI_API_KEY) {
+    throw new Error("GOOGLE_GEMINI_API_KEY not configured");
   }
 
   // Build agent-specific system prompt with user settings
   const systemPrompt = buildAgentSystemPrompt(agentType || "professional", userContext, agentSettings);
 
   try {
-    console.log("🤖 Calling Lovable AI Gateway...");
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    console.log("🤖 Calling Google Gemini API...");
+    const response = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${LOVABLE_API_KEY}`,
+        "Authorization": `Bearer ${GOOGLE_GEMINI_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: "gemini-2.0-flash",
         messages: [
           { role: "system", content: systemPrompt },
           ...conversationHistory.map((msg: any) => ({
@@ -585,15 +585,12 @@ async function callAI(prompt: string, conversationHistory: any[] = [], userConte
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("AI Gateway error:", response.status, errorText);
+      console.error("Gemini API error:", response.status, errorText);
       
       if (response.status === 429) {
         throw new Error("Rate limit exceeded. Please try again in a moment.");
       }
-      if (response.status === 402) {
-        throw new Error("AI credits exhausted. Please add credits to continue.");
-      }
-      throw new Error(`AI Gateway error: ${response.status}`);
+      throw new Error(`Gemini API error: ${response.status}`);
     }
 
     const data = await response.json();
