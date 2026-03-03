@@ -45,10 +45,14 @@ serve(async (req) => {
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
     const normalizedEmail = email.toLowerCase().trim();
 
-    // Check if email is already registered
-    const { data: existingUsers, error: listError } = await supabase.auth.admin.listUsers();
-    if (!listError && existingUsers?.users) {
-      const alreadyRegistered = existingUsers.users.some(
+    // Check if email is already registered (efficient: lookup by email, not list all)
+    const { data: { users: matchedUsers }, error: listError } = await supabase.auth.admin.listUsers({
+      filter: normalizedEmail,
+      page: 1,
+      perPage: 1,
+    });
+    if (!listError && matchedUsers && matchedUsers.length > 0) {
+      const alreadyRegistered = matchedUsers.some(
         (u: any) => u.email?.toLowerCase() === normalizedEmail
       );
       if (alreadyRegistered) {

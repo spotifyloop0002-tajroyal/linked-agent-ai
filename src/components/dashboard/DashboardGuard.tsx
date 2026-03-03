@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { useLinkedInAPI } from "@/hooks/useLinkedInAPI";
 import { DashboardContext } from "@/contexts/DashboardContext";
+import { startAnalyticsCron, stopAnalyticsCron } from "@/lib/analytics-cron";
 import { Loader2 } from "lucide-react";
 
 /**
@@ -59,6 +60,9 @@ const DashboardGuard = () => {
       setCurrentUserId(session.user.id);
       setAuthorized(true);
       setAuthChecked(true);
+
+      // Start analytics cron only when dashboard is active
+      startAnalyticsCron();
     };
 
     checkAuth();

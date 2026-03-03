@@ -1,10 +1,10 @@
-import { useEffect, lazy, Suspense } from "react";
+import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { startAnalyticsCron } from "@/lib/analytics-cron";
+// analytics-cron moved to DashboardGuard to avoid running on every page
 import { Loader2 } from "lucide-react";
 
 // Eagerly load critical pages
@@ -74,10 +74,6 @@ const PageLoader = () => (
 
 // Inner component that uses hooks
 const AppContent = () => {
-  // Start analytics cron job (runs every 2 hours)
-  useEffect(() => {
-    startAnalyticsCron();
-  }, []);
 
   return (
     <>

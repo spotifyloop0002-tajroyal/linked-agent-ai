@@ -81,13 +81,7 @@ const DashboardLayout = ({ children, headerContent }: DashboardLayoutProps) => {
     }
   }, [location.pathname]);
 
-  // Prefetch adjacent routes after idle to make navigation instant
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      Object.keys(routeImports).forEach(path => prefetchRoute(path));
-    }, 2000); // Wait 2s after page load, then prefetch all dashboard routes
-    return () => clearTimeout(timer);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  // Prefetch only on hover — removed aggressive "prefetch all after 2s" to reduce memory usage
 
   // Session sync is now handled globally by useExtensionAuth in App.tsx
 

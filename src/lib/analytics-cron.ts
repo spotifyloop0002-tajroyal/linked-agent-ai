@@ -9,6 +9,8 @@ import { sanitizeAnalytics } from '@/lib/analyticsSanitizer';
 let extensionConnected = false;
 let cronInterval: ReturnType<typeof setInterval> | null = null;
 let isScrapingInProgress = false;
+let messageListenerAttached = false;
+let messageHandler: ((event: MessageEvent) => void) | null = null;
 
 // ============================================================================
 // SCRAPE ALL POST ANALYTICS (v5.0 BULK)
@@ -161,23 +163,19 @@ async function updatePostAnalytics(postUrl: string, analytics: AnalyticsScrapeRe
 // ============================================================================
 
 function setupMessageListeners() {
-  window.addEventListener('message', (event) => {
+  if (messageListenerAttached) return;
+  
+  messageHandler = (event: MessageEvent) => {
     if (event.source !== window) return;
     
     const message = event.data;
     
-    // v5.0 - Extension signals ready for scraping
     if (message.type === 'EXTENSION_READY_FOR_SCRAPING') {
       console.log('🚀 Extension ready for scraping - triggering auto-scrape...');
       extensionConnected = true;
-      
-      // Short delay to allow UI to settle
-      setTimeout(() => {
-        scrapeAllPostAnalytics();
-      }, 2000);
+      setTimeout(() => { scrapeAllPostAnalytics(); }, 2000);
     }
     
-    // Also handle EXTENSION_CONNECTED for backward compatibility
     if (message.type === 'EXTENSION_CONNECTED') {
       extensionConnected = true;
     }
@@ -186,16 +184,17 @@ function setupMessageListeners() {
       extensionConnected = false;
     }
     
-    // v5.0 - Handle bulk analytics result
     if (message.type === 'BULK_ANALYTICS_RESULT') {
       handleAnalyticsResults(message as BulkAnalyticsResultMessage);
     }
     
-    // v5.0 - Handle single analytics result
     if (message.type === 'ANALYTICS_RESULT') {
       handleSingleAnalyticsResult(message);
     }
-  });
+  };
+  
+  window.addEventListener('message', messageHandler);
+  messageListenerAttached = true;
 }
 
 // ============================================================================
@@ -235,8 +234,13 @@ export function stopAnalyticsCron() {
   if (cronInterval) {
     clearInterval(cronInterval);
     cronInterval = null;
-    console.log('⏰ Analytics cron stopped');
   }
+  if (messageHandler) {
+    window.removeEventListener('message', messageHandler);
+    messageHandler = null;
+    messageListenerAttached = false;
+  }
+  console.log('⏰ Analytics cron stopped');
 }
 
 // ============================================================================
