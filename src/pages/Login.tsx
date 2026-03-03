@@ -3,10 +3,9 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Bot, ArrowLeft, Loader2, Mail, Lock, User } from "lucide-react";
+import { Bot, ArrowLeft, Loader2, Mail, Lock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-
 import { useToast } from "@/hooks/use-toast";
 
 const Login = () => {
@@ -14,10 +13,7 @@ const Login = () => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
-  const [isSignUp, setIsSignUp] = useState(false);
 
-  // Form fields
-  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -61,62 +57,6 @@ const Login = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  const handleEmailSignUp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name.trim() || !email.trim() || !password.trim()) {
-      toast({
-        title: "Missing fields",
-        description: "Please fill in all fields",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (password.length < 6) {
-      toast({
-        title: "Password too short",
-        description: "Password must be at least 6 characters",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      const { data, error } = await supabase.auth.signUp({
-        email: email.trim(),
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/onboarding`,
-          data: {
-            full_name: name.trim(),
-          },
-        },
-      });
-
-      if (error) throw error;
-
-      if (data.session?.user && data.session.access_token) {
-        // ✅ Initialize user in extension with access token (v3.1.1+)
-        initializeUserInExtension(data.session.user.id, data.session.user.email, data.session.access_token);
-        
-        toast({
-          title: "Account created!",
-          description: "Welcome to LinkedBot. Let's set up your account.",
-        });
-      }
-    } catch (error) {
-      console.error('Sign up error:', error);
-      toast({
-        title: "Sign up failed",
-        description: error instanceof Error ? error.message : "Failed to create account",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim() || !password.trim()) {
@@ -137,7 +77,7 @@ const Login = () => {
 
       if (error) throw error;
 
-      // ✅ Initialize user in extension with access token (v3.1.1+)
+      // Initialize user in extension with access token
       if (data.session?.user && data.session.access_token) {
         initializeUserInExtension(data.session.user.id, data.session.user.email, data.session.access_token);
       }
@@ -153,41 +93,16 @@ const Login = () => {
     }
   };
 
-
-  // Helper function to initialize user in extension with access token
   const initializeUserInExtension = (userId: string, email: string | undefined, accessToken?: string) => {
-    console.log('🔒 Initializing user in extension:', userId);
-    
-    // Check if extension bridge is available
     const windowWithBridge = window as any;
     if (typeof windowWithBridge.LinkedBotBridge !== 'undefined' && typeof windowWithBridge.LinkedBotBridge.setCurrentUser === 'function') {
       windowWithBridge.LinkedBotBridge.setCurrentUser(userId);
     }
-    
-    // ✅ NEW v3.1.1: Send SET_AUTH with both userId and accessToken
     if (accessToken) {
-      console.log('📤 Sending auth to extension');
-      window.postMessage({
-        type: 'SET_AUTH',
-        userId: userId,
-        accessToken: accessToken
-      }, '*');
+      window.postMessage({ type: 'SET_AUTH', userId, accessToken }, '*');
     }
-    
-    // Send INITIALIZE_USER message for improved extension auth
-    window.postMessage({
-      type: 'INITIALIZE_USER',
-      userId: userId,
-      email: email || null
-    }, '*');
-    
-    // Also send legacy SET_CURRENT_USER for backwards compatibility
-    window.postMessage({
-      type: 'SET_CURRENT_USER',
-      userId: userId
-    }, '*');
-    
-    console.log('✅ Auth sent to extension');
+    window.postMessage({ type: 'INITIALIZE_USER', userId, email: email || null }, '*');
+    window.postMessage({ type: 'SET_CURRENT_USER', userId }, '*');
   };
 
   if (checkingAuth) {
@@ -205,7 +120,6 @@ const Login = () => {
         <div className="absolute inset-0 gradient-hero-bg" />
         <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.1)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.1)_1px,transparent_1px)] bg-[size:4rem_4rem]" />
         
-        {/* Floating elements */}
         <motion.div
           className="absolute top-1/4 left-1/4 w-20 h-20 bg-primary-foreground/20 rounded-2xl backdrop-blur-sm"
           animate={{ y: [0, -20, 0], rotate: [0, 5, 0] }}
@@ -222,7 +136,6 @@ const Login = () => {
           transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
         />
         
-        {/* Content */}
         <div className="relative z-10 flex flex-col justify-center items-center w-full px-12">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -245,7 +158,6 @@ const Login = () => {
 
       {/* Right side - Login form */}
       <div className="w-full lg:w-1/2 flex flex-col">
-        {/* Back button */}
         <div className="p-6">
           <Button variant="ghost" onClick={() => navigate("/")} className="gap-2">
             <ArrowLeft className="w-4 h-4" />
@@ -253,7 +165,6 @@ const Login = () => {
           </Button>
         </div>
 
-        {/* Login content */}
         <div className="flex-1 flex items-center justify-center px-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -270,37 +181,12 @@ const Login = () => {
             </div>
 
             <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold mb-2">
-                {isSignUp ? "Create an account" : "Welcome back"}
-              </h2>
-              <p className="text-muted-foreground">
-                {isSignUp 
-                  ? "Sign up to get started with LinkedBot" 
-                  : "Sign in to continue to LinkedBot"
-                }
-              </p>
+              <h2 className="text-3xl font-bold mb-2">Welcome back</h2>
+              <p className="text-muted-foreground">Sign in to continue to LinkedBot</p>
             </div>
 
             {/* Email/Password Form */}
-            <form onSubmit={isSignUp ? handleEmailSignUp : handleEmailLogin} className="space-y-4">
-              {isSignUp && (
-                <div className="space-y-2">
-                  <Label htmlFor="name">Full Name</Label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input
-                      id="name"
-                      type="text"
-                      placeholder="John Doe"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      className="pl-10"
-                      disabled={isLoading}
-                    />
-                  </div>
-                </div>
-              )}
-
+            <form onSubmit={handleEmailLogin} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <div className="relative">
@@ -342,49 +228,31 @@ const Login = () => {
               >
                 {isLoading ? (
                   <Loader2 className="w-5 h-5 animate-spin" />
-                ) : isSignUp ? (
-                  "Create Account"
                 ) : (
                   "Sign In"
                 )}
               </Button>
             </form>
 
-
-            {/* Toggle sign up / sign in */}
+            {/* Sign up link — redirects to /signup with OTP flow */}
             <p className="text-center text-sm text-muted-foreground mt-6">
-              {isSignUp ? (
-                <>
-                  Already have an account?{" "}
-                  <button
-                    type="button"
-                    onClick={() => setIsSignUp(false)}
-                    className="text-primary hover:underline font-medium"
-                  >
-                    Sign in
-                  </button>
-                </>
-              ) : (
-                <>
-                  Don't have an account?{" "}
-                  <button
-                    type="button"
-                    onClick={() => setIsSignUp(true)}
-                    className="text-primary hover:underline font-medium"
-                  >
-                    Sign up
-                  </button>
-                </>
-              )}
+              Don't have an account?{" "}
+              <button
+                type="button"
+                onClick={() => navigate("/signup")}
+                className="text-primary hover:underline font-medium"
+              >
+                Sign up
+              </button>
             </p>
 
             <p className="text-center text-xs text-muted-foreground mt-4">
               By continuing, you agree to LinkedBot's{" "}
-              <a href="#" className="text-primary hover:underline">
+              <a href="/terms" className="text-primary hover:underline">
                 Terms of Service
               </a>{" "}
               and{" "}
-              <a href="#" className="text-primary hover:underline">
+              <a href="/privacy" className="text-primary hover:underline">
                 Privacy Policy
               </a>
             </p>
