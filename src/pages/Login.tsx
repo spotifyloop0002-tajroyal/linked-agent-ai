@@ -14,7 +14,7 @@ const Login = () => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
-  const [isSignUp, setIsSignUp] = useState(false);
+  // Removed isSignUp toggle — signup must go through /signup with OTP
 
   // Form fields
   const [name, setName] = useState("");
