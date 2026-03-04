@@ -71,7 +71,7 @@ async function sendPaymentEmail(
           You now have full access to all ${planName} features. Start creating amazing LinkedIn content today!
         </p>
         <div style="text-align: center; margin-top: 24px;">
-          <a href="https://link-ai-friend.lovable.app/dashboard" style="display: inline-block; background: #6366f1; color: #ffffff; padding: 12px 32px; border-radius: 8px; text-decoration: none; font-weight: 600;">Go to Dashboard</a>
+          <a href="https://linkedbotremix.lovable.app/dashboard" style="display: inline-block; background: #6366f1; color: #ffffff; padding: 12px 32px; border-radius: 8px; text-decoration: none; font-weight: 600;">Go to Dashboard</a>
         </div>
       </div>
       <div style="background: #f9fafb; padding: 16px 32px; text-align: center; border-top: 1px solid #e5e7eb;">
