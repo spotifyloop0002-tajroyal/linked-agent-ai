@@ -134,6 +134,7 @@ const AppContent = () => {
             <Route path="/community" element={<Community />} />
             {/* Product pages */}
             <Route path="/api" element={<API />} />
+            <Route path="/payment-success" element={<PaymentSuccess />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
