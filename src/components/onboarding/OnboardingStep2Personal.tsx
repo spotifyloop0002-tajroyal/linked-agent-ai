@@ -63,6 +63,15 @@ export const OnboardingStep2Personal = ({
   const [cityOther, setCityOther] = useState(false);
   const [countryOther, setCountryOther] = useState(false);
   const [professionOther, setProfessionOther] = useState(false);
+  const [cityOpen, setCityOpen] = useState(false);
+  const [countryOpen, setCountryOpen] = useState(false);
+
+  const allCountries = useMemo(() => getAllCountries(), []);
+  const citiesForCountry = useMemo(() => {
+    if (!country || countryOther) return [];
+    return getCitiesForCountry(country);
+  }, [country, countryOther]);
+  const [professionOther, setProfessionOther] = useState(false);
 
   const isValidLinkedInUrl = (url: string) => {
     if (!url) return false;
