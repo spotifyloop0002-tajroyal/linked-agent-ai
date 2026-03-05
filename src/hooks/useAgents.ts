@@ -69,10 +69,14 @@ export const useAgents = () => {
         return null;
       }
 
-      // Use cached profile from user_profiles_safe instead of separate query
-      // The profile is already available in DashboardContext, but since this hook
-      // doesn't have access to context, we use a lightweight count-based check
-      const plan = "free"; // Plan check moved to UI layer to avoid redundant DB call
+      // Fetch actual user plan from profile
+      const { data: profile } = await supabase
+        .from("user_profiles_safe")
+        .select("subscription_plan")
+        .eq("user_id", session.user.id)
+        .maybeSingle();
+
+      const plan = (profile?.subscription_plan?.toLowerCase() as string) || "free";
       
       // Define agent limits per plan
       const AGENT_LIMITS: Record<string, number> = {
