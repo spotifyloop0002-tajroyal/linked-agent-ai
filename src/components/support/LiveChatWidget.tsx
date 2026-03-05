@@ -123,11 +123,21 @@ const LiveChatWidget = ({ externalOpen, onExternalClose }: LiveChatWidgetProps) 
         setConversationId(convId);
       }
 
+      const messageContent = input.trim();
+      // Optimistically add message to UI
+      const optimisticMsg: Message = {
+        id: crypto.randomUUID(),
+        content: messageContent,
+        sender_role: "user",
+        created_at: new Date().toISOString(),
+      };
+      setMessages((prev) => [...prev, optimisticMsg]);
+      setInput("");
+
       const { error } = await supabase
         .from("support_messages")
-        .insert({ conversation_id: convId, sender_id: userId, sender_role: "user", content: input.trim() });
+        .insert({ conversation_id: convId, sender_id: userId, sender_role: "user", content: messageContent });
       if (error) throw error;
-      setInput("");
     } catch (e: any) {
       toast.error("Failed to send message");
     } finally {
