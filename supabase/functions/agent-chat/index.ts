@@ -553,25 +553,21 @@ If any answer is NO, rewrite before outputting.`;
 // REAL AI FUNCTION (via Lovable AI Gateway)
 // ============================================
 async function callAI(prompt: string, conversationHistory: any[] = [], userContext?: any, agentType?: string, agentSettings?: any): Promise<string> {
-  const GOOGLE_GEMINI_API_KEY = Deno.env.get("GOOGLE_GEMINI_API_KEY");
-  
-  if (!GOOGLE_GEMINI_API_KEY) {
-    throw new Error("GOOGLE_GEMINI_API_KEY not configured");
-  }
-
   // Build agent-specific system prompt with user settings
   const systemPrompt = buildAgentSystemPrompt(agentType || "professional", userContext, agentSettings);
 
   try {
-    console.log("🤖 Calling Google Gemini API...");
-    const response = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
+    console.log("🤖 Calling Lovable AI (Gemini 2.5 Flash)...");
+    
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const response = await fetch(`${supabaseUrl}/functions/v1/proxy/ai/v1/chat/completions`, {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${GOOGLE_GEMINI_API_KEY}`,
         "Content-Type": "application/json",
+        "Authorization": `Bearer ${Deno.env.get("SUPABASE_ANON_KEY")}`,
       },
       body: JSON.stringify({
-        model: "gemini-2.0-flash",
+        model: "google/gemini-2.5-flash",
         messages: [
           { role: "system", content: systemPrompt },
           ...conversationHistory.map((msg: any) => ({
@@ -585,12 +581,12 @@ async function callAI(prompt: string, conversationHistory: any[] = [], userConte
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Gemini API error:", response.status, errorText);
+      console.error("AI API error:", response.status, errorText);
       
       if (response.status === 429) {
         throw new Error("Rate limit exceeded. Please try again in a moment.");
       }
-      throw new Error(`Gemini API error: ${response.status}`);
+      throw new Error(`AI API error: ${response.status}`);
     }
 
     const data = await response.json();

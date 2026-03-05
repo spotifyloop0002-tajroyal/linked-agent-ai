@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from "react";
-import { useNavigate, Outlet } from "react-router-dom";
+import { useNavigate, useLocation, Outlet } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { useLinkedInAPI } from "@/hooks/useLinkedInAPI";
@@ -18,9 +18,12 @@ const DashboardGuard = () => {
   const [authorized, setAuthorized] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const navigate = useNavigate();
+  const location = useLocation();
   const profileHook = useUserProfile();
   const linkedInHook = useLinkedInAPI();
   const checkedRef = useRef(false);
+  
+  const isAgentChatPage = location.pathname.includes('/agents/chat');
 
   // Wait for profileHook to finish loading, then decide routing
   useEffect(() => {
@@ -166,7 +169,7 @@ const DashboardGuard = () => {
   return (
     <DashboardContext.Provider value={contextValue}>
       <Outlet />
-      <LiveChatWidget />
+      {!isAgentChatPage && <LiveChatWidget />}
     </DashboardContext.Provider>
   );
 };

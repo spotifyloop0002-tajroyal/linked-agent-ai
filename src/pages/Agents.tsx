@@ -288,34 +288,34 @@ const AgentsPage = () => {
                 </DialogDescription>
               </DialogHeader>
 
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 py-6">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 py-4 overflow-y-auto max-h-[60vh]">
                 {agentTypes.map((type) => (
                   <button
                     key={type.id}
                     onClick={() => setSelectedType(type.id)}
-                    className={`p-4 rounded-xl border-2 transition-all text-center hover:border-primary/50 ${
+                    className={`p-3 rounded-xl border-2 transition-all text-center hover:border-primary/50 ${
                       selectedType === type.id
                         ? "border-primary bg-primary/5"
                         : "border-border"
                     }`}
                   >
                     <div
-                      className={`w-12 h-12 rounded-xl mx-auto mb-3 flex items-center justify-center ${
+                      className={`w-10 h-10 md:w-12 md:h-12 rounded-xl mx-auto mb-2 flex items-center justify-center ${
                         selectedType === type.id
                           ? "gradient-bg"
                           : "bg-muted"
                       }`}
                     >
                       <type.icon
-                        className={`w-6 h-6 ${
+                        className={`w-5 h-5 md:w-6 md:h-6 ${
                           selectedType === type.id
                             ? "text-primary-foreground"
                             : "text-muted-foreground"
                         }`}
                       />
                     </div>
-                    <p className="font-medium text-sm">{type.label}</p>
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="font-medium text-xs md:text-sm">{type.label}</p>
+                    <p className="text-[10px] md:text-xs text-muted-foreground mt-0.5">
                       {type.description}
                     </p>
                   </button>
