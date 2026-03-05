@@ -147,7 +147,7 @@ const Pricing = forwardRef<HTMLElement>((_, ref) => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 max-w-7xl mx-auto">
           {plans.map((plan, index) => {
             const priceINR = isYearly ? plan.priceYearlyINR : plan.priceMonthlyINR;
             const priceUSD = isYearly ? plan.priceYearly : plan.priceMonthly;
@@ -175,20 +175,26 @@ const Pricing = forwardRef<HTMLElement>((_, ref) => {
                     </div>
                   </div>
 
-                  <div className="mb-4">
-                    {priceINR ? (
-                      <>
-                        <span className="text-4xl font-bold">{priceINR}</span>
-                        <span className="text-muted-foreground ml-2">/{periodLabel}</span>
-                        <div className="text-sm text-muted-foreground mt-1">({priceUSD} USD)</div>
-                      </>
-                    ) : (
-                      <>
-                        <span className="text-4xl font-bold">{priceUSD}</span>
-                        <span className="text-muted-foreground ml-2">/{periodLabel}</span>
-                      </>
-                    )}
-                  </div>
+                  {plan.isCustom ? (
+                    <div className="mb-4">
+                      <span className="text-4xl font-bold">Let's Talk</span>
+                    </div>
+                  ) : (
+                    <div className="mb-4">
+                      {priceINR ? (
+                        <>
+                          <span className="text-4xl font-bold">{priceINR}</span>
+                          <span className="text-muted-foreground ml-2">/{periodLabel}</span>
+                          <div className="text-sm text-muted-foreground mt-1">({priceUSD} USD)</div>
+                        </>
+                      ) : (
+                        <>
+                          <span className="text-4xl font-bold">{priceUSD}</span>
+                          <span className="text-muted-foreground ml-2">/{periodLabel}</span>
+                        </>
+                      )}
+                    </div>
+                  )}
 
                   <p className="text-muted-foreground mb-6">{plan.description}</p>
 
@@ -203,14 +209,26 @@ const Pricing = forwardRef<HTMLElement>((_, ref) => {
                     ))}
                   </ul>
 
-                  <Button
-                    variant={plan.popular ? "gradient" : "outline"}
-                    size="lg"
-                    className="w-full"
-                    onClick={() => navigate("/login")}
-                  >
-                    {plan.cta}
-                  </Button>
+                  {plan.isCustom ? (
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      className="w-full"
+                      onClick={() => window.location.href = "mailto:contactlinkedbot@gmail.com?subject=Custom Plan Inquiry"}
+                    >
+                      <Mail className="w-4 h-4 mr-2" />
+                      {plan.cta}
+                    </Button>
+                  ) : (
+                    <Button
+                      variant={plan.popular ? "gradient" : "outline"}
+                      size="lg"
+                      className="w-full"
+                      onClick={() => navigate("/login")}
+                    >
+                      {plan.cta}
+                    </Button>
+                  )}
                 </div>
               </div>
             );
