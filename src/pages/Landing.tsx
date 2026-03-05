@@ -15,6 +15,9 @@ const Landing = () => {
   useEffect(() => {
     const checkSession = async () => {
       const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        await supabase.auth.signOut();
+      }
       setIsLoggedIn(!!user);
     };
     checkSession();
