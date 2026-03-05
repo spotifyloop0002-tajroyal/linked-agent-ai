@@ -6,6 +6,7 @@ import { useLinkedInAPI } from "@/hooks/useLinkedInAPI";
 import { DashboardContext } from "@/contexts/DashboardContext";
 import { startAnalyticsCron, stopAnalyticsCron } from "@/lib/analytics-cron";
 import { Loader2 } from "lucide-react";
+import LiveChatWidget from "@/components/support/LiveChatWidget";
 
 /**
  * DashboardGuard v5: Optimized context stability.
@@ -165,6 +166,7 @@ const DashboardGuard = () => {
   return (
     <DashboardContext.Provider value={contextValue}>
       <Outlet />
+      <LiveChatWidget />
     </DashboardContext.Provider>
   );
 };
