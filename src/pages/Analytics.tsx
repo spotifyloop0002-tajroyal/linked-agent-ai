@@ -92,7 +92,7 @@ const calcEngagement = (v: number, l: number, c: number, s: number): number => {
 const AnalyticsPage = () => {
   usePageTitle("Analytics");
   const { toast } = useToast();
-  const { isConnected, isInstalled } = useLinkedBotExtension();
+  const { isConnected, isInstalled, connectExtension, checkExtension } = useLinkedBotExtension();
   const { profile: userProfile, isLoading: profileLoading } = useDashboardProfile();
   const { isSyncing, syncAnalytics } = useLinkedInAnalytics();
 
