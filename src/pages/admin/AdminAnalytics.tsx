@@ -330,6 +330,48 @@ const AdminAnalytics = () => {
           </Card>
         </motion.div>
 
+        {/* Website Traffic Stats */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.17 }}
+          className="grid grid-cols-3 gap-4"
+        >
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-3">
+                <Globe className="w-6 h-6 text-primary" />
+                <div>
+                  <p className="text-xl font-bold">{stats.totalPageViews.toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground">Total Page Views</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-3">
+                <Users className="w-6 h-6 text-primary" />
+                <div>
+                  <p className="text-xl font-bold">{stats.uniqueVisitors.toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground">Unique Visitors</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-3">
+                <MousePointerClick className="w-6 h-6 text-primary" />
+                <div>
+                  <p className="text-xl font-bold">{stats.todayPageViews.toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground">Today's Views</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
         {/* Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Daily Signups */}
