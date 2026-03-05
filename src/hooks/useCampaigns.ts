@@ -134,6 +134,10 @@ export function useCampaigns() {
   }, []);
 
   const generateCampaignPosts = useCallback(async (campaignId: string) => {
+    if (isGenerating) {
+      toast.info("Generation already in progress, please wait...");
+      return false;
+    }
     setIsGenerating(true);
     try {
       const { data, error } = await supabase.functions.invoke("generate-campaign", {
@@ -141,13 +145,11 @@ export function useCampaigns() {
       });
 
       if (error) {
-        // Extract the actual error message from the function response
         let msg = "Failed to generate posts";
         try {
           const ctx = await (error as any)?.context?.json?.();
           if (ctx?.error) msg = ctx.error;
         } catch {
-          // If we can't parse the context, try the error message
           if (error.message && error.message !== "Edge Function returned a non-2xx status code") {
             msg = error.message;
           }
@@ -171,7 +173,7 @@ export function useCampaigns() {
     } finally {
       setIsGenerating(false);
     }
-  }, [fetchCampaigns]);
+  }, [fetchCampaigns, isGenerating]);
 
   const updateCampaignStatus = useCallback(async (campaignId: string, status: string) => {
     try {
