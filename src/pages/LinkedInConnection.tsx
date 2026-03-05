@@ -137,34 +137,6 @@ const LinkedInConnectionPage = () => {
           </Card>
         </div>
 
-        {/* Redirect URI info for developers */}
-        <div className="animate-fade-up [animation-delay:200ms]">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Developer Info</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div>
-                <p className="text-sm font-medium mb-1">OAuth Redirect URI</p>
-                <code className="text-xs bg-muted px-3 py-2 rounded block break-all">
-                  {window.location.origin}/auth/linkedin/callback
-                </code>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Add this URL in your LinkedIn Developer App settings under "Authorized redirect URLs"
-                </p>
-              </div>
-              <div>
-                <p className="text-sm font-medium mb-1">Required Permissions</p>
-                <div className="flex gap-2 flex-wrap">
-                  <Badge variant="outline">openid</Badge>
-                  <Badge variant="outline">profile</Badge>
-                  <Badge variant="outline">email</Badge>
-                  <Badge variant="outline">w_member_social</Badge>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
       </div>
     </DashboardLayout>
   );
