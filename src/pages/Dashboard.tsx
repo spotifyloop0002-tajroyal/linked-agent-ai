@@ -145,7 +145,7 @@ const DashboardPage = () => {
   };
 
   // Post now — directly call LinkedIn posting API
-  const [postingIds, setPostingIds] = useState<Set<string>>(new Set());
+  
   const handlePostNow = async (postId: string) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
