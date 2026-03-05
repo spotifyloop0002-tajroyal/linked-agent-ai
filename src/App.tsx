@@ -76,6 +76,9 @@ const PageLoader = () => (
 
 // Inner component that uses hooks
 const AppContent = () => {
+  // Track page views across all routes
+  const { usePageViewTracker } = await import("@/hooks/usePageViewTracker") as any;
+  usePageViewTracker();
 
   return (
     <>
