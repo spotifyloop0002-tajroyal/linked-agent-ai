@@ -43,8 +43,11 @@ export function useLinkedInAPI() {
     }
   }, []);
 
+  // Defer connection check to avoid blocking initial dashboard render
   useEffect(() => {
-    checkConnection();
+    // Small delay to let the dashboard render first, then check LinkedIn connection
+    const timer = setTimeout(() => checkConnection(), 1500);
+    return () => clearTimeout(timer);
   }, [checkConnection]);
 
   const getAuthUrl = useCallback(async (): Promise<string | null> => {

@@ -92,19 +92,9 @@ export const useUserProfile = () => {
       setIsLoading(true);
       setError(null);
 
-      // Try getUser first, fall back to getSession for resilience on refresh
-      let userId: string | undefined;
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        userId = user?.id;
-      } catch {
-        console.warn('fetchProfile: getUser failed, trying getSession');
-      }
-
-      if (!userId) {
-        const { data: { session } } = await supabase.auth.getSession();
-        userId = session?.user?.id;
-      }
+      // Use getSession first (cached, no network call), only fall back to getUser on failure
+      const { data: { session } } = await supabase.auth.getSession();
+      const userId = session?.user?.id;
 
       if (!userId) {
         setProfile(null);
@@ -129,24 +119,9 @@ export const useUserProfile = () => {
 
   const saveProfile = useCallback(async (profileData: ProfileData): Promise<boolean> => {
     try {
-      // Try getUser first, fall back to getSession if it fails
-      let userId: string | undefined;
-      let userEmail: string | undefined;
-      
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        userId = user?.id;
-        userEmail = user?.email;
-      } catch {
-        // getUser can fail with network issues; fall back to cached session
-        console.warn('getUser failed, falling back to getSession');
-      }
-      
-      if (!userId) {
-        const { data: { session } } = await supabase.auth.getSession();
-        userId = session?.user?.id;
-        userEmail = session?.user?.email;
-      }
+      const { data: { session } } = await supabase.auth.getSession();
+      const userId = session?.user?.id;
+      const userEmail = session?.user?.email;
       
       if (!userId) {
         toast({
@@ -157,11 +132,9 @@ export const useUserProfile = () => {
         return false;
       }
 
-      const user = { id: userId, email: userEmail };
-
       const dataToSave = {
-        user_id: user.id,
-        email: user.email,
+        user_id: userId,
+        email: userEmail,
         ...profileData,
         updated_at: new Date().toISOString(),
         last_active_at: new Date().toISOString(),
@@ -197,22 +170,22 @@ export const useUserProfile = () => {
 
   const updateLastActive = useCallback(async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) return;
 
       await supabase
         .from("user_profiles")
         .update({ last_active_at: new Date().toISOString() })
-        .eq("user_id", user.id);
+        .eq("user_id", session.user.id);
     } catch (err) {
-      console.error("Error updating last active:", err);
+      // Silent fail - non-critical
     }
   }, []);
 
   const incrementPostCount = useCallback(async (type: 'created' | 'scheduled' | 'published') => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user || !profile) return;
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user || !profile) return;
 
       const columnMap = {
         created: 'posts_created_count',
@@ -226,7 +199,7 @@ export const useUserProfile = () => {
       await supabase
         .from("user_profiles")
         .update({ [column]: currentValue + 1 })
-        .eq("user_id", user.id);
+        .eq("user_id", session.user.id);
 
       // Update local state
       setProfile({
@@ -255,10 +228,11 @@ export const useUserProfile = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Update last active on mount
+  // Update last active after a delay to not block initial render
   useEffect(() => {
     if (profile) {
-      updateLastActive();
+      const timer = setTimeout(() => updateLastActive(), 5000);
+      return () => clearTimeout(timer);
     }
   }, [profile?.id]);
 

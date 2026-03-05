@@ -8,9 +8,9 @@ import { startAnalyticsCron, stopAnalyticsCron } from "@/lib/analytics-cron";
 import { Loader2 } from "lucide-react";
 
 /**
- * DashboardGuard v4: Single auth + profile fetch.
- * useUserProfile already fetches the full profile on mount.
- * We reuse its data for the onboarding check instead of making a separate query.
+ * DashboardGuard v5: Optimized context stability.
+ * - Uses individual field deps instead of whole profileHook object
+ * - Defers non-critical operations
  */
 const DashboardGuard = () => {
   const [authChecked, setAuthChecked] = useState(false);
@@ -24,11 +24,8 @@ const DashboardGuard = () => {
   // Wait for profileHook to finish loading, then decide routing
   useEffect(() => {
     if (checkedRef.current) return;
-
-    // Profile hook is still loading — wait
     if (profileHook.isLoading) return;
 
-    // Profile hook has finished — check auth
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
@@ -49,8 +46,6 @@ const DashboardGuard = () => {
 
       let profile = profileHook.profile;
 
-      // If profile is null but user is authenticated, fetch directly
-      // This handles the race condition where session restores after initial profile fetch
       if (!profile) {
         console.log("⏳ Profile null after hook load, fetching directly...");
         const { data } = await supabase
@@ -118,9 +113,16 @@ const DashboardGuard = () => {
     return () => subscription.unsubscribe();
   }, [navigate, currentUserId, profileHook.fetchProfile]);
 
-  // Memoize context value to prevent unnecessary re-renders
+  // Memoize context value — use individual fields to prevent cascading re-renders
   const contextValue = useMemo(() => ({
-    ...profileHook,
+    profile: profileHook.profile,
+    isLoading: profileHook.isLoading,
+    error: profileHook.error,
+    fetchProfile: profileHook.fetchProfile,
+    saveProfile: profileHook.saveProfile,
+    completeOnboarding: profileHook.completeOnboarding,
+    updateLastActive: profileHook.updateLastActive,
+    incrementPostCount: profileHook.incrementPostCount,
     linkedin: {
       isConnected: linkedInHook.isConnected,
       isLoading: linkedInHook.isLoading,
@@ -133,7 +135,14 @@ const DashboardGuard = () => {
       postToLinkedIn: linkedInHook.postToLinkedIn,
     },
   }), [
-    profileHook,
+    profileHook.profile,
+    profileHook.isLoading,
+    profileHook.error,
+    profileHook.fetchProfile,
+    profileHook.saveProfile,
+    profileHook.completeOnboarding,
+    profileHook.updateLastActive,
+    profileHook.incrementPostCount,
     linkedInHook.isConnected,
     linkedInHook.isLoading,
     linkedInHook.linkedinId,
