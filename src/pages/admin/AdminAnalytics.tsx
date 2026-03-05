@@ -501,7 +501,6 @@ const AdminAnalytics = () => {
           </motion.div>
         </div>
       </div>
-      </div>
     </AdminLayout>
   );
 };
