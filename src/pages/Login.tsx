@@ -21,6 +21,15 @@ const Login = () => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
+        // Verify user still exists (handles deleted accounts with stale JWT)
+        const { error: userError } = await supabase.auth.getUser();
+        if (userError) {
+          console.warn("⚠️ Stale session for deleted account, signing out");
+          await supabase.auth.signOut();
+          setCheckingAuth(false);
+          return;
+        }
+
         const { data: profile } = await supabase
           .from('user_profiles_safe')
           .select('onboarding_completed')
