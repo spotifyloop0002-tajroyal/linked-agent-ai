@@ -16,7 +16,8 @@ export const usePageViewTracker = () => {
   const location = useLocation();
 
   useEffect(() => {
-    const track = async () => {
+    // Defer tracking to not block page navigation
+    const timer = setTimeout(async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
 
@@ -30,8 +31,8 @@ export const usePageViewTracker = () => {
       } catch {
         // Silently fail — tracking should never break the app
       }
-    };
+    }, 500);
 
-    track();
+    return () => clearTimeout(timer);
   }, [location.pathname]);
 };
