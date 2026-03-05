@@ -39,6 +39,7 @@ const AdminManagement = lazy(() => import("./pages/admin/AdminManagement"));
 const AdminAPIKeys = lazy(() => import("./pages/admin/AdminAPIKeys"));
 const AdminActivity = lazy(() => import("./pages/admin/AdminActivity"));
 const AdminSupportChat = lazy(() => import("./pages/admin/AdminSupportChat"));
+const AdminVisitors = lazy(() => import("./pages/admin/AdminVisitors"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
 const FeaturesPage = lazy(() => import("./pages/FeaturesPage"));
@@ -127,6 +128,7 @@ const AppContent = () => {
             <Route path="/admin/api-keys" element={<AdminRoute requireSuperAdmin><AdminAPIKeys /></AdminRoute>} />
             <Route path="/admin/activity" element={<AdminRoute><AdminActivity /></AdminRoute>} />
             <Route path="/admin/support" element={<AdminRoute><AdminSupportChat /></AdminRoute>} />
+            <Route path="/admin/visitors" element={<AdminRoute><AdminVisitors /></AdminRoute>} />
             {/* Public pages */}
             <Route path="/features" element={<FeaturesPage />} />
             <Route path="/how-it-works" element={<HowItWorks />} />

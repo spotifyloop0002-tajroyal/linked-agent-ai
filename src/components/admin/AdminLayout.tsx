@@ -18,6 +18,7 @@ import {
   Key,
   Activity,
   MessageCircle,
+  Globe,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -39,6 +40,7 @@ const adminNavItems = [
   { icon: LayoutDashboard, label: "Overview", path: "/admin" },
   { icon: Users, label: "Users", path: "/admin/users" },
   { icon: Activity, label: "Activity Feed", path: "/admin/activity" },
+  { icon: Globe, label: "Visitors", path: "/admin/visitors" },
   { icon: MessageCircle, label: "Support Chat", path: "/admin/support" },
   { icon: Bell, label: "Notifications", path: "/admin/notifications" },
   { icon: BarChart3, label: "Analytics", path: "/admin/analytics" },
