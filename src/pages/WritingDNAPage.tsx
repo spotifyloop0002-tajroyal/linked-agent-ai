@@ -622,7 +622,7 @@ const WritingDNAPage = () => {
                   />
                 </div>
               ))}
-              <div className="flex gap-3">
+              <div className="flex flex-wrap gap-3">
                 {samplePosts.length < 10 && (
                   <Button variant="outline" size="sm" onClick={addSample}>
                     <Plus className="w-4 h-4 mr-1" />
@@ -632,6 +632,19 @@ const WritingDNAPage = () => {
                 <div className="flex-1" />
                 <Button variant="ghost" onClick={() => setShowImport(false)}>
                   Cancel
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={handleSavePosts}
+                  disabled={isSavingPosts || samplePosts.filter((p) => p.trim().length > 10).length === 0}
+                  className="gap-2"
+                >
+                  {isSavingPosts ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Save className="w-4 h-4" />
+                  )}
+                  Save Posts
                 </Button>
                 <Button
                   onClick={handleAnalyze}
