@@ -19,7 +19,7 @@ export const PLAN_LIMITS = {
     smartScheduling: true,
   },
   business: { 
-    agents: -1, // unlimited 
+    agents: 7, 
     postsPerMonth: 60, 
     postsPerDay: 3,
     aiImageGeneration: true,
