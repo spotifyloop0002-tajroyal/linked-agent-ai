@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { toast } from "sonner";
+import LiveChatWidget from "@/components/support/LiveChatWidget";
 
 const faqs = [
   {
@@ -45,6 +46,7 @@ const SUPPORT_EMAIL = "contactlinkedbot@gmail.com";
 
 const HelpCenter = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [chatOpen, setChatOpen] = useState(false);
 
   const filteredFaqs = searchQuery.trim()
     ? faqs.filter(
@@ -121,15 +123,19 @@ const HelpCenter = () => {
                 </Button>
               </div>
             </div>
-            <div className="p-6 rounded-2xl bg-card border border-border text-center">
+            <div
+              className="p-6 rounded-2xl bg-card border border-border text-center cursor-pointer hover:border-primary/50 transition-colors"
+              onClick={() => setChatOpen(true)}
+            >
               <MessageCircle className="w-12 h-12 text-primary mx-auto mb-4" />
               <h3 className="text-xl font-semibold mb-2">Live Chat</h3>
-              <p className="text-muted-foreground">Chat with our support team in real-time during business hours.</p>
+              <p className="text-muted-foreground">Chat with our support team in real-time. Click to start a conversation.</p>
             </div>
           </div>
         </div>
       </main>
       <Footer />
+      <LiveChatWidget externalOpen={chatOpen} onExternalClose={() => setChatOpen(false)} />
     </div>
   );
 };
