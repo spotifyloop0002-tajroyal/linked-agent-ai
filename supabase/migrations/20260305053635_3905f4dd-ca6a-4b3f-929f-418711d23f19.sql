@@ -1,0 +1,1 @@
+UPDATE user_profiles SET linkedin_id = NULL, linkedin_access_token = NULL, linkedin_refresh_token = NULL, linkedin_token_expires_at = NULL, linkedin_verified = false, linkedin_verified_at = NULL WHERE user_id = '461fd541-4d4b-4382-991e-bb81c1c9b550';
