@@ -30,20 +30,32 @@ const DashboardGuard = () => {
 
     // Profile hook has finished — check auth
     const checkAuth = async () => {
-      checkedRef.current = true;
-
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
+        checkedRef.current = true;
         navigate("/login", { replace: true });
         return;
       }
 
-      const profile = profileHook.profile;
+      let profile = profileHook.profile;
+
+      // If profile is null but user is authenticated, fetch directly
+      // This handles the race condition where session restores after initial profile fetch
+      if (!profile) {
+        console.log("⏳ Profile null after hook load, fetching directly...");
+        const { data } = await supabase
+          .from("user_profiles_safe")
+          .select("*")
+          .eq("user_id", session.user.id)
+          .maybeSingle();
+        profile = data as any;
+      }
 
       const isOnboarded = profile?.onboarding_completed ||
         (profile && (profile.name || profile.user_type));
 
       if (!profile || !isOnboarded) {
+        checkedRef.current = true;
         navigate("/onboarding", { replace: true });
         return;
       }
@@ -57,6 +69,7 @@ const DashboardGuard = () => {
           .then(() => console.log("✅ Backfilled onboarding_completed for old user"));
       }
 
+      checkedRef.current = true;
       setCurrentUserId(session.user.id);
       setAuthorized(true);
       setAuthChecked(true);
