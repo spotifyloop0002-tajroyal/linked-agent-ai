@@ -48,10 +48,14 @@ const AdminAnalytics = () => {
     totalViews: 0,
     totalLikes: 0,
     totalComments: 0,
+    totalPageViews: 0,
+    uniqueVisitors: 0,
+    todayPageViews: 0,
   });
   const [planDistribution, setPlanDistribution] = useState<any[]>([]);
   const [dailySignups, setDailySignups] = useState<any[]>([]);
   const [postsByStatus, setPostsByStatus] = useState<any[]>([]);
+  const [dailyPageViews, setDailyPageViews] = useState<any[]>([]);
 
   useEffect(() => {
     const checkAdminAccess = async () => {
