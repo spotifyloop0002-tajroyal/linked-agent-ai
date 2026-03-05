@@ -1,4 +1,5 @@
 import { lazy, Suspense } from "react";
+import { usePageViewTracker } from "@/hooks/usePageViewTracker";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -76,6 +77,8 @@ const PageLoader = () => (
 
 // Inner component that uses hooks
 const AppContent = () => {
+  // Track page views across all routes
+  usePageViewTracker();
 
   return (
     <>

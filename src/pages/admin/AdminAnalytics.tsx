@@ -17,6 +17,8 @@ import {
   Eye,
   ThumbsUp,
   MessageSquare,
+  Globe,
+  MousePointerClick,
 } from "lucide-react";
 import {
   BarChart,
@@ -48,10 +50,14 @@ const AdminAnalytics = () => {
     totalViews: 0,
     totalLikes: 0,
     totalComments: 0,
+    totalPageViews: 0,
+    uniqueVisitors: 0,
+    todayPageViews: 0,
   });
   const [planDistribution, setPlanDistribution] = useState<any[]>([]);
   const [dailySignups, setDailySignups] = useState<any[]>([]);
   const [postsByStatus, setPostsByStatus] = useState<any[]>([]);
+  const [dailyPageViews, setDailyPageViews] = useState<any[]>([]);
 
   useEffect(() => {
     const checkAdminAccess = async () => {
@@ -89,21 +95,28 @@ const AdminAnalytics = () => {
   const fetchAnalytics = async () => {
     try {
       // Fetch all data in parallel
-      const [usersRes, agentsRes, postsRes, analyticsRes] = await Promise.all([
+      const [usersRes, agentsRes, postsRes, analyticsRes, pageViewsRes] = await Promise.all([
         supabase.rpc('get_admin_users_data'),
         supabase.from('agents').select('*', { count: 'exact' }),
         supabase.from('posts').select('*'),
         supabase.from('post_analytics').select('views, likes, comments, shares'),
+        supabase.from('page_views' as any).select('*'),
       ]);
 
       const users = usersRes.data || [];
       const posts = postsRes.data || [];
       const analytics = analyticsRes.data || [];
+      const pageViews = (pageViewsRes.data || []) as any[];
 
       // Calculate stats
-      const totalViews = analytics.reduce((sum, a) => sum + (a.views || 0), 0);
-      const totalLikes = analytics.reduce((sum, a) => sum + (a.likes || 0), 0);
-      const totalComments = analytics.reduce((sum, a) => sum + (a.comments || 0), 0);
+      const totalViews = analytics.reduce((sum: number, a: any) => sum + (a.views || 0), 0);
+      const totalLikes = analytics.reduce((sum: number, a: any) => sum + (a.likes || 0), 0);
+      const totalComments = analytics.reduce((sum: number, a: any) => sum + (a.comments || 0), 0);
+
+      // Page view stats
+      const uniqueVisitorIds = new Set(pageViews.map((pv: any) => pv.visitor_id));
+      const today = format(new Date(), 'yyyy-MM-dd');
+      const todayViews = pageViews.filter((pv: any) => pv.created_at?.startsWith(today));
 
       setStats({
         totalUsers: users.length,
@@ -113,7 +126,25 @@ const AdminAnalytics = () => {
         totalViews,
         totalLikes,
         totalComments,
+        totalPageViews: pageViews.length,
+        uniqueVisitors: uniqueVisitorIds.size,
+        todayPageViews: todayViews.length,
       });
+
+      // Daily page views (last 7 days)
+      const pvByDay: Record<string, number> = {};
+      for (let i = 6; i >= 0; i--) {
+        pvByDay[format(subDays(new Date(), i), 'MMM d')] = 0;
+      }
+      pageViews.forEach((pv: any) => {
+        if (pv.created_at) {
+          const d = format(new Date(pv.created_at), 'MMM d');
+          if (pvByDay[d] !== undefined) pvByDay[d]++;
+        }
+      });
+      setDailyPageViews(
+        Object.entries(pvByDay).map(([date, count]) => ({ date, count }))
+      );
 
       // Plan distribution
       const planCounts: Record<string, number> = {};
@@ -299,6 +330,48 @@ const AdminAnalytics = () => {
           </Card>
         </motion.div>
 
+        {/* Website Traffic Stats */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.17 }}
+          className="grid grid-cols-3 gap-4"
+        >
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-3">
+                <Globe className="w-6 h-6 text-primary" />
+                <div>
+                  <p className="text-xl font-bold">{stats.totalPageViews.toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground">Total Page Views</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-3">
+                <Users className="w-6 h-6 text-primary" />
+                <div>
+                  <p className="text-xl font-bold">{stats.uniqueVisitors.toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground">Unique Visitors</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-3">
+                <MousePointerClick className="w-6 h-6 text-primary" />
+                <div>
+                  <p className="text-xl font-bold">{stats.todayPageViews.toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground">Today's Views</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
         {/* Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Daily Signups */}
@@ -391,6 +464,36 @@ const AdminAnalytics = () => {
                       <Tooltip />
                       <Bar dataKey="value" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
                     </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* Daily Page Views */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.35 }}
+            className="lg:col-span-2"
+          >
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Globe className="w-5 h-5" />
+                  Website Traffic (Last 7 Days)
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[250px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={dailyPageViews}>
+                      <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                      <XAxis dataKey="date" className="text-xs" />
+                      <YAxis className="text-xs" />
+                      <Tooltip />
+                      <Line type="monotone" dataKey="count" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ r: 4 }} />
+                    </LineChart>
                   </ResponsiveContainer>
                 </div>
               </CardContent>
