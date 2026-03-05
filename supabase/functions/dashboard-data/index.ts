@@ -65,7 +65,7 @@ serve(async (req) => {
       // 4. Scheduled/recent posts for the dashboard table
       supabase
         .from('posts')
-        .select('id, content, scheduled_time, status, posted_at, linkedin_post_url, verified, tracking_id, views_count, likes_count, comments_count, shares_count, last_synced_at, agent_name, campaign_id')
+        .select('id, content, scheduled_time, status, posted_at, linkedin_post_url, verified, tracking_id, photo_url, views_count, likes_count, comments_count, shares_count, last_synced_at, agent_name, campaign_id')
         .eq('user_id', userId)
         .in('status', ['pending', 'posting', 'posted', 'failed'])
         .order('scheduled_time', { ascending: true })

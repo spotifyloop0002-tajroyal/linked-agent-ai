@@ -311,8 +311,48 @@ const AgentChatPage = () => {
         
         setGeneratedPosts(prev => [finalPost, ...prev.filter(p => p.id !== finalPost.id)]);
         
-        addActivityEntry("scheduled", `Scheduled for ${format(scheduledTime, 'MMM d, h:mm a')}`, savedPost.id);
-        toast.success(`✅ Post scheduled for ${format(scheduledTime, 'MMM d, h:mm a')}. View it in Dashboard or Calendar.`);
+        // Check if posting "right now" (within 2 minutes) — call LinkedIn API directly
+        const timeDiff = scheduledTime.getTime() - Date.now();
+        if (timeDiff < 2 * 60 * 1000) {
+          // Post immediately via LinkedIn API
+          addActivityEntry("scheduled", `Publishing now...`, savedPost.id);
+          toast.info('📤 Publishing to LinkedIn...');
+          
+          try {
+            const { data: { user } } = await supabase.auth.getUser();
+            const { data, error } = await supabase.functions.invoke('linkedin-post', {
+              body: {
+                postId: savedPost.dbId || savedPost.id,
+                content: savedPost.content,
+                imageUrl: finalImageUrl || undefined,
+                userId: user?.id,
+              },
+            });
+            
+            if (error || data?.error) {
+              const errMsg = error?.message || data?.error || 'Unknown error';
+              toast.error(`Failed to post: ${errMsg}`);
+              addActivityEntry("failed", errMsg, savedPost.id);
+            } else {
+              toast.success('✅ Published to LinkedIn!', {
+                description: data?.postUrl ? 'Click to view' : undefined,
+                action: data?.postUrl ? {
+                  label: 'View Post',
+                  onClick: () => window.open(data.postUrl, '_blank'),
+                } : undefined,
+              });
+              addActivityEntry("published", `Published to LinkedIn`, savedPost.id);
+              updatePost(savedPost.id, { status: 'posted' as PostStatus });
+            }
+          } catch (postErr) {
+            console.error('LinkedIn post error:', postErr);
+            toast.error('Failed to publish to LinkedIn');
+            addActivityEntry("failed", `Post error`, savedPost.id);
+          }
+        } else {
+          addActivityEntry("scheduled", `Scheduled for ${format(scheduledTime, 'MMM d, h:mm a')}`, savedPost.id);
+          toast.success(`✅ Post scheduled for ${format(scheduledTime, 'MMM d, h:mm a')}. View it in Dashboard or Calendar.`);
+        }
       }
     }
   };

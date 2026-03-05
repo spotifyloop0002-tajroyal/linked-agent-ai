@@ -106,6 +106,7 @@ const DashboardPage = () => {
   
   const [selectedPost, setSelectedPost] = useState<DashboardScheduledPost | null>(null);
   const [showPostModal, setShowPostModal] = useState(false);
+  const [postingIds, setPostingIds] = useState<Set<string>>(new Set());
 
   // Delete post handler — always scope to current user
   const handleDeletePost = async (postId: string) => {
@@ -143,21 +144,63 @@ const DashboardPage = () => {
     }
   };
 
-  // Post now — schedule immediately, scoped to current user
+  // Post now — directly call LinkedIn posting API
+  
   const handlePostNow = async (postId: string) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      const { error } = await supabase.from('posts').update({
-        status: 'pending', retry_count: 0, last_error: null,
-        scheduled_time: new Date().toISOString(),
-      }).eq('id', postId).eq('user_id', user.id);
-      if (error) throw error;
-      toast.success('Post will be published within the next minute!');
+
+      // Get the post content
+      const post = scheduledPosts.find(p => p.id === postId);
+      if (!post) {
+        toast.error('Post not found');
+        return;
+      }
+
+      setPostingIds(prev => new Set(prev).add(postId));
+      toast.info('📤 Publishing to LinkedIn...');
+
+      // Call the linkedin-post edge function directly
+      const { data, error } = await supabase.functions.invoke('linkedin-post', {
+        body: {
+          postId: postId,
+          content: post.content,
+          imageUrl: post.photo_url || undefined,
+          userId: user.id,
+        },
+      });
+
+      if (error) {
+        console.error('LinkedIn post error:', error);
+        toast.error(`Failed to post: ${error.message}`);
+      } else if (data?.error) {
+        console.error('LinkedIn post error:', data.error);
+        toast.error(`Failed to post: ${data.error}`);
+      } else {
+        toast.success('✅ Post published to LinkedIn!', {
+          description: data?.postUrl ? 'Click to view on LinkedIn' : undefined,
+          action: data?.postUrl ? {
+            label: 'View Post',
+            onClick: () => window.open(data.postUrl, '_blank'),
+          } : undefined,
+        });
+      }
+
       refetchData();
+      setPostingIds(prev => {
+        const next = new Set(prev);
+        next.delete(postId);
+        return next;
+      });
     } catch (err) {
       console.error('Failed to trigger post:', err);
       toast.error('Failed to trigger post');
+      setPostingIds(prev => {
+        const next = new Set(prev);
+        next.delete(postId);
+        return next;
+      });
     }
   };
 

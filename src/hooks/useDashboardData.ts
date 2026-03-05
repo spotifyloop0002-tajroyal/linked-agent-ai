@@ -51,6 +51,7 @@ export interface DashboardScheduledPost {
   linkedin_post_url?: string;
   verified?: boolean;
   tracking_id?: string;
+  photo_url?: string | null;
   views_count?: number;
   likes_count?: number;
   comments_count?: number;
