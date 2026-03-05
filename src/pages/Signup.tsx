@@ -112,13 +112,16 @@ const Signup = () => {
         body: { email: email.trim(), otp: otp.trim() },
       });
 
-      if (error) throw error;
+      // Check for error in response data first (edge function returns error in body)
       if (data?.error) throw new Error(data.error);
+      if (error) throw error;
 
       toast({ title: "Email Verified!", description: "Now create your password" });
       setStep("password");
     } catch (err: any) {
-      toast({ title: "Verification failed", description: err.message || "Invalid or expired OTP", variant: "destructive" });
+      const msg = err.message || "Invalid or expired OTP";
+      const description = msg.includes("non-2xx") ? "Invalid or expired OTP. Please request a new code." : msg;
+      toast({ title: "Verification failed", description, variant: "destructive" });
     } finally {
       setIsLoading(false);
     }
