@@ -11,8 +11,9 @@ const Footer = lazy(() => import("@/components/landing/Footer"));
 
 const Landing = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const navigate = useNavigate();
 
-  // Single auth check shared across Navbar + Hero
+  // Single auth check — redirect logged-in users to dashboard
   useEffect(() => {
     const checkSession = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -20,15 +21,21 @@ const Landing = () => {
         await supabase.auth.signOut();
       }
       setIsLoggedIn(!!user);
+      if (user) {
+        navigate("/dashboard", { replace: true });
+      }
     };
     checkSession();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setIsLoggedIn(!!session);
+      if (session) {
+        navigate("/dashboard", { replace: true });
+      }
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [navigate]);
 
   return (
     <div className="min-h-screen bg-background">
