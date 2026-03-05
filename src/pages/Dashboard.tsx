@@ -106,6 +106,7 @@ const DashboardPage = () => {
   
   const [selectedPost, setSelectedPost] = useState<DashboardScheduledPost | null>(null);
   const [showPostModal, setShowPostModal] = useState(false);
+  const [postingIds, setPostingIds] = useState<Set<string>>(new Set());
 
   // Delete post handler — always scope to current user
   const handleDeletePost = async (postId: string) => {
