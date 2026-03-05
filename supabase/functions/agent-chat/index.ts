@@ -507,10 +507,13 @@ WHEN USER ASKS "where can I see my scheduled posts?":
    ✗ NO italic (*text*)
    ✗ Just plain text with line breaks
 
-4. REQUIRED STRUCTURE:
-   ✓ START: Hook (question, bold statement, or mini-story)
-   ✓ MIDDLE: Short paragraphs (2-3 lines max)
-   ✓ END: Insight (NOT "What do you think?")
+4. REQUIRED STRUCTURE FOR LINKEDIN POSTS:
+   ✓ START: Hook line (question, bold statement, or mini-story) — THEN a blank line
+   ✓ MIDDLE: Short paragraphs (2-3 lines max) separated by BLANK LINES
+   ✓ END: Insight or call-to-action (NOT "What do you think?")
+   ✓ CRITICAL: Use DOUBLE line breaks (\\n\\n) between paragraphs. LinkedIn collapses single line breaks.
+   ✓ Each thought should be its own paragraph with a blank line before and after
+   ✓ Short punchy lines work best on LinkedIn — one idea per paragraph
 
 5. SENTENCE STYLE:
    ✓ Mix short and long sentences
