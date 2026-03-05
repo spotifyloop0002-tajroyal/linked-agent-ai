@@ -34,7 +34,6 @@ serve(async (req) => {
       });
     }
 
-    // Accept base64-encoded file data + file type
     const { fileData, fileType, fileName } = await req.json();
 
     if (!fileData || !fileType) {
@@ -47,40 +46,46 @@ serve(async (req) => {
     const GOOGLE_GEMINI_API_KEY = Deno.env.get("GOOGLE_GEMINI_API_KEY");
     if (!GOOGLE_GEMINI_API_KEY) throw new Error("GOOGLE_GEMINI_API_KEY not configured");
 
-    let prompt: string;
     const messages: any[] = [];
 
-    if (fileType.startsWith("image/")) {
-      // For images, use vision capability
+    const systemPrompt = "You are a document extraction expert. Extract ALL text and meaningful content from this document. If it contains LinkedIn posts, extract each post's content. If it's a company document, extract key information like company name, products, services, values, target audience, and any relevant details.";
+
+    if (fileType === "text/plain") {
+      // For plain text, decode and send as text
+      const textContent = atob(fileData);
       messages.push({
         role: "system",
-        content: "You are a document extraction expert. Extract ALL text and meaningful content from this image. If it's a screenshot of LinkedIn posts, extract each post's content. If it's a company document, extract key information like company name, products, services, values, target audience, and any relevant details.",
+        content: systemPrompt,
+      });
+      messages.push({
+        role: "user",
+        content: `Extract and organize the key information from this document (${fileName || "document"}):\n\n${textContent.substring(0, 50000)}`,
+      });
+    } else {
+      // For images AND PDFs, send as inline data via multimodal
+      // Gemini supports PDF and images natively as base64 inline_data
+      const mimeType = fileType === "application/pdf" ? "application/pdf" : fileType;
+      
+      messages.push({
+        role: "system",
+        content: systemPrompt,
       });
       messages.push({
         role: "user",
         content: [
           {
             type: "text",
-            text: `Extract all text and meaningful content from this ${fileName || "image"}. Return it as structured text organized by sections.`,
+            text: `Extract all text and meaningful content from this ${fileName || "document"}. Return it as structured text organized by sections.`,
           },
           {
             type: "image_url",
-            image_url: { url: `data:${fileType};base64,${fileData}` },
+            image_url: { url: `data:${mimeType};base64,${fileData}` },
           },
         ],
       });
-    } else {
-      // For PDFs/text, decode and send as text
-      const textContent = atob(fileData);
-      messages.push({
-        role: "system",
-        content: "You are a document extraction expert. Extract and organize the key information from this document. Focus on: company details, products/services, brand voice, target audience, key messages, and any content that would help create LinkedIn posts.",
-      });
-      messages.push({
-        role: "user",
-        content: `Extract and organize the key information from this document (${fileName || "document"}):\n\n${textContent.substring(0, 50000)}`,
-      });
     }
+
+    console.log(`📄 Extracting document: ${fileName}, type: ${fileType}, size: ${fileData.length} chars`);
 
     const aiResponse = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
       method: "POST",
@@ -129,15 +134,11 @@ serve(async (req) => {
     });
 
     if (!aiResponse.ok) {
+      const errBody = await aiResponse.text();
+      console.error("AI API error:", aiResponse.status, errBody);
       if (aiResponse.status === 429) {
         return new Response(JSON.stringify({ error: "Rate limited. Try again later." }), {
           status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (aiResponse.status === 402) {
-        return new Response(JSON.stringify({ error: "AI credits exhausted. Please add funds." }), {
-          status: 402,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
@@ -148,10 +149,13 @@ serve(async (req) => {
     const toolCall = aiData.choices?.[0]?.message?.tool_calls?.[0];
 
     if (!toolCall?.function?.arguments) {
+      console.error("AI response:", JSON.stringify(aiData));
       throw new Error("AI did not return extracted content");
     }
 
     const extracted = JSON.parse(toolCall.function.arguments);
+
+    console.log(`✅ Extracted: "${extracted.title}", type: ${extracted.type}, content length: ${extracted.content?.length}`);
 
     // Save as reference material
     const { error: insertErr } = await supabase.from("agent_reference_materials").insert({
