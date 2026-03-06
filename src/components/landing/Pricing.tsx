@@ -30,8 +30,8 @@ const plans = [
     icon: Crown,
     priceMonthly: "$12",
     priceMonthlyINR: "₹999",
-    priceYearly: "$120",
-    priceYearlyINR: "₹9,999",
+    priceYearly: "$144",
+    priceYearlyINR: "₹11,988",
     period: "per month",
     description: "For professionals serious about LinkedIn growth",
     features: [
@@ -52,8 +52,8 @@ const plans = [
     icon: Rocket,
     priceMonthly: "$22",
     priceMonthlyINR: "₹1,999",
-    priceYearly: "$220",
-    priceYearlyINR: "₹19,999",
+    priceYearly: "$264",
+    priceYearlyINR: "₹23,988",
     period: "per month",
     description: "For teams and agencies managing multiple brands",
     features: [
@@ -139,11 +139,6 @@ const Pricing = forwardRef<HTMLElement>((_, ref) => {
             <span className={`text-sm font-medium ${isYearly ? "text-foreground" : "text-muted-foreground"}`}>
               Yearly
             </span>
-            {isYearly && (
-              <Badge className="bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200 text-xs">
-                Save ~17%
-              </Badge>
-            )}
           </div>
         </div>
 
