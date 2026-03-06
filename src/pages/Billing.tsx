@@ -362,29 +362,42 @@ const BillingPage = () => {
                       </div>
 
                       <ul className="space-y-2 text-sm mb-6">
-                        <li className="flex items-center gap-2">
-                          <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
-                          {limits.agents === -1 ? "Unlimited" : limits.agents} Agent{limits.agents !== 1 ? "s" : ""}
-                        </li>
-                        <li className="flex items-center gap-2">
-                          <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
-                          {limits.postsPerMonth} posts/month
-                        </li>
-                        <li className="flex items-center gap-2">
-                          <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
-                          {limits.postsPerDay} posts/day
-                        </li>
-                        {limits.aiImageGeneration && (
-                          <li className="flex items-center gap-2">
-                            <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
-                            AI Image Generation
-                          </li>
-                        )}
-                        {limits.smartScheduling && (
-                          <li className="flex items-center gap-2">
-                            <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
-                            Smart Scheduling
-                          </li>
+                        {plan === "custom" ? (
+                          <>
+                            {["Unlimited Agents", "Unlimited posts", "Dedicated account manager", "Custom AI training", "API access", "White-label options", "SLA & priority support"].map((feature) => (
+                              <li key={feature} className="flex items-center gap-2">
+                                <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+                                {feature}
+                              </li>
+                            ))}
+                          </>
+                        ) : (
+                          <>
+                            <li className="flex items-center gap-2">
+                              <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+                              {limits.agents === -1 ? "Unlimited" : limits.agents} Agent{limits.agents !== 1 ? "s" : ""}
+                            </li>
+                            <li className="flex items-center gap-2">
+                              <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+                              {limits.postsPerMonth} posts/month
+                            </li>
+                            <li className="flex items-center gap-2">
+                              <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+                              {limits.postsPerDay} posts/day
+                            </li>
+                            {limits.aiImageGeneration && (
+                              <li className="flex items-center gap-2">
+                                <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+                                AI Image Generation
+                              </li>
+                            )}
+                            {limits.smartScheduling && (
+                              <li className="flex items-center gap-2">
+                                <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+                                Smart Scheduling
+                              </li>
+                            )}
+                          </>
                         )}
                       </ul>
 
