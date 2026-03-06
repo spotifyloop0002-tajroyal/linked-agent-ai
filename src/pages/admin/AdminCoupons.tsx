@@ -479,6 +479,11 @@ const AdminCouponsPage = () => {
                           {formData.plan}
                         </Badge>
                       )}
+                      {formData.billing_period !== "any" && (
+                        <Badge variant="secondary" className="capitalize">
+                          {formData.billing_period}
+                        </Badge>
+                      )}
                     </div>
                   </div>
                 )}
