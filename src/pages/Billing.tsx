@@ -389,6 +389,17 @@ const BillingPage = () => {
                         <Badge variant="outline" className="w-full justify-center py-2">
                           Current Plan
                         </Badge>
+                      ) : plan === "custom" ? (
+                        <Button 
+                          className="w-full"
+                          variant="outline"
+                          asChild
+                        >
+                          <a href="mailto:contactlinkedbot@gmail.com?subject=Custom Plan Inquiry">
+                            <Mail className="w-4 h-4 mr-2" />
+                            Contact Us
+                          </a>
+                        </Button>
                       ) : plan !== "free" ? (
                         <Button 
                           className="w-full"
@@ -404,7 +415,7 @@ const BillingPage = () => {
                           ) : pricing?.final === 0 ? (
                             "Activate Free"
                           ) : (
-                            `Pay ₹${pricing?.final || (billingPeriod === "yearly" ? PLAN_PRICING[plan].inrYearly : PLAN_PRICING[plan].inr)} →`
+                            `Pay ₹${pricing?.final || (billingPeriod === "yearly" ? PLAN_PRICING[plan as "pro" | "business"].inrYearly : PLAN_PRICING[plan as "pro" | "business"].inr)} →`
                           )}
                         </Button>
                       ) : null}
