@@ -105,6 +105,7 @@ const AdminCouponsPage = () => {
     type: "percentage" as string,
     value: 0,
     plan: "any",
+    billing_period: "any" as string,
     duration_days: 30,
     max_uses: "",
     valid_until: "",
@@ -138,6 +139,7 @@ const AdminCouponsPage = () => {
       type: "percentage",
       value: 0,
       plan: "any",
+      billing_period: "any",
       duration_days: 30,
       max_uses: "",
       valid_until: "",
@@ -148,11 +150,22 @@ const AdminCouponsPage = () => {
   const handleOpenDialog = (coupon?: Coupon) => {
     if (coupon) {
       setEditingCoupon(coupon);
+      // Derive billing_period from plan field (e.g. "pro_yearly" -> plan="pro", billing_period="yearly")
+      let plan = coupon.plan || "any";
+      let billing_period = "any";
+      if (plan?.endsWith("_yearly")) {
+        billing_period = "yearly";
+        plan = plan.replace("_yearly", "");
+      } else if (plan?.endsWith("_monthly")) {
+        billing_period = "monthly";
+        plan = plan.replace("_monthly", "");
+      }
       setFormData({
         code: coupon.code,
         type: coupon.type,
         value: coupon.value,
-        plan: coupon.plan || "any",
+        plan,
+        billing_period,
         duration_days: coupon.duration_days,
         max_uses: coupon.max_uses?.toString() || "",
         valid_until: coupon.valid_until ? coupon.valid_until.split("T")[0] : "",
@@ -190,11 +203,24 @@ const AdminCouponsPage = () => {
 
     setIsSaving(true);
     try {
+      // Combine plan + billing_period into a single plan field for storage
+      let planValue: string | null = null;
+      if (formData.plan !== "any") {
+        if (formData.billing_period !== "any") {
+          planValue = `${formData.plan}_${formData.billing_period}`;
+        } else {
+          planValue = formData.plan;
+        }
+      } else if (formData.billing_period !== "any") {
+        // Any plan but specific billing period (e.g. "yearly" applies to all yearly plans)
+        planValue = `_${formData.billing_period}`;
+      }
+
       const couponData = {
         code: formData.code.toUpperCase(),
         type: formData.type,
         value: formData.value,
-        plan: formData.plan === "any" ? null : formData.plan,
+        plan: planValue,
         duration_days: formData.duration_days,
         max_uses: formData.max_uses ? parseInt(formData.max_uses) : null,
         valid_until: formData.valid_until || null,
@@ -368,21 +394,40 @@ const AdminCouponsPage = () => {
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label>Applicable Plan</Label>
-                  <Select
-                    value={formData.plan}
-                    onValueChange={(val) => setFormData({ ...formData, plan: val })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="any">All Plans</SelectItem>
-                      <SelectItem value="pro">Pro Only (₹999)</SelectItem>
-                      <SelectItem value="business">Business Only (₹1999)</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Applicable Plan</Label>
+                    <Select
+                      value={formData.plan}
+                      onValueChange={(val) => setFormData({ ...formData, plan: val })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="any">All Plans</SelectItem>
+                        <SelectItem value="pro">Pro Only</SelectItem>
+                        <SelectItem value="business">Business Only</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Billing Period</Label>
+                    <Select
+                      value={formData.billing_period}
+                      onValueChange={(val) => setFormData({ ...formData, billing_period: val })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="any">All Periods</SelectItem>
+                        <SelectItem value="monthly">Monthly Only</SelectItem>
+                        <SelectItem value="yearly">Yearly Only</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -432,6 +477,11 @@ const AdminCouponsPage = () => {
                       {formData.plan !== "any" && (
                         <Badge variant="secondary" className="capitalize">
                           {formData.plan}
+                        </Badge>
+                      )}
+                      {formData.billing_period !== "any" && (
+                        <Badge variant="secondary" className="capitalize">
+                          {formData.billing_period}
                         </Badge>
                       )}
                     </div>
