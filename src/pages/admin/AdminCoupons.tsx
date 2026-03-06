@@ -105,6 +105,7 @@ const AdminCouponsPage = () => {
     type: "percentage" as string,
     value: 0,
     plan: "any",
+    billing_period: "any" as string,
     duration_days: 30,
     max_uses: "",
     valid_until: "",
