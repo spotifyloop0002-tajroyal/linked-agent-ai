@@ -64,10 +64,10 @@ serve(async (req) => {
 
     // Filter: skip campaign posts that would exceed daily limit
     // Also skip posts scheduled more than 24 hours in the past (stale)
-    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
     const filteredPosts = duePosts.filter(post => {
       // Skip stale posts (>24h overdue)
-      if (post.scheduled_time < oneDayAgo) {
+      if (post.scheduled_time < sevenDaysAgo) {
         console.log(`⏭️ Skipping stale post ${post.id} (scheduled ${post.scheduled_time})`);
         return false;
       }
