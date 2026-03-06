@@ -28,9 +28,9 @@ const CONTENT_LENGTH_RULES: Record<string, string> = {
 
 const EMOJI_RULES: Record<string, string> = {
   none: "Do NOT use any emojis at all.",
-  low: "Use 1-2 emojis per post, sparingly and strategically.",
-  moderate: "Use 3-5 emojis per post to add visual interest.",
-  high: "Use emojis liberally throughout the post for engagement and visual appeal.",
+  low: "Use 3-4 emojis per post. Place them at the start of key paragraphs to make the post scannable.",
+  moderate: "Use 5-7 emojis per post. Start key paragraphs with emojis to add visual energy and make the post engaging.",
+  high: "Use 8-12+ emojis liberally throughout the post. Almost every paragraph should have 1-2 emojis. Make it visually rich and expressive.",
 };
 
 // ============================================
@@ -197,14 +197,15 @@ serve(async (req) => {
     const contentLengthRule = CONTENT_LENGTH_RULES[campaign.content_length || "medium"] || CONTENT_LENGTH_RULES.medium;
     const emojiRule = EMOJI_RULES[campaign.emoji_level || "moderate"] || EMOJI_RULES.moderate;
 
-    // Hashtag rules
+    // Hashtag rules — #LinkedBot is ALWAYS appended
     let hashtagRule = "";
     if (campaign.hashtag_mode === "none") {
-      hashtagRule = "Do NOT include any hashtags.";
+      hashtagRule = "Add ONLY #LinkedBot as the last line of the post. No other hashtags.";
     } else if (campaign.hashtag_mode === "manual" && campaign.fixed_hashtags?.length > 0) {
-      hashtagRule = `Always include these hashtags at the end: ${campaign.fixed_hashtags.map((h: string) => h.startsWith("#") ? h : `#${h}`).join(" ")}`;
+      const userHashtags = campaign.fixed_hashtags.map((h: string) => h.startsWith("#") ? h : `#${h}`).join(" ");
+      hashtagRule = `Always include these hashtags at the end: ${userHashtags} #LinkedBot (LinkedBot must always be the last hashtag)`;
     } else {
-      hashtagRule = "Add 3-5 relevant hashtags at the end of each post.";
+      hashtagRule = "Add 3-5 relevant hashtags at the end of each post. ALWAYS include #LinkedBot as the very last hashtag.";
     }
 
     // Footer
@@ -240,6 +241,31 @@ CONTENT RULES:
 7. Make each post a standalone piece that can be read independently
 8. Number each post clearly as "Post 1:", "Post 2:", etc.
 ${footerRule}
+
+FORMATTING RULES — SUPER IMPORTANT:
+- Use DOUBLE line breaks (\\n\\n) between EVERY paragraph. LinkedIn collapses single line breaks.
+- Each thought gets its OWN paragraph with a blank line before and after
+- Start key paragraphs with relevant emojis to make the post scannable
+- Keep paragraphs SHORT (1-3 lines max)
+- The post should be AIRY and EASY TO READ with lots of white space
+- ALWAYS end every post with #LinkedBot as the very last hashtag on its own line
+
+EXAMPLE OF GOOD FORMATTING:
+"Did you know LinkedIn drives 75-85% of ALL B2B leads? 🤯
+
+That's a massive stat!
+
+But here's the kicker: just "being" on LinkedIn isn't enough. 📈
+
+You need consistent, valuable content to capture those leads.
+
+This is where it gets interesting... ✨
+
+Think less "generic AI post" and more "you, but on your best day, consistently."
+
+Stop leaving leads on the table! 🚀
+
+#B2BLeads #LinkedInGrowth #LinkedBot"
 
 HUMANIZATION RULES:
 - Use contractions: "I'm" not "I am", "don't" not "do not"

@@ -352,12 +352,12 @@ ${agentSettings?.tone ? `🎯 TONE (MANDATORY): Write ONLY in a "${agentSettings
 
 ${agentSettings?.emojiLevel !== undefined ? `🎯 EMOJI RULE (MANDATORY): ${
   agentSettings.emojiLevel === 0 ? '❌ ZERO EMOJIS. Do NOT include ANY emoji characters anywhere in the post. Not even one. This is non-negotiable.' :
-  agentSettings.emojiLevel === 1 ? 'Use EXACTLY 1-2 emojis in the ENTIRE post. No more. Place them strategically.' :
-  agentSettings.emojiLevel === 2 ? 'Use 3-5 emojis spread naturally through the post.' :
-  'Use emojis generously (6-10+) throughout the post to make it expressive.'
-}` : ''}
+  agentSettings.emojiLevel === 1 ? 'Use 3-4 emojis spread naturally through the post. Place them at the start of key paragraphs or to emphasize points.' :
+  agentSettings.emojiLevel === 2 ? 'Use 5-7 emojis generously through the post. Start paragraphs with emojis, use them to highlight key points and add energy.' :
+  'Use emojis heavily (8-12+) throughout the post. Almost every paragraph should have 1-2 emojis. Make it visually rich and expressive.'
+}` : 'Use 4-6 emojis naturally throughout the post by default. Start key paragraphs with relevant emojis. Make the post visually engaging.'}
 
-🎯 HASHTAG RULE (MANDATORY): Do NOT add hashtags (#) to posts unless the user explicitly asks for them. LinkedIn posts perform better without forced hashtags.
+🎯 HASHTAG RULE (MANDATORY): Always add #LinkedBot as the LAST hashtag in every post. This is mandatory and non-negotiable. If user asks for hashtags, add their requested hashtags AND #LinkedBot at the end. If user asks for no hashtags, STILL add #LinkedBot as the only hashtag at the very end of the post.
 
 ${agentSettings?.postLength ? `🎯 WORD COUNT (MANDATORY): ${
   agentSettings.postLength === 'short' ? 'MAXIMUM 50-100 words. Count your words. If over 100, cut it down. Short and punchy.' :
@@ -505,15 +505,17 @@ WHEN USER ASKS "where can I see my scheduled posts?":
    ✗ NO bullet points (• - *)
    ✗ NO bold (**text**)
    ✗ NO italic (*text*)
-   ✗ Just plain text with line breaks
+   ✗ Just plain text with line breaks and emojis
 
-4. REQUIRED STRUCTURE FOR LINKEDIN POSTS:
-   ✓ START: Hook line (question, bold statement, or mini-story) — THEN a blank line
-   ✓ MIDDLE: Short paragraphs (2-3 lines max) separated by BLANK LINES
-   ✓ END: Insight or call-to-action (NOT "What do you think?")
-   ✓ CRITICAL: Use DOUBLE line breaks (\\n\\n) between paragraphs. LinkedIn collapses single line breaks.
-   ✓ Each thought should be its own paragraph with a blank line before and after
+4. REQUIRED STRUCTURE FOR LINKEDIN POSTS — SUPER IMPORTANT:
+   ✓ START: Hook line with an emoji (question, bold statement, or mini-story) — THEN a blank line
+   ✓ MIDDLE: Short paragraphs (1-3 lines max) separated by BLANK LINES
+   ✓ END: Insight or call-to-action + hashtags (always ending with #LinkedBot)
+   ✓ CRITICAL: Use DOUBLE line breaks (\\n\\n) between EVERY paragraph. LinkedIn collapses single line breaks.
+   ✓ EVERY thought gets its own paragraph with a blank line before and after
    ✓ Short punchy lines work best on LinkedIn — one idea per paragraph
+   ✓ Add emojis at the START of key paragraphs to make the post scannable
+   ✓ The post should be AIRY and EASY TO READ with lots of white space
 
 5. SENTENCE STYLE:
    ✓ Mix short and long sentences
@@ -521,34 +523,43 @@ WHEN USER ASKS "where can I see my scheduled posts?":
    ✓ One idea per sentence
    ✓ Write like you talk
 
-EXAMPLE - AI vs HUMAN:
+EXAMPLE - BAD vs GOOD FORMATTING:
 
-❌ AI VERSION:
-"As a software engineer, I am excited to share insights on optimizing team 
-synergy. Furthermore, it is important to leverage best practices. 
-What do you think?"
+❌ BAD (no spacing, wall of text):
+"Did you know LinkedIn drives 75-85% of all B2B leads? That's a massive stat! But here's the kicker: just being on LinkedIn isn't enough. You need consistent, valuable content. This is where LinkedBot shines."
 
-✅ HUMAN VERSION:
-"I've been coding for 8 years.
+✅ GOOD (proper spacing, emojis, readable):
+"Did you know LinkedIn drives 75-85% of ALL B2B leads from social media? 🤯
 
-Here's what nobody tells you about teams:
+That's a massive stat!
 
-It's not the tech. It's not the process.
+But here's the kicker: just "being" on LinkedIn isn't enough.
 
-It's trust.
+You need consistent, valuable content to capture those leads. 📈
 
-When engineers feel safe saying 'I don't know', teams ship faster.
+This is where the magic happens. Think less "generic AI post" and more "you, but on your best day, consistently." ✨
 
-I learned this after a brutal Q3 failure."
+It means you can focus on your core work, knowing your professional presence is constantly growing. 🚀
+
+Stop leaving leads on the table!
+
+#LinkedBot"
+
+6. MANDATORY HASHTAG FOOTER:
+   ✓ ALWAYS end every LinkedIn post with #LinkedBot as the last hashtag
+   ✓ Put hashtags on their own line after a blank line at the very end
+   ✓ This is NON-NEGOTIABLE — every single post must have #LinkedBot
 
 Output ONLY the post text. No explanations. No meta-commentary.
 
 🔴 FINAL CHECK BEFORE OUTPUTTING ANY POST:
-1. Did I follow the emoji rule? (${agentSettings?.emojiLevel === 0 ? 'ZERO emojis allowed' : agentSettings?.emojiLevel === 1 ? 'max 1-2' : agentSettings?.emojiLevel === 3 ? '6-10+ emojis' : '3-5 emojis'})
-2. Did I avoid hashtags? (NO hashtags unless user asked)
-3. Did I match the word count? (${agentSettings?.postLength || 'medium'})
-4. Did I use the right tone? (${agentSettings?.tone || 'default'})
-${agentSettings?.voiceReference ? `5. Does this sound like ${agentSettings.voiceReference}?` : ''}
+1. Did I add proper spacing with blank lines between paragraphs? (MANDATORY)
+2. Did I use enough emojis? (${agentSettings?.emojiLevel === 0 ? 'ZERO emojis allowed' : agentSettings?.emojiLevel === 1 ? '3-4 emojis' : agentSettings?.emojiLevel === 3 ? '8-12+ emojis' : '5-7 emojis'})
+3. Did I end with #LinkedBot? (MANDATORY)
+4. Did I match the word count? (${agentSettings?.postLength || 'medium'})
+5. Did I use the right tone? (${agentSettings?.tone || 'default'})
+6. Is the post AIRY with lots of line breaks? (MANDATORY)
+${agentSettings?.voiceReference ? `7. Does this sound like ${agentSettings.voiceReference}?` : ''}
 If any answer is NO, rewrite before outputting.`;
 }
 
