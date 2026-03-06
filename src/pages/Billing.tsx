@@ -291,10 +291,10 @@ const BillingPage = () => {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="grid md:grid-cols-3 gap-6">
-                {(["free", "pro", "business"] as const).map((plan) => {
+              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {(["free", "pro", "business", "custom"] as const).map((plan) => {
                   const limits = PLAN_LIMITS[plan];
-                  const Icon = planIcons[plan];
+                  const Icon = plan === "custom" ? Mail : planIcons[plan as keyof typeof planIcons];
                   const isCurrentPlan = status?.plan === plan;
                   const pricing = plan !== "free" ? calculateFinalPrice(plan, couponValidation, billingPeriod) : null;
                   const isProcessing = selectedPlan === plan && paymentLoading;
