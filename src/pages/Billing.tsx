@@ -291,15 +291,16 @@ const BillingPage = () => {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="grid md:grid-cols-3 gap-6">
-                {(["free", "pro", "business"] as const).map((plan) => {
+              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {(["free", "pro", "business", "custom"] as const).map((plan) => {
                   const limits = PLAN_LIMITS[plan];
-                  const Icon = planIcons[plan];
+                  const Icon = plan === "custom" ? Mail : planIcons[plan as keyof typeof planIcons];
                   const isCurrentPlan = status?.plan === plan;
-                  const pricing = plan !== "free" ? calculateFinalPrice(plan, couponValidation, billingPeriod) : null;
+                  const isPaidPlan = plan === "pro" || plan === "business";
+                  const pricing = isPaidPlan ? calculateFinalPrice(plan, couponValidation, billingPeriod) : null;
                   const isProcessing = selectedPlan === plan && paymentLoading;
                   const periodLabel = billingPeriod === "yearly" ? "/year" : "/month";
-                  const usdPrice = plan !== "free" 
+                  const usdPrice = isPaidPlan
                     ? billingPeriod === "yearly" ? PLAN_PRICING[plan].usdYearly : PLAN_PRICING[plan].usd
                     : 0;
                   
@@ -329,7 +330,9 @@ const BillingPage = () => {
                       </div>
 
                       <div className="mb-4">
-                        {plan === "free" ? (
+                        {plan === "custom" ? (
+                          <div className="text-2xl font-bold">Let's Talk</div>
+                        ) : plan === "free" ? (
                           <div className="text-2xl font-bold">Free</div>
                         ) : pricing ? (
                           <div className="space-y-1">
@@ -359,29 +362,42 @@ const BillingPage = () => {
                       </div>
 
                       <ul className="space-y-2 text-sm mb-6">
-                        <li className="flex items-center gap-2">
-                          <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
-                          {limits.agents === -1 ? "Unlimited" : limits.agents} Agent{limits.agents !== 1 ? "s" : ""}
-                        </li>
-                        <li className="flex items-center gap-2">
-                          <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
-                          {limits.postsPerMonth} posts/month
-                        </li>
-                        <li className="flex items-center gap-2">
-                          <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
-                          {limits.postsPerDay} posts/day
-                        </li>
-                        {limits.aiImageGeneration && (
-                          <li className="flex items-center gap-2">
-                            <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
-                            AI Image Generation
-                          </li>
-                        )}
-                        {limits.smartScheduling && (
-                          <li className="flex items-center gap-2">
-                            <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
-                            Smart Scheduling
-                          </li>
+                        {plan === "custom" ? (
+                          <>
+                            {["Unlimited Agents", "Unlimited posts", "Dedicated account manager", "Custom AI training", "API access", "White-label options", "SLA & priority support"].map((feature) => (
+                              <li key={feature} className="flex items-center gap-2">
+                                <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+                                {feature}
+                              </li>
+                            ))}
+                          </>
+                        ) : (
+                          <>
+                            <li className="flex items-center gap-2">
+                              <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+                              {limits.agents === -1 ? "Unlimited" : limits.agents} Agent{limits.agents !== 1 ? "s" : ""}
+                            </li>
+                            <li className="flex items-center gap-2">
+                              <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+                              {limits.postsPerMonth} posts/month
+                            </li>
+                            <li className="flex items-center gap-2">
+                              <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+                              {limits.postsPerDay} posts/day
+                            </li>
+                            {limits.aiImageGeneration && (
+                              <li className="flex items-center gap-2">
+                                <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+                                AI Image Generation
+                              </li>
+                            )}
+                            {limits.smartScheduling && (
+                              <li className="flex items-center gap-2">
+                                <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+                                Smart Scheduling
+                              </li>
+                            )}
+                          </>
                         )}
                       </ul>
 
@@ -389,6 +405,17 @@ const BillingPage = () => {
                         <Badge variant="outline" className="w-full justify-center py-2">
                           Current Plan
                         </Badge>
+                      ) : plan === "custom" ? (
+                        <Button 
+                          className="w-full"
+                          variant="outline"
+                          asChild
+                        >
+                          <a href="mailto:contactlinkedbot@gmail.com?subject=Custom Plan Inquiry">
+                            <Mail className="w-4 h-4 mr-2" />
+                            Contact Us
+                          </a>
+                        </Button>
                       ) : plan !== "free" ? (
                         <Button 
                           className="w-full"
@@ -404,7 +431,7 @@ const BillingPage = () => {
                           ) : pricing?.final === 0 ? (
                             "Activate Free"
                           ) : (
-                            `Pay ₹${pricing?.final || (billingPeriod === "yearly" ? PLAN_PRICING[plan].inrYearly : PLAN_PRICING[plan].inr)} →`
+                            `Pay ₹${pricing?.final || (billingPeriod === "yearly" ? PLAN_PRICING[plan as "pro" | "business"].inrYearly : PLAN_PRICING[plan as "pro" | "business"].inr)} →`
                           )}
                         </Button>
                       ) : null}
