@@ -283,11 +283,6 @@ const BillingPage = () => {
                 <span className={`text-sm font-medium ${billingPeriod === "yearly" ? "text-foreground" : "text-muted-foreground"}`}>
                   Yearly
                 </span>
-                {billingPeriod === "yearly" && (
-                  <Badge variant="secondary" className="text-xs bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200">
-                    Save ~17%
-                  </Badge>
-                )}
               </div>
             </CardHeader>
             <CardContent>

@@ -7,10 +7,10 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Plan pricing in INR
+// Plan pricing in INR — yearly = 12x monthly (no built-in discount)
 const PLAN_PRICES = {
-  pro: { monthly: 999, yearly: 9999 },
-  business: { monthly: 1999, yearly: 19999 },
+  pro: { monthly: 999, yearly: 11988 },
+  business: { monthly: 1999, yearly: 23988 },
 };
 
 function getDurationDays(billingPeriod: string): number {
@@ -169,7 +169,13 @@ serve(async (req) => {
 
           if ((!validFrom || now >= validFrom) && (!validUntil || now <= validUntil)) {
             if (!coupon.max_uses || coupon.current_uses < coupon.max_uses) {
-              if (!coupon.plan || coupon.plan === plan) {
+              // Check plan restriction: coupon.plan can be "pro", "business", "pro_yearly", "_monthly", etc.
+              const couponPlan = coupon.plan as string | null;
+              const planMatches = !couponPlan || 
+                couponPlan === plan || 
+                couponPlan === `${plan}_${billingPeriod}` || 
+                couponPlan === `_${billingPeriod}`;
+              if (planMatches) {
                 if (coupon.type === "percentage") {
                   discountAmount = Math.round((amount * coupon.value) / 100);
                 } else if (coupon.type === "fixed") {
@@ -466,15 +472,27 @@ serve(async (req) => {
         );
       }
 
-      // Calculate discount for each plan (monthly prices for display)
+      // Calculate discount for each plan
+      // coupon.plan can be: null (all), "pro", "business", "pro_yearly", "pro_monthly", "_yearly", "_monthly"
       const discounts: Record<string, number> = {};
+      const couponPlan = coupon.plan as string | null;
+      
       for (const [planKey, prices] of Object.entries(PLAN_PRICES)) {
-        if (!coupon.plan || coupon.plan === planKey) {
+        // Check if coupon applies to this plan+period combo
+        const appliesToPlanMonthly = !couponPlan || couponPlan === planKey || couponPlan === `${planKey}_monthly` || couponPlan === `_monthly`;
+        const appliesToPlanYearly = !couponPlan || couponPlan === planKey || couponPlan === `${planKey}_yearly` || couponPlan === `_yearly`;
+        
+        if (appliesToPlanMonthly) {
           if (coupon.type === "percentage") {
             discounts[planKey] = Math.round((prices.monthly * coupon.value) / 100);
-            discounts[`${planKey}_yearly`] = Math.round((prices.yearly * coupon.value) / 100);
           } else {
             discounts[planKey] = Math.min(coupon.value, prices.monthly);
+          }
+        }
+        if (appliesToPlanYearly) {
+          if (coupon.type === "percentage") {
+            discounts[`${planKey}_yearly`] = Math.round((prices.yearly * coupon.value) / 100);
+          } else {
             discounts[`${planKey}_yearly`] = Math.min(coupon.value, prices.yearly);
           }
         }
