@@ -296,10 +296,11 @@ const BillingPage = () => {
                   const limits = PLAN_LIMITS[plan];
                   const Icon = plan === "custom" ? Mail : planIcons[plan as keyof typeof planIcons];
                   const isCurrentPlan = status?.plan === plan;
-                  const pricing = plan !== "free" ? calculateFinalPrice(plan, couponValidation, billingPeriod) : null;
+                  const isPaidPlan = plan === "pro" || plan === "business";
+                  const pricing = isPaidPlan ? calculateFinalPrice(plan, couponValidation, billingPeriod) : null;
                   const isProcessing = selectedPlan === plan && paymentLoading;
                   const periodLabel = billingPeriod === "yearly" ? "/year" : "/month";
-                  const usdPrice = plan !== "free" 
+                  const usdPrice = isPaidPlan
                     ? billingPeriod === "yearly" ? PLAN_PRICING[plan].usdYearly : PLAN_PRICING[plan].usd
                     : 0;
                   
