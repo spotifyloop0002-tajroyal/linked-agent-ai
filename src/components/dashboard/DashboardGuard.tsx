@@ -17,6 +17,7 @@ const DashboardGuard = () => {
   const [authChecked, setAuthChecked] = useState(false);
   const [authorized, setAuthorized] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [stuckTimer, setStuckTimer] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const profileHook = useUserProfile();
@@ -25,40 +26,54 @@ const DashboardGuard = () => {
   
   const isAgentChatPage = location.pathname.includes('/agents/chat');
 
+  // Safety timeout: if auth check takes more than 8 seconds, redirect to login
+  useEffect(() => {
+    if (authChecked) return;
+    const timer = setTimeout(() => {
+      if (!authChecked) {
+        console.warn("⚠️ Dashboard auth check stuck for 8s, redirecting to login");
+        setStuckTimer(true);
+        navigate("/login", { replace: true });
+      }
+    }, 8000);
+    return () => clearTimeout(timer);
+  }, [authChecked, navigate]);
+
   // Wait for profileHook to finish loading, then decide routing
   useEffect(() => {
     if (checkedRef.current) return;
     if (profileHook.isLoading) return;
 
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        checkedRef.current = true;
-        navigate("/login", { replace: true });
-        return;
-      }
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          checkedRef.current = true;
+          navigate("/login", { replace: true });
+          return;
+        }
 
-      // Verify user still exists (handles deleted accounts with stale JWT)
-      const { error: userError } = await supabase.auth.getUser();
-      if (userError) {
-        console.warn("⚠️ User no longer exists, signing out:", userError.message);
-        await supabase.auth.signOut();
-        checkedRef.current = true;
-        navigate("/login", { replace: true });
-        return;
-      }
+        // Verify user still exists (handles deleted accounts with stale JWT)
+        const { error: userError } = await supabase.auth.getUser();
+        if (userError) {
+          console.warn("⚠️ User no longer exists, signing out:", userError.message);
+          await supabase.auth.signOut();
+          checkedRef.current = true;
+          navigate("/login", { replace: true });
+          return;
+        }
 
-      let profile = profileHook.profile;
+        let profile = profileHook.profile;
 
-      if (!profile) {
-        console.log("⏳ Profile null after hook load, fetching directly...");
-        const { data } = await supabase
-          .from("user_profiles_safe")
-          .select("*")
-          .eq("user_id", session.user.id)
-          .maybeSingle();
-        profile = data as any;
-      }
+        if (!profile) {
+          console.log("⏳ Profile null after hook load, fetching directly...");
+          const { data } = await supabase
+            .from("user_profiles_safe")
+            .select("*")
+            .eq("user_id", session.user.id)
+            .maybeSingle();
+          profile = data as any;
+        }
 
       const isOnboarded = profile?.onboarding_completed ||
         (profile && (profile.name || profile.user_type));
