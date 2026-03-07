@@ -70,7 +70,8 @@ export interface UserContext {
 // Storage keys for persistence - now user-specific with actual user ID
 const CHAT_STORAGE_PREFIX = "linkedbot_chat_history_";
 const POSTS_STORAGE_PREFIX = "linkedbot_generated_posts_";
-const MAX_STORED_MESSAGES = 30;
+const MAX_STORED_MESSAGES = 20;
+const MAX_STORED_POSTS = 15;
 
 // Generate a descriptive image prompt from post content
 function generateImagePromptFromContent(content: string): string {
@@ -291,12 +292,15 @@ export function useAgentChat(
     }
   }, [messages, agentId, dbLoaded]);
 
-  // Save posts to localStorage when they change
+  // Save posts to localStorage when they change (cap to prevent OOM)
   useEffect(() => {
     try {
-      localStorage.setItem(getPostsStorageKey(agentId), JSON.stringify(generatedPosts));
+      const postsToStore = generatedPosts.slice(0, MAX_STORED_POSTS);
+      localStorage.setItem(getPostsStorageKey(agentId), JSON.stringify(postsToStore));
     } catch (error) {
       console.error("Error saving posts:", error);
+      // If storage is full, clear old data
+      try { localStorage.removeItem(getPostsStorageKey(agentId)); } catch {}
     }
   }, [generatedPosts, agentId]);
 
@@ -325,15 +329,23 @@ export function useAgentChat(
     setIsLoading(true);
 
     try {
+      // Only send lightweight summaries of generated posts to avoid OOM
+      const postSummaries = generatedPosts.slice(0, 5).map(p => ({
+        id: p.id,
+        content: p.content?.substring(0, 200),
+        status: p.status,
+        approved: p.approved,
+      }));
+
       const requestBody = {
         message,
-        history: [...messages, userMessage].slice(-10).map(m => ({
+        history: [...messages, userMessage].slice(-8).map(m => ({
           role: m.role,
-          content: m.content,
+          content: m.content.substring(0, 500),
         })),
         agentSettings,
         userContext,
-        generatedPosts,
+        generatedPosts: postSummaries,
         generateImage: options?.generateImage ?? false,
         uploadedImages: options?.uploadedImages ?? [],
       };
