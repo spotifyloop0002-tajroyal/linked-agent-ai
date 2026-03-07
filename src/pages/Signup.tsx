@@ -409,12 +409,6 @@ const Signup = () => {
               </button>
             </p>
 
-            <p className="text-center text-xs text-muted-foreground mt-4">
-              By continuing, you agree to LinkedBot's{" "}
-              <a href="/legal/terms" className="text-primary hover:underline">Terms of Service</a>{" "}
-              and{" "}
-              <a href="/legal/privacy" className="text-primary hover:underline">Privacy Policy</a>
-            </p>
           </motion.div>
         </div>
       </div>
