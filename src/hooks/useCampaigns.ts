@@ -39,6 +39,7 @@ export interface CampaignFormData {
   autoBestTime: boolean;
   autoApprove: boolean;
   postingTime?: string;
+  secondPostTime?: string;
   contentLength: string;
   emojiLevel: string;
   hashtagMode: string;

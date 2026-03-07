@@ -394,16 +394,36 @@ export function CampaignSetupForm({ onSubmit, onCancel, isGenerating }: Campaign
           </div>
 
           {!autoBestTime && (
-            <div className="space-y-2 p-4 rounded-xl bg-muted/50 border border-border">
-              <Label htmlFor="postingTime" className="font-medium text-sm">Preferred Posting Time (IST)</Label>
-              <Input
-                id="postingTime"
-                type="time"
-                value={postingTime}
-                onChange={(e) => setPostingTime(e.target.value)}
-                className="w-full max-w-[200px]"
-              />
-              <p className="text-xs text-muted-foreground">All posts will be scheduled at this time (Indian Standard Time)</p>
+            <div className="space-y-4 p-4 rounded-xl bg-muted/50 border border-border">
+              <div className="space-y-2">
+                <Label htmlFor="postingTime" className="font-medium text-sm">
+                  {postsPerDay === 2 ? "1st Post Time (IST)" : "Preferred Posting Time (IST)"}
+                </Label>
+                <Input
+                  id="postingTime"
+                  type="time"
+                  value={postingTime}
+                  onChange={(e) => setPostingTime(e.target.value)}
+                  className="w-full max-w-[200px]"
+                />
+              </div>
+              {postsPerDay === 2 && (
+                <div className="space-y-2">
+                  <Label htmlFor="secondPostTime" className="font-medium text-sm">2nd Post Time (IST)</Label>
+                  <Input
+                    id="secondPostTime"
+                    type="time"
+                    value={secondPostTime}
+                    onChange={(e) => setSecondPostTime(e.target.value)}
+                    className="w-full max-w-[200px]"
+                  />
+                </div>
+              )}
+              <p className="text-xs text-muted-foreground">
+                {postsPerDay === 2
+                  ? "Both posts will be scheduled at these times (Indian Standard Time)"
+                  : "All posts will be scheduled at this time (Indian Standard Time)"}
+              </p>
             </div>
           )}
 
