@@ -390,6 +390,7 @@ const DashboardPage = () => {
                      <th className="text-left p-4 text-sm font-medium text-muted-foreground">Scheduled</th>
                      <th className="text-left p-4 text-sm font-medium text-muted-foreground">Status</th>
                      <th className="text-left p-4 text-sm font-medium text-muted-foreground">Analytics</th>
+                     <th className="text-left p-4 text-sm font-medium text-muted-foreground">Image</th>
                     <th className="text-right p-4 text-sm font-medium text-muted-foreground">Actions</th>
                   </tr>
                 </thead>
@@ -528,6 +529,21 @@ const DashboardPage = () => {
                           </div>
                         ) : (
                           <span className="text-muted-foreground text-xs">—</span>
+                        )}
+                      </td>
+                      <td className="p-4">
+                        {post.photo_url ? (
+                          <img 
+                            src={post.photo_url} 
+                            alt="Post image" 
+                            className="w-12 h-12 rounded-lg object-cover border border-border"
+                            loading="lazy"
+                          />
+                        ) : (
+                          <span className="text-muted-foreground text-xs flex items-center gap-1">
+                            <ImageIcon className="w-4 h-4" />
+                            None
+                          </span>
                         )}
                       </td>
                       <td className="p-4">
