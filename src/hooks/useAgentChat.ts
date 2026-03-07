@@ -346,7 +346,7 @@ export function useAgentChat(
       });
 
       const invokeAgentChatWithTimeout = async (attempt = 1): Promise<{ data: any; error: any }> => {
-        const timeoutMs = 25000;
+        const timeoutMs = 55000; // 55s — allow time for context fetch + AI call chain
         let timeoutId: number | undefined;
 
         const timeoutPromise = new Promise<never>((_, reject) => {

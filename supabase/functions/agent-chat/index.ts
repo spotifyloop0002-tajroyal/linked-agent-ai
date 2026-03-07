@@ -1181,17 +1181,21 @@ serve(async (req) => {
     const generateImage: boolean = body?.generateImage || false;
 
     console.log("📨 Agent received:", message);
-    console.log("📝 History length:", conversationHistory.length);
-    console.log("🗂️ Generated posts:", generatedPosts.length);
-    console.log("🖼️ Uploaded images:", uploadedImages.length);
     console.log("🤖 Agent type:", agentType);
-    console.log("🎨 Generate image:", generateImage);
 
-    // Fetch user context for personalized AI
-    const userContext = await fetchUserContext(authHeader);
+    // Pre-detect intent BEFORE fetching context to skip expensive calls for simple intents
+    const earlyIntent = detectIntent(message, uploadedImages);
+    console.log("🎯 Early intent:", earlyIntent.type);
 
-    // Reference materials are now included in get-agent-context (consolidated)
-    // No separate fetch needed
+    // Intents that DON'T need user context or AI — respond instantly
+    const fastIntents = ["greeting", "cancel", "show_post", "ask_time", "generate_image"];
+    const needsContext = !fastIntents.includes(earlyIntent.type);
+
+    // Only fetch user context when actually needed (AI calls, posting, scheduling)
+    let userContext: any = null;
+    if (needsContext) {
+      userContext = await fetchUserContext(authHeader);
+    }
 
     if (!message && uploadedImages.length === 0) {
       return new Response(
@@ -1205,8 +1209,8 @@ serve(async (req) => {
       );
     }
 
-    const intent = detectIntent(message, uploadedImages);
-    console.log("🎯 Detected intent:", intent.type);
+    const intent = earlyIntent;
+    console.log("🎯 Processing intent:", intent.type);
 
     let response = "";
     let posts: any[] = [];
