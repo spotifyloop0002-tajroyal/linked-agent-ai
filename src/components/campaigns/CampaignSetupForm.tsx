@@ -98,6 +98,7 @@ export function CampaignSetupForm({ onSubmit, onCancel, isGenerating }: Campaign
       autoBestTime,
       autoApprove,
       postingTime: !autoBestTime ? postingTime : undefined,
+      secondPostTime: !autoBestTime && postsPerDay === 2 ? secondPostTime : undefined,
       contentLength,
       emojiLevel,
       hashtagMode,
