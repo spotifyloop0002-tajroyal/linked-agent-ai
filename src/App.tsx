@@ -138,6 +138,10 @@ const AppContent = () => {
             <Route path="/terms" element={<TermsOfService />} />
             <Route path="/cookies" element={<CookiePolicy />} />
             <Route path="/gdpr" element={<GDPR />} />
+            <Route path="/legal/privacy" element={<PrivacyPolicy />} />
+            <Route path="/legal/terms" element={<TermsOfService />} />
+            <Route path="/legal/cookies" element={<CookiePolicy />} />
+            <Route path="/legal/gdpr" element={<GDPR />} />
             {/* Resource pages */}
             <Route path="/docs" element={<Documentation />} />
             <Route path="/blog" element={<Blog />} />
