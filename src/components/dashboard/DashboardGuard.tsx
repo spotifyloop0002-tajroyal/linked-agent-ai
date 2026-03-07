@@ -75,31 +75,36 @@ const DashboardGuard = () => {
           profile = data as any;
         }
 
-      const isOnboarded = profile?.onboarding_completed ||
-        (profile && (profile.name || profile.user_type));
+        const isOnboarded = profile?.onboarding_completed ||
+          (profile && (profile.name || profile.user_type));
 
-      if (!profile || !isOnboarded) {
+        if (!profile || !isOnboarded) {
+          checkedRef.current = true;
+          navigate("/onboarding", { replace: true });
+          return;
+        }
+
+        // Backfill onboarding flag for old users
+        if (!profile.onboarding_completed && isOnboarded) {
+          supabase
+            .from("user_profiles")
+            .update({ onboarding_completed: true })
+            .eq("user_id", session.user.id)
+            .then(() => console.log("✅ Backfilled onboarding_completed for old user"));
+        }
+
         checkedRef.current = true;
-        navigate("/onboarding", { replace: true });
-        return;
+        setCurrentUserId(session.user.id);
+        setAuthorized(true);
+        setAuthChecked(true);
+
+        // Start analytics cron only when dashboard is active
+        startAnalyticsCron();
+      } catch (err) {
+        console.error("❌ Auth check failed:", err);
+        checkedRef.current = true;
+        navigate("/login", { replace: true });
       }
-
-      // Backfill onboarding flag for old users
-      if (!profile.onboarding_completed && isOnboarded) {
-        supabase
-          .from("user_profiles")
-          .update({ onboarding_completed: true })
-          .eq("user_id", session.user.id)
-          .then(() => console.log("✅ Backfilled onboarding_completed for old user"));
-      }
-
-      checkedRef.current = true;
-      setCurrentUserId(session.user.id);
-      setAuthorized(true);
-      setAuthChecked(true);
-
-      // Start analytics cron only when dashboard is active
-      startAnalyticsCron();
     };
 
     checkAuth();
