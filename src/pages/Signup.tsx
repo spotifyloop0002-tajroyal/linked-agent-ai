@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Bot, ArrowLeft, Loader2, Mail, Lock, User, ShieldCheck, ArrowRight } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
@@ -25,6 +26,7 @@ const Signup = () => {
   const [password, setPassword] = useState("");
   const [otp, setOtp] = useState("");
   const [resendCooldown, setResendCooldown] = useState(0);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -77,6 +79,10 @@ const Signup = () => {
     e?.preventDefault();
     if (!name.trim() || !email.trim()) {
       toast({ title: "Missing fields", description: "Please fill in your name and email", variant: "destructive" });
+      return;
+    }
+    if (!agreedToTerms) {
+      toast({ title: "Agreement required", description: "Please agree to the Terms of Service and Privacy Policy", variant: "destructive" });
       return;
     }
 
@@ -295,7 +301,22 @@ const Signup = () => {
                       </div>
                     </div>
 
-                    <Button type="submit" variant="gradient" size="xl" className="w-full gap-2" disabled={isLoading}>
+                    <div className="flex items-start gap-2 mt-2">
+                      <Checkbox
+                        id="agree-terms"
+                        checked={agreedToTerms}
+                        onCheckedChange={(checked) => setAgreedToTerms(checked === true)}
+                        className="mt-0.5"
+                      />
+                      <label htmlFor="agree-terms" className="text-xs text-muted-foreground cursor-pointer leading-tight">
+                        I agree to LinkedBot's{" "}
+                        <a href="/legal/terms" target="_blank" className="text-primary hover:underline">Terms of Service</a>{" "}
+                        and{" "}
+                        <a href="/legal/privacy" target="_blank" className="text-primary hover:underline">Privacy Policy</a>
+                      </label>
+                    </div>
+
+                    <Button type="submit" variant="gradient" size="xl" className="w-full gap-2" disabled={isLoading || !agreedToTerms}>
                       {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <><span>Verify Email</span><ArrowRight className="w-4 h-4" /></>}
                     </Button>
                   </form>
@@ -388,12 +409,6 @@ const Signup = () => {
               </button>
             </p>
 
-            <p className="text-center text-xs text-muted-foreground mt-4">
-              By continuing, you agree to LinkedBot's{" "}
-              <a href="/legal/terms" className="text-primary hover:underline">Terms of Service</a>{" "}
-              and{" "}
-              <a href="/legal/privacy" className="text-primary hover:underline">Privacy Policy</a>
-            </p>
           </motion.div>
         </div>
       </div>
