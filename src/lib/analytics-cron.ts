@@ -178,6 +178,14 @@ function setupMessageListeners() {
     
     if (message.type === 'EXTENSION_CONNECTED') {
       extensionConnected = true;
+      console.log('📊 Analytics cron: Extension connected');
+    }
+    
+    if (message.type === 'EXTENSION_STATUS' && message.connected) {
+      extensionConnected = true;
+      console.log('📊 Analytics cron: Extension status confirmed connected');
+      // Trigger scrape if we just learned the extension is connected
+      setTimeout(() => { scrapeAllPostAnalytics(); }, 3000);
     }
     
     if (message.type === 'EXTENSION_DISCONNECTED') {
