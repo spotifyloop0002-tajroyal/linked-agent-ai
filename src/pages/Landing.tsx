@@ -46,6 +46,7 @@ const Landing = () => {
         <Suspense fallback={<div className="h-96" />}>
           <Features />
           <Pricing />
+          <AffiliateSection />
         </Suspense>
       </main>
       <Suspense fallback={null}>

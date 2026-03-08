@@ -206,15 +206,7 @@ const Pricing = forwardRef<HTMLElement>((_, ref) => {
                   </ul>
 
                   {plan.isCustom ? (
-                    <Button
-                      variant="outline"
-                      size="lg"
-                      className="w-full"
-                      onClick={() => window.location.href = "mailto:contactlinkedbot@gmail.com?subject=Custom Plan Inquiry"}
-                    >
-                      <Mail className="w-4 h-4 mr-2" />
-                      {plan.cta}
-                    </Button>
+                    <CustomPlanDialog />
                   ) : (
                     <Button
                       variant={plan.popular ? "gradient" : "outline"}

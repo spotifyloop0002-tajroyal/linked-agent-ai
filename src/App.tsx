@@ -136,6 +136,8 @@ const AppContent = () => {
             <Route path="/admin/activity" element={<AdminRoute><AdminActivity /></AdminRoute>} />
             <Route path="/admin/support" element={<AdminRoute><AdminSupportChat /></AdminRoute>} />
             <Route path="/admin/visitors" element={<AdminRoute><AdminVisitors /></AdminRoute>} />
+            <Route path="/admin/affiliates" element={<AdminRoute><AdminAffiliates /></AdminRoute>} />
+            <Route path="/admin/custom-requests" element={<AdminRoute><AdminCustomRequests /></AdminRoute>} />
             {/* Public pages */}
             <Route path="/features" element={<FeaturesPage />} />
             <Route path="/how-it-works" element={<HowItWorks />} />
