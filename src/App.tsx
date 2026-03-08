@@ -86,10 +86,14 @@ const PageViewTracker = () => {
 
 // Inner component that uses hooks
 const AppContent = () => {
+  // Lazy import CookieConsentBanner
+  const CookieConsentBanner = lazy(() => import("./components/CookieConsentBanner"));
+
   return (
     <>
       <Toaster />
       <Sonner />
+      <Suspense fallback={null}><CookieConsentBanner /></Suspense>
       <BrowserRouter>
         <PageViewTracker />
         <Suspense fallback={<PageLoader />}>

@@ -229,6 +229,14 @@ const Pricing = forwardRef<HTMLElement>((_, ref) => {
             );
           })}
         </div>
+
+        {/* Checkout notice */}
+        <p className="text-center text-xs text-muted-foreground mt-8 max-w-xl mx-auto">
+          By purchasing a plan, you agree to our{" "}
+          <a href="/terms" className="text-primary hover:underline">Terms & Conditions</a>{" "}
+          and{" "}
+          <a href="/refund-policy" className="text-primary hover:underline">Refund & Cancellation Policy</a>.
+        </p>
       </div>
     </section>
   );
