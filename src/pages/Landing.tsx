@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 // Lazy load below-the-fold sections
 const Features = lazy(() => import("@/components/landing/Features"));
 const Pricing = lazy(() => import("@/components/landing/Pricing"));
+const AffiliateSection = lazy(() => import("@/components/landing/AffiliateSection"));
 const Footer = lazy(() => import("@/components/landing/Footer"));
 
 const Landing = () => {
