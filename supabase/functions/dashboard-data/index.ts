@@ -92,6 +92,15 @@ serve(async (req) => {
       ? analyticsPosts[0].scraped_at
       : analyticsResult.data?.last_synced || null;
 
+    console.log('✅ Dashboard data:', {
+      agents: (agentsResult.data || []).length,
+      scheduledPosts: (scheduledPostsResult.data || []).length,
+      analyticsPosts: analyticsPosts.length,
+      agentsError: agentsResult.error?.message,
+      postsError: postsResult.error?.message,
+      scheduledError: scheduledPostsResult.error?.message,
+    });
+
     return new Response(JSON.stringify({
       success: true,
       analytics: {
