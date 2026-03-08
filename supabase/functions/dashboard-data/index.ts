@@ -35,6 +35,7 @@ serve(async (req) => {
     }
 
     const userId = user.id;
+    console.log('📊 Dashboard data request for user:', userId);
 
     // Run ALL queries in parallel — this is the key optimization
     const [analyticsResult, postsResult, agentsResult, scheduledPostsResult] = await Promise.all([
@@ -90,6 +91,15 @@ serve(async (req) => {
     const lastSyncTime = analyticsPosts.length > 0 && analyticsPosts[0].scraped_at
       ? analyticsPosts[0].scraped_at
       : analyticsResult.data?.last_synced || null;
+
+    console.log('✅ Dashboard data:', {
+      agents: (agentsResult.data || []).length,
+      scheduledPosts: (scheduledPostsResult.data || []).length,
+      analyticsPosts: analyticsPosts.length,
+      agentsError: agentsResult.error?.message,
+      postsError: postsResult.error?.message,
+      scheduledError: scheduledPostsResult.error?.message,
+    });
 
     return new Response(JSON.stringify({
       success: true,
