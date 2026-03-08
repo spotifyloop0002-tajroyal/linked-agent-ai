@@ -78,8 +78,7 @@ const DashboardPage = () => {
   const queuedCount = scheduledPosts.filter(p => p.status === 'pending' || p.status === 'posting').length;
   const postedCount = scheduledPosts.filter(p => p.status === 'posted').length;
   const activeAgentsCount = agents.filter(a => a.is_active).length;
-  const totalGeneratedFromAgents = agents.reduce((sum, a) => sum + (a.posts_created || 0), 0);
-  const totalGenerated = totalGeneratedFromAgents > 0 ? totalGeneratedFromAgents : (profile?.posts_created_count || 0);
+  const totalGenerated = scheduledPosts.length || (profile?.posts_created_count || 0);
 
   const stats = [
     { label: "Active Agents", value: activeAgentsCount.toString(), subtitle: `${agents.length} total agents`, icon: Users, color: "from-primary to-primary/60" },
