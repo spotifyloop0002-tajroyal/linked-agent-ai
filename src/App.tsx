@@ -40,6 +40,8 @@ const AdminAPIKeys = lazy(() => import("./pages/admin/AdminAPIKeys"));
 const AdminActivity = lazy(() => import("./pages/admin/AdminActivity"));
 const AdminSupportChat = lazy(() => import("./pages/admin/AdminSupportChat"));
 const AdminVisitors = lazy(() => import("./pages/admin/AdminVisitors"));
+const AdminAffiliates = lazy(() => import("./pages/admin/AdminAffiliates"));
+const AdminCustomRequests = lazy(() => import("./pages/admin/AdminCustomRequests"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
 const FeaturesPage = lazy(() => import("./pages/FeaturesPage"));
