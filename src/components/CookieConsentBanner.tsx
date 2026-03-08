@@ -2,20 +2,24 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { Cookie, X } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const CookieConsentBanner = () => {
   const [visible, setVisible] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Only show on public pages, not dashboard or admin
+  const isProtectedRoute = location.pathname.startsWith("/dashboard") || location.pathname.startsWith("/admin");
 
   useEffect(() => {
+    if (isProtectedRoute) return;
     const consent = localStorage.getItem("cookie-consent");
     if (!consent) {
-      // Show after a short delay
       const timer = setTimeout(() => setVisible(true), 1500);
       return () => clearTimeout(timer);
     }
-  }, []);
+  }, [isProtectedRoute]);
 
   const handleAccept = () => {
     localStorage.setItem("cookie-consent", "accepted");
