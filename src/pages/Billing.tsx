@@ -63,6 +63,13 @@ const BillingPage = () => {
     setIsApplyingCoupon(false);
     if (result.valid) {
       toast.success("Coupon applied successfully!");
+      // Auto-switch billing period if coupon is restricted to a specific period
+      const restricted = result.restrictedPlan || "";
+      if (restricted.includes("yearly")) {
+        setBillingPeriod("yearly");
+      } else if (restricted.includes("monthly")) {
+        setBillingPeriod("monthly");
+      }
     } else {
       toast.error(result.error || "Invalid coupon code");
     }
