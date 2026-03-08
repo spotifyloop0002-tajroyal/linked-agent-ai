@@ -503,8 +503,29 @@ const SettingsPage = () => {
           </div>
         )}
 
-        {/* Delete Account */}
+        {/* Legal */}
         <div className="animate-fade-up [animation-delay:200ms]">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <AlertCircle className="w-5 h-5 text-primary" />
+                Legal
+              </CardTitle>
+              <CardDescription>Review our policies and terms</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-3">
+                <li><a href="/terms" target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline">Terms & Conditions</a></li>
+                <li><a href="/privacy-policy" target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline">Privacy Policy</a></li>
+                <li><a href="/refund-policy" target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline">Refund & Cancellation Policy</a></li>
+                <li><a href="/cookie-policy" target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline">Cookie Policy</a></li>
+              </ul>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Delete Account */}
+        <div className="animate-fade-up [animation-delay:300ms]">
           <Card className="border-destructive/30">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-destructive">
