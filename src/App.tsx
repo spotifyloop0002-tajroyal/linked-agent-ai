@@ -135,11 +135,16 @@ const AppContent = () => {
             <Route path="/features" element={<FeaturesPage />} />
             <Route path="/how-it-works" element={<HowItWorks />} />
             <Route path="/pricing" element={<PricingPage />} />
-            {/* Legal pages */}
-            <Route path="/privacy" element={<PrivacyPolicy />} />
+            {/* Legal pages - clean URLs */}
             <Route path="/terms" element={<TermsOfService />} />
-            <Route path="/cookies" element={<CookiePolicy />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/refund-policy" element={<RefundPolicy />} />
+            <Route path="/cookie-policy" element={<CookiePolicy />} />
+            <Route path="/affiliate-program" element={<AffiliateProgram />} />
             <Route path="/gdpr" element={<GDPR />} />
+            {/* Legacy legal routes */}
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/cookies" element={<CookiePolicy />} />
             <Route path="/legal/privacy" element={<PrivacyPolicy />} />
             <Route path="/legal/terms" element={<TermsOfService />} />
             <Route path="/legal/cookies" element={<CookiePolicy />} />
