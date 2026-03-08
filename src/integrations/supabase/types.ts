@@ -47,6 +47,48 @@ export type Database = {
         }
         Relationships: []
       }
+      affiliate_applications: {
+        Row: {
+          city: string
+          country: string
+          created_at: string
+          email: string
+          id: string
+          instagram_url: string | null
+          linkedin_url: string | null
+          name: string
+          phone: string
+          reason: string | null
+          status: string
+        }
+        Insert: {
+          city: string
+          country: string
+          created_at?: string
+          email: string
+          id?: string
+          instagram_url?: string | null
+          linkedin_url?: string | null
+          name: string
+          phone: string
+          reason?: string | null
+          status?: string
+        }
+        Update: {
+          city?: string
+          country?: string
+          created_at?: string
+          email?: string
+          id?: string
+          instagram_url?: string | null
+          linkedin_url?: string | null
+          name?: string
+          phone?: string
+          reason?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       agent_reference_materials: {
         Row: {
           agent_id: string | null
@@ -338,6 +380,39 @@ export type Database = {
           valid_from?: string | null
           valid_until?: string | null
           value?: number
+        }
+        Relationships: []
+      }
+      custom_plan_requests: {
+        Row: {
+          company: string | null
+          created_at: string
+          email: string
+          id: string
+          message: string | null
+          name: string
+          phone: string
+          status: string
+        }
+        Insert: {
+          company?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          message?: string | null
+          name: string
+          phone: string
+          status?: string
+        }
+        Update: {
+          company?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          message?: string | null
+          name?: string
+          phone?: string
+          status?: string
         }
         Relationships: []
       }
