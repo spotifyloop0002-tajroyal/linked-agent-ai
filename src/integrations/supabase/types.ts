@@ -741,6 +741,7 @@ export type Database = {
       payments: {
         Row: {
           amount: number
+          billing_period: string | null
           coupon_code: string | null
           coupon_id: string | null
           created_at: string
@@ -760,6 +761,7 @@ export type Database = {
         }
         Insert: {
           amount: number
+          billing_period?: string | null
           coupon_code?: string | null
           coupon_id?: string | null
           created_at?: string
@@ -779,6 +781,7 @@ export type Database = {
         }
         Update: {
           amount?: number
+          billing_period?: string | null
           coupon_code?: string | null
           coupon_id?: string | null
           created_at?: string
@@ -1116,6 +1119,7 @@ export type Database = {
       user_profiles: {
         Row: {
           background: string | null
+          billing_period: string | null
           city: string | null
           company_description: string | null
           company_name: string | null
@@ -1166,6 +1170,7 @@ export type Database = {
         }
         Insert: {
           background?: string | null
+          billing_period?: string | null
           city?: string | null
           company_description?: string | null
           company_name?: string | null
@@ -1216,6 +1221,7 @@ export type Database = {
         }
         Update: {
           background?: string | null
+          billing_period?: string | null
           city?: string | null
           company_description?: string | null
           company_name?: string | null
