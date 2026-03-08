@@ -216,6 +216,7 @@ serve(async (req) => {
           discount_amount: discountAmount,
           final_amount: 0,
           payment_method: "coupon",
+          billing_period: billingPeriod,
         });
 
         if (couponId) {
