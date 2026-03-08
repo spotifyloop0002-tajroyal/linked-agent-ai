@@ -393,6 +393,7 @@ serve(async (req) => {
         .update({
           subscription_plan: payment.plan,
           subscription_expires_at: expiryDate.toISOString(),
+          billing_period: period,
         })
         .eq("user_id", user.id);
 
