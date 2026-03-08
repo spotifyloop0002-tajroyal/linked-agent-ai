@@ -1,0 +1,2 @@
+ALTER TABLE public.coupons DROP CONSTRAINT coupons_plan_check;
+ALTER TABLE public.coupons ADD CONSTRAINT coupons_plan_check CHECK (plan = ANY (ARRAY['pro'::text, 'business'::text, 'pro_monthly'::text, 'pro_yearly'::text, 'business_monthly'::text, 'business_yearly'::text, '_monthly'::text, '_yearly'::text]));
