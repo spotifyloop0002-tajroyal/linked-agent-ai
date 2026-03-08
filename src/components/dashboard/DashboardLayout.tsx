@@ -275,7 +275,10 @@ const DashboardLayout = ({ children, headerContent }: DashboardLayoutProps) => {
         </header>
 
         {/* Page content - flex-1 with overflow for scrollable pages */}
-        <main className="flex-1 overflow-auto p-6">{children}</main>
+        <main className="flex-1 overflow-auto p-6">
+          <SubscriptionExpiryBanner />
+          {children}
+        </main>
       </div>
     </div>
   );
