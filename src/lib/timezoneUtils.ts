@@ -1,43 +1,52 @@
 // ============================================================================
-// IST (Indian Standard Time) TIMEZONE UTILITIES
+// LOCAL TIMEZONE UTILITIES (Auto-detects user's browser timezone)
 // ============================================================================
 
-const IST_TIMEZONE = 'Asia/Kolkata';
-const IST_OFFSET_HOURS = 5.5; // UTC+5:30
-
 /**
- * Get current time in IST
+ * Get the user's local timezone from the browser
  */
-export function getCurrentTimeIST(): Date {
-  return new Date(new Date().toLocaleString('en-US', { timeZone: IST_TIMEZONE }));
+export function getUserTimezone(): string {
+  return Intl.DateTimeFormat().resolvedOptions().timeZone;
 }
 
 /**
- * Convert a Date to IST timezone
+ * Get short timezone label (e.g., "IST", "EST", "PST")
  */
-export function toIST(date: Date): Date {
-  return new Date(date.toLocaleString('en-US', { timeZone: IST_TIMEZONE }));
+export function getTimezoneLabel(): string {
+  const date = new Date();
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZoneName: 'short',
+    timeZone: getUserTimezone(),
+  }).formatToParts(date);
+  return parts.find(p => p.type === 'timeZoneName')?.value || '';
 }
 
 /**
- * Format a date for display in IST
+ * Get current time in user's local timezone
  */
-export function formatDateIST(date: Date | string): string {
+export function getCurrentTimeLocal(): Date {
+  return new Date();
+}
+
+/**
+ * Format a date for display in user's local timezone
+ */
+export function formatDateLocal(date: Date | string): string {
   const d = typeof date === 'string' ? new Date(date) : date;
-  return d.toLocaleString('en-IN', { 
-    timeZone: IST_TIMEZONE,
+  return d.toLocaleString('en-US', { 
+    timeZone: getUserTimezone(),
     dateStyle: 'medium',
     timeStyle: 'short'
   });
 }
 
 /**
- * Format just the time in IST
+ * Format just the time in user's local timezone
  */
-export function formatTimeIST(date: Date | string): string {
+export function formatTimeLocal(date: Date | string): string {
   const d = typeof date === 'string' ? new Date(date) : date;
-  return d.toLocaleTimeString('en-IN', { 
-    timeZone: IST_TIMEZONE,
+  return d.toLocaleTimeString('en-US', { 
+    timeZone: getUserTimezone(),
     hour: 'numeric',
     minute: '2-digit',
     hour12: true
@@ -45,12 +54,12 @@ export function formatTimeIST(date: Date | string): string {
 }
 
 /**
- * Format just the date in IST
+ * Format just the date in user's local timezone
  */
-export function formatDateOnlyIST(date: Date | string): string {
+export function formatDateOnlyLocal(date: Date | string): string {
   const d = typeof date === 'string' ? new Date(date) : date;
-  return d.toLocaleDateString('en-IN', { 
-    timeZone: IST_TIMEZONE,
+  return d.toLocaleDateString('en-US', { 
+    timeZone: getUserTimezone(),
     weekday: 'short',
     month: 'short',
     day: 'numeric'
@@ -58,197 +67,71 @@ export function formatDateOnlyIST(date: Date | string): string {
 }
 
 /**
- * Create an ISO string that represents a specific time in IST
- * This converts local IST time to UTC for storage
- */
-export function createISOFromIST(
-  year: number,
-  month: number, // 0-indexed
-  day: number,
-  hours: number,
-  minutes: number = 0
-): string {
-  // Create date in IST by calculating UTC offset
-  const utcHours = hours - IST_OFFSET_HOURS;
-  const date = new Date(Date.UTC(year, month, day, Math.floor(utcHours), minutes + (utcHours % 1) * 60));
-  return date.toISOString();
-}
-
-/**
- * Parse a natural language time string into an ISO string (in IST context)
- * Returns the time as an ISO string that represents the correct moment
- */
-export function parseScheduleTimeIST(
-  timeText: string, 
-  referenceDate?: Date
-): string | null {
-  const lower = timeText.toLowerCase().trim();
-  
-  // Get current time in IST for reference
-  const nowIST = referenceDate 
-    ? new Date(referenceDate.toLocaleString('en-US', { timeZone: IST_TIMEZONE }))
-    : getCurrentTimeIST();
-  
-  // Create a working date in IST context
-  let year = nowIST.getFullYear();
-  let month = nowIST.getMonth();
-  let day = nowIST.getDate();
-  let hours = 9; // Default to 9 AM IST
-  let minutes = 0;
-  
-  // Handle relative day references
-  if (lower.includes('tomorrow')) {
-    day += 1;
-  } else if (lower.includes('next week')) {
-    day += 7;
-  }
-  
-  // Handle day of week
-  const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-  for (let i = 0; i < days.length; i++) {
-    if (lower.includes(`next ${days[i]}`)) {
-      const currentDay = nowIST.getDay();
-      let daysUntil = i - currentDay;
-      if (daysUntil <= 0) daysUntil += 7;
-      day += daysUntil;
-      break;
-    }
-  }
-  
-  // Handle "in X hours/minutes"
-  const inHoursMatch = lower.match(/in\s+(\d+)\s*hours?/i);
-  if (inHoursMatch) {
-    const hoursToAdd = parseInt(inHoursMatch[1]);
-    const result = new Date(nowIST);
-    result.setHours(result.getHours() + hoursToAdd);
-    return result.toISOString();
-  }
-  
-  const inMinutesMatch = lower.match(/in\s+(\d+)\s*minutes?/i);
-  if (inMinutesMatch) {
-    const minsToAdd = parseInt(inMinutesMatch[1]);
-    const result = new Date(nowIST);
-    result.setMinutes(result.getMinutes() + minsToAdd);
-    return result.toISOString();
-  }
-  
-  // Extract time (e.g., "3:42 pm", "15:30", "3pm")
-  // Match patterns like "3:42 pm", "3:42pm", "15:30"
-  const timeMatch = lower.match(/(\d{1,2}):(\d{2})\s*(am|pm)?/i);
-  if (timeMatch) {
-    hours = parseInt(timeMatch[1]);
-    minutes = parseInt(timeMatch[2]);
-    const ampm = timeMatch[3]?.toLowerCase();
-    
-    if (ampm === 'pm' && hours < 12) hours += 12;
-    if (ampm === 'am' && hours === 12) hours = 0;
-  } else {
-    // Match patterns like "3pm", "3 pm"
-    const simpleTimeMatch = lower.match(/(\d{1,2})\s*(am|pm)/i);
-    if (simpleTimeMatch) {
-      hours = parseInt(simpleTimeMatch[1]);
-      const ampm = simpleTimeMatch[2].toLowerCase();
-      
-      if (ampm === 'pm' && hours < 12) hours += 12;
-      if (ampm === 'am' && hours === 12) hours = 0;
-    }
-  }
-  
-  // Handle relative times of day
-  if (lower.includes('morning') && !timeMatch) {
-    hours = 9;
-    minutes = 0;
-  } else if (lower.includes('afternoon') && !timeMatch) {
-    hours = 14;
-    minutes = 0;
-  } else if (lower.includes('evening') && !timeMatch) {
-    hours = 18;
-    minutes = 0;
-  } else if (lower.includes('tonight') && !timeMatch) {
-    hours = 20;
-    minutes = 0;
-  }
-  
-  // Calculate the date, handling month overflow
-  const tempDate = new Date(year, month, day);
-  year = tempDate.getFullYear();
-  month = tempDate.getMonth();
-  day = tempDate.getDate();
-  
-  // Create the scheduled time
-  // Convert IST time to UTC for storage
-  const utcHours = hours - 5; // IST is UTC+5:30
-  const utcMinutes = minutes - 30;
-  
-  let scheduledDate = new Date(Date.UTC(year, month, day, utcHours, utcMinutes));
-  
-  // Adjust if minutes went negative
-  if (utcMinutes < 0) {
-    scheduledDate = new Date(scheduledDate.getTime() - 30 * 60 * 1000);
-  }
-  
-  // If the time is in the past for today (in IST), assume tomorrow
-  const now = new Date();
-  if (scheduledDate <= now && !lower.includes('today')) {
-    scheduledDate.setDate(scheduledDate.getDate() + 1);
-  }
-  
-  return scheduledDate.toISOString();
-}
-
-/**
- * Check if a scheduled time has passed (comparing in UTC)
+ * Check if a scheduled time has passed
  */
 export function isPostDue(scheduledTime: string): boolean {
   const now = new Date();
   const scheduled = new Date(scheduledTime);
-  
-  console.log('[IST] Checking post schedule:', {
-    now: now.toISOString(),
-    nowIST: formatDateIST(now),
-    scheduled: scheduled.toISOString(),
-    scheduledIST: formatDateIST(scheduled),
-    isDue: now >= scheduled
-  });
-  
   return now >= scheduled;
 }
 
 /**
- * Format a scheduled time for display (user-friendly)
+ * Format a scheduled time for display (user-friendly with timezone label)
  */
-export function formatScheduledTimeIST(isoString: string): string {
+export function formatScheduledTimeLocal(isoString: string): string {
   const date = new Date(isoString);
-  const nowIST = getCurrentTimeIST();
-  const tomorrow = new Date(nowIST);
+  const now = new Date();
+  const tomorrow = new Date(now);
   tomorrow.setDate(tomorrow.getDate() + 1);
   
-  // Convert scheduled date to IST for comparison
-  const scheduledIST = toIST(date);
+  const tz = getUserTimezone();
+  const tzLabel = getTimezoneLabel();
   
-  const isToday = scheduledIST.toDateString() === nowIST.toDateString();
-  const isTomorrow = scheduledIST.toDateString() === tomorrow.toDateString();
+  const scheduledLocal = new Date(date.toLocaleString('en-US', { timeZone: tz }));
+  const nowLocal = new Date(now.toLocaleString('en-US', { timeZone: tz }));
+  const tomorrowLocal = new Date(tomorrow.toLocaleString('en-US', { timeZone: tz }));
   
-  const timeStr = formatTimeIST(date);
+  const isToday = scheduledLocal.toDateString() === nowLocal.toDateString();
+  const isTomorrow = scheduledLocal.toDateString() === tomorrowLocal.toDateString();
+  
+  const timeStr = formatTimeLocal(date);
   
   if (isToday) {
-    return `Today at ${timeStr} IST`;
+    return `Today at ${timeStr} ${tzLabel}`;
   } else if (isTomorrow) {
-    return `Tomorrow at ${timeStr} IST`;
+    return `Tomorrow at ${timeStr} ${tzLabel}`;
   } else {
-    return `${formatDateOnlyIST(date)} at ${timeStr} IST`;
+    return `${formatDateOnlyLocal(date)} at ${timeStr} ${tzLabel}`;
   }
 }
 
 /**
- * Get optimal posting times for LinkedIn in IST
+ * Get optimal posting times for LinkedIn (in user's timezone)
  */
-export function getOptimalPostingTimesIST(): { time: string; label: string }[] {
+export function getOptimalPostingTimes(): { time: string; label: string }[] {
+  const tzLabel = getTimezoneLabel();
   return [
-    { time: '08:00', label: '8:00 AM IST - Early morning engagement' },
-    { time: '10:00', label: '10:00 AM IST - Mid-morning peak' },
-    { time: '12:00', label: '12:00 PM IST - Lunch break browsing' },
-    { time: '17:00', label: '5:00 PM IST - End of workday' },
-    { time: '19:00', label: '7:00 PM IST - Evening engagement' },
+    { time: '08:00', label: `8:00 AM ${tzLabel} - Early morning engagement` },
+    { time: '10:00', label: `10:00 AM ${tzLabel} - Mid-morning peak` },
+    { time: '12:00', label: `12:00 PM ${tzLabel} - Lunch break browsing` },
+    { time: '17:00', label: `5:00 PM ${tzLabel} - End of workday` },
+    { time: '19:00', label: `7:00 PM ${tzLabel} - Evening engagement` },
   ];
 }
+
+// ============================================================================
+// BACKWARD COMPATIBILITY ALIASES (so existing imports don't break)
+// ============================================================================
+
+/** @deprecated Use formatDateLocal */
+export const formatDateIST = formatDateLocal;
+/** @deprecated Use formatTimeLocal */
+export const formatTimeIST = formatTimeLocal;
+/** @deprecated Use formatDateOnlyLocal */
+export const formatDateOnlyIST = formatDateOnlyLocal;
+/** @deprecated Use getCurrentTimeLocal */
+export const getCurrentTimeIST = getCurrentTimeLocal;
+/** @deprecated Use formatScheduledTimeLocal */
+export const formatScheduledTimeIST = formatScheduledTimeLocal;
+/** @deprecated Use getOptimalPostingTimes */
+export const getOptimalPostingTimesIST = getOptimalPostingTimes;

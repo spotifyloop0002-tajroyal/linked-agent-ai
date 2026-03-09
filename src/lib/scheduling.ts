@@ -1,10 +1,9 @@
 // ============================================================================
-// POST SCHEDULING UTILITIES - v5.0 (Fixed Time Parsing)
+// POST SCHEDULING UTILITIES - v6.0 (Local Timezone Support)
 // ============================================================================
 
 import { toast } from 'sonner';
-
-const IST_TIMEZONE = 'Asia/Kolkata';
+import { getUserTimezone, getTimezoneLabel } from '@/lib/timezoneUtils';
 
 // Error messages for scheduling
 export const SCHEDULE_ERRORS = {
@@ -18,7 +17,7 @@ export const SCHEDULE_ERRORS = {
 
 /**
  * Parse a natural language time string into a Date object
- * Handles: "1:30 AM", "tomorrow 9 AM", "2:30 PM today", "in 2 hours"
+ * Uses user's local timezone automatically
  */
 export function parseScheduleTime(
   userInput: string,
@@ -31,7 +30,6 @@ export function parseScheduleTime(
   
   // Handle "post now" / "now" / "immediately"
   if (lower === 'now' || lower.includes('post now') || lower.includes('immediately') || lower.includes('right now')) {
-    // Schedule 1 minute in the future for "now" requests
     const result = new Date(now);
     result.setMinutes(result.getMinutes() + 1);
     result.setSeconds(0, 0);
@@ -89,7 +87,6 @@ export function parseScheduleTime(
     minutes = parseInt(timeMatch[2]);
     const period = timeMatch[3]?.toLowerCase();
     
-    // Convert to 24-hour format
     if (period === 'pm' && hours !== 12) hours += 12;
     if (period === 'am' && hours === 12) hours = 0;
   } else {
@@ -115,23 +112,20 @@ export function parseScheduleTime(
     } else if (lower.includes('tonight')) {
       hours = 20;
     } else {
-      // No time found - return null to indicate invalid input
       console.log('❌ Could not parse time from:', userInput);
       return null;
     }
   }
   
-  // Set the time
+  // Set the time (browser Date automatically uses local timezone)
   scheduledDate.setHours(hours, minutes, 0, 0);
   
   // CRITICAL: Check if time is in the past
   if (scheduledDate <= now) {
-    // If time is in past and no "tomorrow" mentioned, assume next occurrence
     if (!lower.includes('tomorrow') && !lower.includes('today')) {
       scheduledDate.setDate(scheduledDate.getDate() + 1);
       console.log('⏰ Time was in past, moved to tomorrow:', scheduledDate.toISOString());
     } else if (lower.includes('today')) {
-      // User explicitly said "today" but time has passed
       console.log('❌ Time has already passed today:', scheduledDate.toISOString());
       return null;
     }
@@ -153,17 +147,14 @@ export function validateScheduleTime(scheduledTime: Date | string): ScheduleVali
   const now = new Date();
   const scheduled = typeof scheduledTime === 'string' ? new Date(scheduledTime) : scheduledTime;
   
-  // Check 1: Is it a valid date?
   if (isNaN(scheduled.getTime())) {
     return { valid: false, error: SCHEDULE_ERRORS.INVALID_FORMAT };
   }
   
-  // Check 2: Is it in the future?
   if (scheduled <= now) {
     return { valid: false, error: SCHEDULE_ERRORS.PAST_TIME };
   }
   
-  // Check 3: Is it too far in future? (>30 days)
   const thirtyDaysFromNow = new Date();
   thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
   
@@ -171,7 +162,6 @@ export function validateScheduleTime(scheduledTime: Date | string): ScheduleVali
     return { valid: false, error: SCHEDULE_ERRORS.TOO_FAR };
   }
   
-  // Check 4: Is it at least 2 minutes from now?
   const twoMinutesFromNow = new Date();
   twoMinutesFromNow.setMinutes(twoMinutesFromNow.getMinutes() + 2);
   
@@ -183,13 +173,14 @@ export function validateScheduleTime(scheduledTime: Date | string): ScheduleVali
 }
 
 /**
- * Format scheduled time for display in IST
+ * Format scheduled time for display in user's local timezone
  */
 export function formatScheduledTimeForDisplay(isoString: string | Date): string {
   const date = typeof isoString === 'string' ? new Date(isoString) : isoString;
+  const tz = getUserTimezone();
   
-  return date.toLocaleString('en-IN', {
-    timeZone: IST_TIMEZONE,
+  return date.toLocaleString('en-US', {
+    timeZone: tz,
     day: 'numeric',
     month: 'long',
     hour: 'numeric',
@@ -207,28 +198,31 @@ export function formatRelativeScheduledTime(isoString: string | Date): string {
   const tomorrow = new Date(now);
   tomorrow.setDate(tomorrow.getDate() + 1);
   
-  const timeStr = date.toLocaleTimeString('en-IN', { 
-    timeZone: IST_TIMEZONE,
+  const tz = getUserTimezone();
+  const tzLabel = getTimezoneLabel();
+  
+  const timeStr = date.toLocaleTimeString('en-US', { 
+    timeZone: tz,
     hour: 'numeric', 
     minute: '2-digit',
     hour12: true
   });
   
-  // Compare dates in IST
-  const dateIST = new Date(date.toLocaleString('en-US', { timeZone: IST_TIMEZONE }));
-  const nowIST = new Date(now.toLocaleString('en-US', { timeZone: IST_TIMEZONE }));
-  const tomorrowIST = new Date(tomorrow.toLocaleString('en-US', { timeZone: IST_TIMEZONE }));
+  // Compare dates in user's timezone
+  const dateLocal = new Date(date.toLocaleString('en-US', { timeZone: tz }));
+  const nowLocal = new Date(now.toLocaleString('en-US', { timeZone: tz }));
+  const tomorrowLocal = new Date(tomorrow.toLocaleString('en-US', { timeZone: tz }));
   
-  const isToday = dateIST.toDateString() === nowIST.toDateString();
-  const isTomorrow = dateIST.toDateString() === tomorrowIST.toDateString();
+  const isToday = dateLocal.toDateString() === nowLocal.toDateString();
+  const isTomorrow = dateLocal.toDateString() === tomorrowLocal.toDateString();
   
   if (isToday) {
     return `Today at ${timeStr}`;
   } else if (isTomorrow) {
     return `Tomorrow at ${timeStr}`;
   } else {
-    return date.toLocaleDateString('en-IN', { 
-      timeZone: IST_TIMEZONE,
+    return date.toLocaleDateString('en-US', { 
+      timeZone: tz,
       weekday: 'short', 
       month: 'short', 
       day: 'numeric',
@@ -271,7 +265,6 @@ export function createExtensionPayload(
 
 /**
  * Send posts to extension via postMessage
- * Returns a promise that resolves with the extension response
  */
 export function sendToExtension(
   posts: ExtensionPostPayload[]
@@ -279,13 +272,11 @@ export function sendToExtension(
   return new Promise((resolve) => {
     console.log('📤 Sending to extension:', posts);
     
-    // Send the message
     window.postMessage({
       type: 'SCHEDULE_POSTS',
       posts: posts,
     }, '*');
     
-    // Listen for response
     const handler = (event: MessageEvent) => {
       if (event.data.type === 'SCHEDULE_RESULT') {
         window.removeEventListener('message', handler);
@@ -306,7 +297,6 @@ export function sendToExtension(
     
     window.addEventListener('message', handler);
     
-    // Timeout after 5 seconds
     const timeout = setTimeout(() => {
       window.removeEventListener('message', handler);
       console.error('❌ Extension did not respond');
@@ -353,7 +343,6 @@ export function postNowToExtension(
     
     window.addEventListener('message', handler);
     
-    // Timeout after 30 seconds for posting
     const timeout = setTimeout(() => {
       window.removeEventListener('message', handler);
       resolve({ success: false, error: 'Posting timeout' });
