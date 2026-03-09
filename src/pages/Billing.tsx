@@ -67,6 +67,8 @@ const BillingPage = () => {
       const restricted = result.restrictedPlan || "";
       if (restricted.includes("yearly")) {
         setBillingPeriod("yearly");
+      } else if (restricted.includes("quarterly")) {
+        setBillingPeriod("quarterly");
       } else if (restricted.includes("monthly")) {
         setBillingPeriod("monthly");
       }
