@@ -4,8 +4,8 @@ import { toast } from "sonner";
 
 // Plan pricing
 export const PLAN_PRICING = {
-  pro: { usd: 12, inr: 999, usdYearly: 144, inrYearly: 11988 },
-  business: { usd: 22, inr: 1999, usdYearly: 264, inrYearly: 23988 },
+  pro: { usd: 12, inr: 999, usdQuarterly: 36, inrQuarterly: 2997, usdYearly: 144, inrYearly: 11988 },
+  business: { usd: 22, inr: 1999, usdQuarterly: 66, inrQuarterly: 5997, usdYearly: 264, inrYearly: 23988 },
 };
 
 interface CouponValidation {
