@@ -156,6 +156,9 @@ const AdminCouponsPage = () => {
       if (plan?.endsWith("_yearly")) {
         billing_period = "yearly";
         plan = plan.replace("_yearly", "");
+      } else if (plan?.endsWith("_quarterly")) {
+        billing_period = "quarterly";
+        plan = plan.replace("_quarterly", "");
       } else if (plan?.endsWith("_monthly")) {
         billing_period = "monthly";
         plan = plan.replace("_monthly", "");
