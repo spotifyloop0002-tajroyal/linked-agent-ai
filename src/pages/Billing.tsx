@@ -300,9 +300,9 @@ const BillingPage = () => {
                   const isPaidPlan = plan === "pro" || plan === "business";
                   const pricing = isPaidPlan ? calculateFinalPrice(plan, couponValidation, billingPeriod) : null;
                   const isProcessing = selectedPlan === plan && paymentLoading;
-                  const periodLabel = billingPeriod === "yearly" ? "/year" : "/month";
+                  const periodLabel = billingPeriod === "yearly" ? "/year" : billingPeriod === "quarterly" ? "/3 mo" : "/month";
                   const usdPrice = isPaidPlan
-                    ? billingPeriod === "yearly" ? PLAN_PRICING[plan].usdYearly : PLAN_PRICING[plan].usd
+                    ? billingPeriod === "yearly" ? PLAN_PRICING[plan].usdYearly : billingPeriod === "quarterly" ? PLAN_PRICING[plan].usdQuarterly : PLAN_PRICING[plan].usd
                     : 0;
                   
                   return (
