@@ -427,6 +427,7 @@ const AdminCouponsPage = () => {
                       <SelectContent>
                         <SelectItem value="any">All Periods</SelectItem>
                         <SelectItem value="monthly">Monthly Only</SelectItem>
+                        <SelectItem value="quarterly">Quarterly (3 Months) Only</SelectItem>
                         <SelectItem value="yearly">Yearly Only</SelectItem>
                       </SelectContent>
                     </Select>

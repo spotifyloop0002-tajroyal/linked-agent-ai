@@ -176,11 +176,11 @@ export function usePayment() {
     billingPeriod: BillingPeriod = "monthly"
   ): { original: number; discount: number; final: number } => {
     const pricing = PLAN_PRICING[plan];
-    const original = billingPeriod === "yearly" ? pricing.inrYearly : pricing.inr;
+    const original = billingPeriod === "yearly" ? pricing.inrYearly : billingPeriod === "quarterly" ? pricing.inrQuarterly : pricing.inr;
     let discount = 0;
 
     if (coupon?.valid && coupon.discounts) {
-      const key = billingPeriod === "yearly" ? `${plan}_yearly` : plan;
+      const key = billingPeriod === "monthly" ? plan : `${plan}_${billingPeriod}`;
       discount = coupon.discounts[key] || 0;
     }
 
