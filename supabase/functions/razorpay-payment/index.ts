@@ -9,16 +9,20 @@ const corsHeaders = {
 
 // Plan pricing in INR — yearly = 12x monthly (no built-in discount)
 const PLAN_PRICES = {
-  pro: { monthly: 999, yearly: 11988 },
-  business: { monthly: 1999, yearly: 23988 },
+  pro: { monthly: 999, quarterly: 2997, yearly: 11988 },
+  business: { monthly: 1999, quarterly: 5997, yearly: 23988 },
 };
 
 function getDurationDays(billingPeriod: string): number {
-  return billingPeriod === "yearly" ? 365 : 30;
+  if (billingPeriod === "yearly") return 365;
+  if (billingPeriod === "quarterly") return 90;
+  return 30;
 }
 
 function getDurationLabel(billingPeriod: string): string {
-  return billingPeriod === "yearly" ? "12 months (1 year)" : "1 month (30 days)";
+  if (billingPeriod === "yearly") return "12 months (1 year)";
+  if (billingPeriod === "quarterly") return "3 months (90 days)";
+  return "1 month (30 days)";
 }
 
 async function sendPaymentEmail(
@@ -135,7 +139,7 @@ serve(async (req) => {
 
     const body = await req.json();
     const { action, plan, couponCode, paymentData, billingPeriod: rawBillingPeriod } = body;
-    const billingPeriod = rawBillingPeriod === "yearly" ? "yearly" : "monthly";
+    const billingPeriod = rawBillingPeriod === "yearly" ? "yearly" : rawBillingPeriod === "quarterly" ? "quarterly" : "monthly";
 
     // ================================
     // ACTION: CREATE ORDER

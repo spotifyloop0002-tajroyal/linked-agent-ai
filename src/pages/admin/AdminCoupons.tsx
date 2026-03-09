@@ -156,6 +156,9 @@ const AdminCouponsPage = () => {
       if (plan?.endsWith("_yearly")) {
         billing_period = "yearly";
         plan = plan.replace("_yearly", "");
+      } else if (plan?.endsWith("_quarterly")) {
+        billing_period = "quarterly";
+        plan = plan.replace("_quarterly", "");
       } else if (plan?.endsWith("_monthly")) {
         billing_period = "monthly";
         plan = plan.replace("_monthly", "");
@@ -424,6 +427,7 @@ const AdminCouponsPage = () => {
                       <SelectContent>
                         <SelectItem value="any">All Periods</SelectItem>
                         <SelectItem value="monthly">Monthly Only</SelectItem>
+                        <SelectItem value="quarterly">Quarterly (3 Months) Only</SelectItem>
                         <SelectItem value="yearly">Yearly Only</SelectItem>
                       </SelectContent>
                     </Select>

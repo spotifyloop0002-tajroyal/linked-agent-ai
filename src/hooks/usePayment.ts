@@ -4,8 +4,8 @@ import { toast } from "sonner";
 
 // Plan pricing
 export const PLAN_PRICING = {
-  pro: { usd: 12, inr: 999, usdYearly: 144, inrYearly: 11988 },
-  business: { usd: 22, inr: 1999, usdYearly: 264, inrYearly: 23988 },
+  pro: { usd: 12, inr: 999, usdQuarterly: 36, inrQuarterly: 2997, usdYearly: 144, inrYearly: 11988 },
+  business: { usd: 22, inr: 1999, usdQuarterly: 66, inrQuarterly: 5997, usdYearly: 264, inrYearly: 23988 },
 };
 
 interface CouponValidation {
@@ -39,7 +39,7 @@ declare global {
   }
 }
 
-export type BillingPeriod = "monthly" | "yearly";
+export type BillingPeriod = "monthly" | "quarterly" | "yearly";
 
 export function usePayment() {
   const [isLoading, setIsLoading] = useState(false);
@@ -176,11 +176,11 @@ export function usePayment() {
     billingPeriod: BillingPeriod = "monthly"
   ): { original: number; discount: number; final: number } => {
     const pricing = PLAN_PRICING[plan];
-    const original = billingPeriod === "yearly" ? pricing.inrYearly : pricing.inr;
+    const original = billingPeriod === "yearly" ? pricing.inrYearly : billingPeriod === "quarterly" ? pricing.inrQuarterly : pricing.inr;
     let discount = 0;
 
     if (coupon?.valid && coupon.discounts) {
-      const key = billingPeriod === "yearly" ? `${plan}_yearly` : plan;
+      const key = billingPeriod === "monthly" ? plan : `${plan}_${billingPeriod}`;
       discount = coupon.discounts[key] || 0;
     }
 

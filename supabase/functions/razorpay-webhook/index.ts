@@ -8,7 +8,9 @@ const corsHeaders = {
 };
 
 function getDurationDays(billingPeriod: string): number {
-  return billingPeriod === "yearly" ? 365 : 30;
+  if (billingPeriod === "yearly") return 365;
+  if (billingPeriod === "quarterly") return 90;
+  return 30;
 }
 
 serve(async (req) => {

@@ -67,6 +67,8 @@ const BillingPage = () => {
       const restricted = result.restrictedPlan || "";
       if (restricted.includes("yearly")) {
         setBillingPeriod("yearly");
+      } else if (restricted.includes("quarterly")) {
+        setBillingPeriod("quarterly");
       } else if (restricted.includes("monthly")) {
         setBillingPeriod("monthly");
       }
@@ -273,23 +275,20 @@ const BillingPage = () => {
               <CardDescription>Select the plan that best fits your needs</CardDescription>
               
               {/* Billing Period Toggle */}
-              <div className="flex items-center justify-center gap-2 mt-4">
-                <span className={`text-sm font-medium ${billingPeriod === "monthly" ? "text-foreground" : "text-muted-foreground"}`}>Monthly</span>
-                <button
-                  onClick={() => setBillingPeriod(billingPeriod === "monthly" ? "yearly" : "monthly")}
-                  className={`relative inline-flex h-7 w-14 items-center rounded-full transition-colors ${
-                    billingPeriod === "yearly" ? "bg-primary" : "bg-muted"
-                  }`}
-                >
-                  <span
-                    className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
-                      billingPeriod === "yearly" ? "translate-x-8" : "translate-x-1"
+              <div className="flex items-center justify-center gap-3 mt-4">
+                {(["monthly", "quarterly", "yearly"] as BillingPeriod[]).map((period) => (
+                  <button
+                    key={period}
+                    onClick={() => setBillingPeriod(period)}
+                    className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                      billingPeriod === period
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-muted-foreground hover:bg-muted/80"
                     }`}
-                  />
-                </button>
-                <span className={`text-sm font-medium ${billingPeriod === "yearly" ? "text-foreground" : "text-muted-foreground"}`}>
-                  Yearly
-                </span>
+                  >
+                    {period === "monthly" ? "Monthly" : period === "quarterly" ? "3 Months" : "Yearly"}
+                  </button>
+                ))}
               </div>
             </CardHeader>
             <CardContent>
@@ -301,9 +300,9 @@ const BillingPage = () => {
                   const isPaidPlan = plan === "pro" || plan === "business";
                   const pricing = isPaidPlan ? calculateFinalPrice(plan, couponValidation, billingPeriod) : null;
                   const isProcessing = selectedPlan === plan && paymentLoading;
-                  const periodLabel = billingPeriod === "yearly" ? "/year" : "/month";
+                  const periodLabel = billingPeriod === "yearly" ? "/year" : billingPeriod === "quarterly" ? "/3 mo" : "/month";
                   const usdPrice = isPaidPlan
-                    ? billingPeriod === "yearly" ? PLAN_PRICING[plan].usdYearly : PLAN_PRICING[plan].usd
+                    ? billingPeriod === "yearly" ? PLAN_PRICING[plan].usdYearly : billingPeriod === "quarterly" ? PLAN_PRICING[plan].usdQuarterly : PLAN_PRICING[plan].usd
                     : 0;
                   
                   return (
