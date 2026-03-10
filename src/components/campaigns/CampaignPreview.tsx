@@ -74,7 +74,7 @@ export function CampaignPreview({ campaignId, onClose, onApproveAll, onRegenerat
       const [postsRes, campaignRes] = await Promise.all([
         supabase
           .from("posts")
-          .select("id, content, scheduled_time, status")
+          .select("id, content, scheduled_time, status, photo_url")
           .eq("campaign_id", campaignId)
           .order("scheduled_time", { ascending: true }),
         supabase
