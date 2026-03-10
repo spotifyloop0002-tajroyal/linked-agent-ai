@@ -136,8 +136,8 @@ const DashboardPostsTable = ({ scheduledPosts, refetchData, onViewPost }: Props)
       <div className="p-12 text-center">
         <Calendar className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
         <p className="text-muted-foreground mb-4">No scheduled posts yet</p>
-        <Button variant="outline" onClick={() => navigate("/dashboard/agents")}>
-          Create Your First Post
+        <Button variant="outline" onClick={() => navigate("/dashboard/campaigns")}>
+          New Agent Campaign
         </Button>
       </div>
     );
