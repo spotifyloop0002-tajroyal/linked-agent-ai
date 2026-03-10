@@ -271,8 +271,8 @@ export function CampaignPreview({ campaignId, onClose, onApproveAll, onRegenerat
                 </div>
 
                 {post.photo_url && (
-                  <div className="mb-3 rounded-lg overflow-hidden border border-border">
-                    <img src={post.photo_url} alt="Post image" className="w-full max-h-64 object-cover" />
+                  <div className="mb-3 rounded-lg overflow-hidden border border-border cursor-pointer" onClick={() => window.open(post.photo_url!, '_blank')}>
+                    <img src={post.photo_url} alt="Post image" className="w-full max-h-64 object-cover hover:opacity-90 transition-opacity" title="Click to view full image" />
                   </div>
                 )}
 
