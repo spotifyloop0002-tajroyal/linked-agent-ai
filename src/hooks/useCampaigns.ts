@@ -60,7 +60,9 @@ export function useCampaigns() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
   const isGeneratingRef = useRef(false);
+  const isCreatingRef = useRef(false);
 
   const fetchCampaigns = useCallback(async () => {
     try {
@@ -83,6 +85,12 @@ export function useCampaigns() {
   }, []);
 
   const createCampaign = useCallback(async (formData: CampaignFormData) => {
+    if (isCreatingRef.current) {
+      toast.info("Campaign creation already in progress, please wait...");
+      return null;
+    }
+    isCreatingRef.current = true;
+    setIsCreating(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("Not authenticated");
@@ -188,6 +196,9 @@ export function useCampaigns() {
       const msg = error instanceof Error ? error.message : "Failed to create campaign";
       toast.error(msg);
       return null;
+    } finally {
+      isCreatingRef.current = false;
+      setIsCreating(false);
     }
   }, []);
 
@@ -288,6 +299,7 @@ export function useCampaigns() {
     campaigns,
     isLoading,
     isGenerating,
+    isCreating,
     fetchCampaigns,
     createCampaign,
     generateCampaignPosts,

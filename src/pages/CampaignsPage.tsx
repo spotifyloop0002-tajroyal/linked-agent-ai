@@ -18,7 +18,7 @@ import { usePostingLimits } from "@/hooks/usePostingLimits";
 
 const CampaignsPage = () => {
   usePageTitle("Agent Campaigns");
-  const { campaigns, isLoading, isGenerating, createCampaign, generateCampaignPosts, updateCampaignStatus, deleteCampaign, approveCampaignPosts } = useCampaigns();
+  const { campaigns, isLoading, isGenerating, isCreating, createCampaign, generateCampaignPosts, updateCampaignStatus, deleteCampaign, approveCampaignPosts } = useCampaigns();
   const { isConnected: linkedInConnected, isLoading: linkedInLoading } = useDashboardLinkedIn();
   const { canPost, limitMessage, status: limitsStatus } = usePostingLimits();
   const navigate = useNavigate();
@@ -186,7 +186,7 @@ const CampaignsPage = () => {
           <CampaignSetupForm
             onSubmit={handleCreate}
             onCancel={() => setShowSetup(false)}
-            isGenerating={isGenerating}
+            isGenerating={isGenerating || isCreating}
           />
         )}
 
