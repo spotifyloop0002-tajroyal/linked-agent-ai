@@ -488,6 +488,26 @@ Generate exactly ${postDates.length} LinkedIn posts. Separate each with "---POST
       post_count: createdPosts?.length || postsToInsert.length,
     }).eq("id", campaignId);
 
+    // Send email previews for the first 3 posts (non-blocking)
+    if (createdPosts && createdPosts.length > 0) {
+      const previewPosts = createdPosts.slice(0, 3);
+      for (const p of previewPosts) {
+        try {
+          await fetch(`${supabaseUrl}/functions/v1/send-post-preview`, {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${Deno.env.get("SUPABASE_ANON_KEY")}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ postId: p.id }),
+          });
+        } catch (emailErr) {
+          console.warn("Preview email failed (non-critical):", emailErr);
+        }
+      }
+      console.log(`📧 Sent preview emails for ${previewPosts.length} posts`);
+    }
+
     return new Response(JSON.stringify({
       success: true,
       postsGenerated: createdPosts?.length || postsToInsert.length,
