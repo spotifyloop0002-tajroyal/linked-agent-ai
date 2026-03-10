@@ -47,19 +47,23 @@ serve(async (req) => {
     // Use service role to list all storage objects
     const adminClient = createClient(supabaseUrl, serviceKey);
 
-    const { data: files, error: listError } = await adminClient
-      .from("storage.objects" as any)
-      .select("name, metadata, created_at, owner")
-      .eq("bucket_id", "post-images");
+    // Fetch storage files + reference materials in parallel
+    const [filesResult, refMaterialsResult] = await Promise.all([
+      adminClient.from("storage.objects" as any)
+        .select("name, metadata, created_at, owner")
+        .eq("bucket_id", "post-images"),
+      adminClient.from("agent_reference_materials")
+        .select("user_id, type, content"),
+    ]);
 
-    // Fallback: list via storage API
+    const { data: files, error: listError } = filesResult;
+
+    // Process file storage
     let storageData: Record<string, { fileCount: number; totalBytes: number }> = {};
     let totalStorageBytes = 0;
 
     if (listError) {
-      // Try listing files per known user from the bucket
       console.log("Direct table query failed, using storage.list fallback");
-      
       const { data: profiles } = await adminClient
         .from("user_profiles")
         .select("user_id");
@@ -72,35 +76,58 @@ serve(async (req) => {
 
           if (userFiles && userFiles.length > 0) {
             const totalBytes = userFiles.reduce((sum, f) => sum + (f.metadata?.size || 0), 0);
-            storageData[profile.user_id] = {
-              fileCount: userFiles.length,
-              totalBytes,
-            };
+            storageData[profile.user_id] = { fileCount: userFiles.length, totalBytes };
             totalStorageBytes += totalBytes;
           }
-        } catch {
-          // Skip users with no folder
-        }
+        } catch { /* Skip */ }
       }
     } else {
-      // Parse from direct query
       for (const file of (files || [])) {
         const userId = file.name?.split("/")?.[0];
         if (!userId) continue;
         const size = file.metadata?.size || 0;
-        if (!storageData[userId]) {
-          storageData[userId] = { fileCount: 0, totalBytes: 0 };
-        }
+        if (!storageData[userId]) storageData[userId] = { fileCount: 0, totalBytes: 0 };
         storageData[userId].fileCount++;
         storageData[userId].totalBytes += size;
         totalStorageBytes += size;
       }
     }
 
+    // Process reference materials per user
+    const refMaterials = refMaterialsResult.data || [];
+    const refData: Record<string, { count: number; totalChars: number; agentsTrained: number }> = {};
+    let totalRefCount = 0;
+    let totalRefChars = 0;
+
+    for (const mat of refMaterials) {
+      if (!refData[mat.user_id]) refData[mat.user_id] = { count: 0, totalChars: 0, agentsTrained: 0 };
+      refData[mat.user_id].count++;
+      refData[mat.user_id].totalChars += mat.content?.length || 0;
+      totalRefCount++;
+      totalRefChars += mat.content?.length || 0;
+    }
+
+    // Count unique agent types trained per user
+    const agentTypesByUser: Record<string, Set<string>> = {};
+    for (const mat of refMaterials) {
+      if (mat.type?.startsWith("agent_training_")) {
+        if (!agentTypesByUser[mat.user_id]) agentTypesByUser[mat.user_id] = new Set();
+        agentTypesByUser[mat.user_id].add(mat.type);
+      }
+    }
+    for (const userId of Object.keys(agentTypesByUser)) {
+      if (refData[userId]) refData[userId].agentsTrained = agentTypesByUser[userId].size;
+    }
+
     return new Response(JSON.stringify({
       perUser: storageData,
       totalBytes: totalStorageBytes,
       totalFiles: Object.values(storageData).reduce((sum, d) => sum + d.fileCount, 0),
+      refMaterials: {
+        perUser: refData,
+        totalCount: totalRefCount,
+        totalChars: totalRefChars,
+      },
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
