@@ -497,6 +497,9 @@ const WritingDNAPage = () => {
     company_info: "🏢 Company Info",
     product_info: "📦 Product Info",
     general: "📄 General",
+    ...Object.fromEntries(
+      AGENT_TYPES.map(a => [`agent_training_${a.id}`, `🤖 ${a.label} Training`])
+    ),
   };
 
   const toneIcons: Record<string, React.ReactNode> = {
