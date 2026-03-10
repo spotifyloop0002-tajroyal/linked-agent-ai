@@ -44,6 +44,151 @@ interface SavedMaterial {
   created_at: string;
 }
 
+// Agent Training Section Component
+function AgentTrainingSection({ materials, onMaterialsChange }: { materials: SavedMaterial[]; onMaterialsChange: () => void }) {
+  const [selectedAgent, setSelectedAgent] = useState<string | null>(null);
+  const [trainingText, setTrainingText] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Filter materials that belong to a specific agent type
+  const getAgentMaterials = (agentId: string) =>
+    materials.filter((m) => m.type === `agent_training_${agentId}`);
+
+  const handleSaveTraining = async () => {
+    if (!selectedAgent || !trainingText.trim()) return;
+    setIsSaving(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const agentConfig = AGENT_TYPE_MAP[selectedAgent];
+      await supabase.from("agent_reference_materials").insert({
+        user_id: user.id,
+        title: `${agentConfig?.label || selectedAgent} Training — ${trainingText.substring(0, 40)}...`,
+        content: trainingText.trim(),
+        type: `agent_training_${selectedAgent}`,
+      });
+
+      toast.success(`Training saved for ${agentConfig?.label || selectedAgent} agent!`);
+      setTrainingText("");
+      onMaterialsChange();
+    } catch {
+      toast.error("Failed to save training");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDeleteTraining = async (id: string) => {
+    try {
+      await supabase.from("agent_reference_materials").delete().eq("id", id);
+      toast.success("Training material removed");
+      onMaterialsChange();
+    } catch {
+      toast.error("Failed to delete");
+    }
+  };
+
+  const agentMaterials = selectedAgent ? getAgentMaterials(selectedAgent) : [];
+
+  return (
+    <div className="bg-card rounded-2xl border border-border p-6 shadow-sm">
+      <div className="flex items-center gap-3 mb-2">
+        <Sparkles className="w-5 h-5 text-primary" />
+        <h3 className="text-lg font-semibold">Train by Agent Type</h3>
+      </div>
+      <p className="text-sm text-muted-foreground mb-5">
+        Add custom training data per agent type. This content will be used when that agent generates posts.
+      </p>
+
+      {/* Agent Type Selector */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-6">
+        {AGENT_TYPES.map((agent) => {
+          const Icon = agent.icon;
+          const count = getAgentMaterials(agent.id).length;
+          const isSelected = selectedAgent === agent.id;
+          return (
+            <button
+              key={agent.id}
+              type="button"
+              onClick={() => setSelectedAgent(isSelected ? null : agent.id)}
+              className={cn(
+                "p-3 rounded-xl border-2 text-left transition-all relative",
+                isSelected
+                  ? "border-primary bg-primary/5 ring-2 ring-primary/20"
+                  : "border-border hover:border-primary/40"
+              )}
+            >
+              <div className="flex items-center gap-2">
+                <Icon className={cn("w-4 h-4", isSelected ? "text-primary" : "text-muted-foreground")} />
+                <span className="text-xs font-medium truncate">{agent.label}</span>
+              </div>
+              {count > 0 && (
+                <Badge variant="secondary" className="absolute -top-2 -right-2 text-[10px] px-1.5 py-0">
+                  {count}
+                </Badge>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Training Input for Selected Agent */}
+      {selectedAgent && (
+        <div className="space-y-4 animate-fade-in">
+          <div className="p-3 rounded-lg bg-primary/5 border border-primary/20">
+            <p className="text-xs font-medium text-primary">
+              Training: {AGENT_TYPE_MAP[selectedAgent]?.label} Agent
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Add example posts, tone guidelines, phrases to use, or topics this agent should focus on.
+            </p>
+          </div>
+
+          {/* Existing training materials */}
+          {agentMaterials.length > 0 && (
+            <div className="space-y-2">
+              {agentMaterials.map((m) => (
+                <div key={m.id} className="flex items-start gap-2 p-3 rounded-lg bg-muted/30 border border-border/50">
+                  <FileText className="w-3.5 h-3.5 text-muted-foreground mt-0.5 flex-shrink-0" />
+                  <p className="text-xs text-muted-foreground flex-1 line-clamp-2">{m.content.substring(0, 150)}</p>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 text-destructive/60 hover:text-destructive flex-shrink-0"
+                    onClick={() => handleDeleteTraining(m.id)}
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <Textarea
+            value={trainingText}
+            onChange={(e) => setTrainingText(e.target.value)}
+            placeholder={`E.g. "Always start with a bold statement. Use data points. Keep tone witty but professional. Avoid buzzwords like synergy..."`}
+            rows={4}
+            className="text-sm"
+          />
+          <div className="flex justify-end">
+            <Button
+              onClick={handleSaveTraining}
+              disabled={isSaving || !trainingText.trim()}
+              className="gap-2"
+              size="sm"
+            >
+              {isSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+              Save Training
+            </Button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 const WritingDNAPage = () => {
   usePageTitle("Writing DNA");
   const { dna, isLoading, isAnalyzing, analyzePosts } = useWritingDNA();
