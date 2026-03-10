@@ -272,7 +272,7 @@ export function CampaignPreview({ campaignId, onClose, onApproveAll, onRegenerat
                 </div>
 
                 {post.photo_url && (
-                  <div className="mb-3 rounded-lg overflow-hidden border border-border cursor-pointer" onClick={() => window.open(post.photo_url!, '_blank')}>
+                  <div className="mb-3 rounded-lg overflow-hidden border border-border cursor-pointer" onClick={() => setLightboxUrl(post.photo_url)}>
                     <img src={post.photo_url} alt="Post image" className="w-full max-h-64 object-cover hover:opacity-90 transition-opacity" title="Click to view full image" />
                   </div>
                 )}
