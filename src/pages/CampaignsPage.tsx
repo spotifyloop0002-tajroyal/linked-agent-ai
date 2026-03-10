@@ -18,6 +18,8 @@ import { useNavigate } from "react-router-dom";
 const CampaignsPage = () => {
   usePageTitle("Agent Campaigns");
   const { campaigns, isLoading, isGenerating, createCampaign, generateCampaignPosts, updateCampaignStatus, deleteCampaign, approveCampaignPosts } = useCampaigns();
+  const { isConnected: linkedInConnected, isLoading: linkedInLoading } = useDashboardLinkedIn();
+  const navigate = useNavigate();
   const [showSetup, setShowSetup] = useState(false);
   const [showPlanner, setShowPlanner] = useState(false);
   const [previewCampaignId, setPreviewCampaignId] = useState<string | null>(null);
