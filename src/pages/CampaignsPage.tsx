@@ -7,10 +7,13 @@ import { CampaignList } from "@/components/campaigns/CampaignList";
 import { CampaignPreview } from "@/components/campaigns/CampaignPreview";
 import { WeeklyContentPlanner, WeeklyPlan } from "@/components/campaigns/WeeklyContentPlanner";
 import { Button } from "@/components/ui/button";
-import { Plus, Bot, CalendarDays } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Plus, Bot, CalendarDays, Linkedin, AlertCircle } from "lucide-react";
 import { AGENT_TYPE_MAP } from "@/lib/agentTypes";
 import { toast } from "sonner";
 import { addDays } from "date-fns";
+import { useDashboardLinkedIn } from "@/contexts/DashboardContext";
+import { useNavigate } from "react-router-dom";
 
 const CampaignsPage = () => {
   usePageTitle("Agent Campaigns");
