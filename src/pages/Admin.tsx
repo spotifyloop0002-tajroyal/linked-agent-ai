@@ -553,6 +553,11 @@ const AdminPage = () => {
                       ) : (
                         <span className="text-muted-foreground text-sm">0 B</span>
                       )}
+                      {refMaterialsData[user.user_id] && (
+                        <div className="text-xs text-muted-foreground mt-0.5">
+                          {refMaterialsData[user.user_id].count} refs · {refMaterialsData[user.user_id].agentsTrained} agents
+                        </div>
+                      )}
                     </TableCell>
                     <TableCell className="text-center">
                       {user.followers_count || 0}
