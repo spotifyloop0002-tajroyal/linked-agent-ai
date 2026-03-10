@@ -180,7 +180,7 @@ serve(async (req) => {
     const agentType = campaign.agent_type || campaign.tone_type || "professional";
     const agentConfig = AGENT_TYPE_PROMPTS[agentType] || AGENT_TYPE_PROMPTS.professional;
 
-    // Calculate posting dates
+    // Calculate posting dates — always use posting days within date range
     const startDate = new Date(campaign.start_date);
     const endDate = new Date(campaign.end_date);
     const today = new Date();
@@ -191,26 +191,14 @@ serve(async (req) => {
     
     const dayNames = ["sunday","monday","tuesday","wednesday","thursday","friday","saturday"];
 
-    if (campaign.duration_type === "alternate") {
-      let current = new Date(startDate);
-      while (current <= endDate && postDates.length < campaign.post_count) {
-        if (current >= today && postingDays.includes(dayNames[current.getDay()])) {
-          for (let p = 0; p < postsPerDay && postDates.length < campaign.post_count; p++) {
-            postDates.push(new Date(current));
-          }
+    let current = new Date(startDate);
+    while (current <= endDate && postDates.length < (campaign.post_count || 100)) {
+      if (current >= today && postingDays.includes(dayNames[current.getDay()])) {
+        for (let p = 0; p < postsPerDay && postDates.length < (campaign.post_count || 100); p++) {
+          postDates.push(new Date(current));
         }
-        current.setDate(current.getDate() + 2);
       }
-    } else {
-      let current = new Date(startDate);
-      while (current <= endDate && postDates.length < campaign.post_count) {
-        if (current >= today && postingDays.includes(dayNames[current.getDay()])) {
-          for (let p = 0; p < postsPerDay && postDates.length < campaign.post_count; p++) {
-            postDates.push(new Date(current));
-          }
-        }
-        current.setDate(current.getDate() + 1);
-      }
+      current.setDate(current.getDate() + 1);
     }
 
     if (postDates.length === 0) {
