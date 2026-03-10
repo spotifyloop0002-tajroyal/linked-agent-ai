@@ -225,9 +225,10 @@ serve(async (req) => {
     const dayNames = ["sunday","monday","tuesday","wednesday","thursday","friday","saturday"];
 
     let current = new Date(startDate);
-    while (current <= endDate && postDates.length < (campaign.post_count || 100)) {
+    const maxPosts = Math.min(campaign.post_count || 100, remaining);
+    while (current <= endDate && postDates.length < maxPosts) {
       if (current >= today && postingDays.includes(dayNames[current.getDay()])) {
-        for (let p = 0; p < postsPerDay && postDates.length < (campaign.post_count || 100); p++) {
+        for (let p = 0; p < postsPerDay && postDates.length < maxPosts; p++) {
           postDates.push(new Date(current));
         }
       }
