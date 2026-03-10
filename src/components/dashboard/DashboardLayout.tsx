@@ -52,7 +52,6 @@ const routeImports: Record<string, () => Promise<unknown>> = {
   "/dashboard": () => import("@/pages/Dashboard"),
   "/dashboard/campaigns": () => import("@/pages/CampaignsPage"),
   "/dashboard/calendar": () => import("@/pages/CalendarPage"),
-  "/dashboard/agents": () => import("@/pages/Agents"),
   "/dashboard/writing-dna": () => import("@/pages/WritingDNAPage"),
   "/dashboard/analytics": () => import("@/pages/Analytics"),
   "/dashboard/linkedin": () => import("@/pages/LinkedInConnection"),

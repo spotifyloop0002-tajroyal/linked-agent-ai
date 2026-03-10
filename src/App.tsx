@@ -106,8 +106,7 @@ const AppContent = () => {
             {/* Dashboard routes: DashboardGuard runs ONCE as layout route */}
             <Route path="/dashboard" element={<DashboardGuard />}>
               <Route index element={<Dashboard />} />
-              <Route path="agents" element={<Agents />} />
-              <Route path="agents/chat" element={<AgentChat />} />
+              {/* Agents page removed — campaigns are now agent campaigns */}
               <Route path="calendar" element={<CalendarPage />} />
               <Route path="campaigns" element={<CampaignsPage />} />
               <Route path="writing-dna" element={<WritingDNAPage />} />
