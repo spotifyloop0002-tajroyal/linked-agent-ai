@@ -1,0 +1,1 @@
+ALTER TABLE public.campaigns ADD COLUMN uploaded_image_url text DEFAULT NULL;
