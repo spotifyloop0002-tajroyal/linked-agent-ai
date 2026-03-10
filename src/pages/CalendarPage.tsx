@@ -340,7 +340,7 @@ const CalendarPage = () => {
                       variant="ghost" 
                       size="icon" 
                       className="h-8 w-8"
-                      onClick={() => navigate(`/dashboard/agents?edit=${post.id}`)}
+                      onClick={() => navigate(`/dashboard/campaigns`)}
                     >
                       <Edit className="w-4 h-4" />
                     </Button>

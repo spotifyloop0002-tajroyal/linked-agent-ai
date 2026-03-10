@@ -253,7 +253,7 @@ const DashboardPostsTable = ({ scheduledPosts, refetchData, onViewPost }: Props)
                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => window.open(post.linkedin_post_url, '_blank')}><ExternalLink className="w-4 h-4 text-primary" /></Button>
                     )}
                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onViewPost(post)}><Eye className="w-4 h-4" /></Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate(`/dashboard/agents?editPost=${post.id}`)}><Edit className="w-4 h-4" /></Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate(`/dashboard/campaigns`)}><Edit className="w-4 h-4" /></Button>
                     <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => handleDeletePost(post.id)}><Trash2 className="w-4 h-4" /></Button>
                   </div>
                 </td>
