@@ -102,6 +102,41 @@ export function useCampaigns() {
       }
       postCount = formData.postCount || postCount || 7;
 
+      // --- PLAN LIMIT CHECK ---
+      const { data: profile } = await supabase
+        .from('user_profiles_safe')
+        .select('subscription_plan')
+        .eq('user_id', session.user.id)
+        .maybeSingle();
+
+      const plan = (profile?.subscription_plan as PlanType) || 'free';
+      const monthlyLimit = MONTHLY_LIMITS[plan] || MONTHLY_LIMITS.free;
+
+      // Count existing posts this month (all non-failed statuses)
+      const monthStart = new Date();
+      monthStart.setDate(1);
+      monthStart.setHours(0, 0, 0, 0);
+
+      const { count: existingPosts } = await supabase
+        .from('posts')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', session.user.id)
+        .in('status', ['posted', 'pending', 'posting', 'draft'])
+        .gte('scheduled_time', monthStart.toISOString());
+
+      const currentCount = existingPosts || 0;
+      const remaining = monthlyLimit - currentCount;
+
+      if (remaining <= 0) {
+        toast.error(`Monthly limit reached! Your ${plan} plan allows ${monthlyLimit} posts/month. Upgrade for more.`);
+        return null;
+      }
+
+      if (postCount > remaining) {
+        toast.error(`This campaign needs ${postCount} posts but you only have ${remaining} posts remaining this month (${plan} plan: ${monthlyLimit}/month). Reduce posting days or upgrade your plan.`);
+        return null;
+      }
+
       const { data, error } = await supabase
         .from("campaigns")
         .insert({
