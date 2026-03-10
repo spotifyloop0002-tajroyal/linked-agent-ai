@@ -16,8 +16,7 @@ const Signup = lazy(() => import("./pages/Signup"));
 // Lazy load all other pages
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
-const Agents = lazy(() => import("./pages/Agents"));
-const AgentChat = lazy(() => import("./pages/AgentChat"));
+// Agents page removed — replaced by Agent Campaigns
 const CalendarPage = lazy(() => import("./pages/CalendarPage"));
 const CampaignsPage = lazy(() => import("./pages/CampaignsPage"));
 const WritingDNAPage = lazy(() => import("./pages/WritingDNAPage"));
