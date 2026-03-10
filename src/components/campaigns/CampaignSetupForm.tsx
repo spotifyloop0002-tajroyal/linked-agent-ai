@@ -166,9 +166,14 @@ export function CampaignSetupForm({ onSubmit, onCancel, isGenerating }: Campaign
     }
   };
 
+  const isSubmittingRef = useRef(false);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!topic.trim() || !agentType) return;
+    if (!topic.trim() || !agentType || isGenerating || isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
+    // Reset after a delay to allow the async flow to set isGenerating
+    setTimeout(() => { isSubmittingRef.current = false; }, 3000);
 
     const postCount = calculatePostCount();
 
