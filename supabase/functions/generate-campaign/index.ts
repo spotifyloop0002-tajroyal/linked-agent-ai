@@ -301,6 +301,18 @@ serve(async (req) => {
 CRITICAL: The user's Writing DNA represents their personal voice. The agent type (${agentType}) should influence the FORMAT and STRUCTURE of posts, but the VOICE and PERSONALITY should come from the Writing DNA. Think of it as: the user's voice + the agent's format.`;
     }
 
+    // Build agent-specific training context
+    let agentTrainingContext = "";
+    const referenceMaterials = ctx.referenceMaterials || [];
+    const agentTrainingMaterials = referenceMaterials.filter(
+      (m: any) => m.type === `agent_training_${agentType}`
+    );
+    if (agentTrainingMaterials.length > 0) {
+      agentTrainingContext = `\nAGENT-SPECIFIC TRAINING DATA (User provided these guidelines specifically for the ${agentType} agent - FOLLOW THESE CLOSELY):
+${agentTrainingMaterials.map((m: any, i: number) => `${i + 1}. ${m.content}`).join("\n")}
+`;
+    }
+
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY not configured");
