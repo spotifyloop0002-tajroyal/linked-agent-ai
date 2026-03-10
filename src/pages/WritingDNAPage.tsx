@@ -446,6 +446,11 @@ const WritingDNAPage = () => {
         )}
 
         {/* ═══════════════════════════════════════ */}
+        {/* AGENT-SPECIFIC TRAINING SECTION */}
+        {/* ═══════════════════════════════════════ */}
+        <AgentTrainingSection materials={materials} onMaterialsChange={fetchMaterials} />
+
+        {/* ═══════════════════════════════════════ */}
         {/* SAVED REFERENCE MATERIALS SECTION */}
         {/* ═══════════════════════════════════════ */}
         <div className="bg-card rounded-2xl border border-border p-6 shadow-sm">
