@@ -136,7 +136,14 @@ export function useCampaigns() {
       if (error) throw error;
 
       toast.success("Campaign created! Generating posts...");
-      return data as unknown as Campaign;
+
+      // Send campaign-created email (non-blocking)
+      const campaign = data as unknown as Campaign;
+      supabase.functions.invoke("send-campaign-email", {
+        body: { campaignId: campaign.id, type: "campaign_created" },
+      }).catch(() => {});
+
+      return campaign;
     } catch (error) {
       const msg = error instanceof Error ? error.message : "Failed to create campaign";
       toast.error(msg);
