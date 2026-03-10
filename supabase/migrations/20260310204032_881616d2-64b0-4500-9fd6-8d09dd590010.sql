@@ -1,0 +1,1 @@
+ALTER TABLE public.agent_reference_materials DROP CONSTRAINT agent_reference_materials_type_check;
