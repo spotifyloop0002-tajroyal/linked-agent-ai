@@ -34,7 +34,9 @@ serve(async (req) => {
       });
     }
 
-    const { fileData, fileType, fileName, agentId } = await req.json();
+    const body = await req.json();
+    const { fileData, fileType, fileName, agentId } = body;
+    console.log("📋 Request body keys:", Object.keys(body), "agentId:", agentId);
 
     if (!fileData || !fileType) {
       return new Response(JSON.stringify({ error: "fileData and fileType are required" }), {
