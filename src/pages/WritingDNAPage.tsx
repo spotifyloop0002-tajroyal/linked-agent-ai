@@ -865,73 +865,7 @@ const WritingDNAPage = () => {
           </div>
         )}
 
-        {/* Import UI */}
-        {showImport && (
-          <div className="bg-card rounded-2xl border border-border p-6 shadow-sm animate-fade-in">
-            <h3 className="font-semibold mb-4">
-              Paste Your LinkedIn Posts
-              <span className="text-muted-foreground font-normal ml-2 text-sm">
-                (minimum 3 posts)
-              </span>
-            </h3>
-            <div className="space-y-4">
-              {samplePosts.map((post, index) => (
-                <div key={index} className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">Post {index + 1}</Label>
-                  <Textarea
-                    value={post}
-                    onChange={(e) => updateSample(index, e.target.value)}
-                    placeholder="Paste your LinkedIn post content here..."
-                    rows={4}
-                    className="text-sm"
-                  />
-                </div>
-              ))}
-              <div className="flex flex-wrap gap-3">
-                {samplePosts.length < 10 && (
-                  <Button variant="outline" size="sm" onClick={addSample}>
-                    <Plus className="w-4 h-4 mr-1" />
-                    Add Another Post
-                  </Button>
-                )}
-                <div className="flex-1" />
-                <Button variant="ghost" onClick={() => setShowImport(false)}>
-                  Cancel
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={handleSavePosts}
-                  disabled={isSavingPosts || samplePosts.filter((p) => p.trim().length > 10).length === 0}
-                  className="gap-2"
-                >
-                  {isSavingPosts ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Save className="w-4 h-4" />
-                  )}
-                  Save Posts
-                </Button>
-                <Button
-                  onClick={handleAnalyze}
-                  disabled={isAnalyzing || samplePosts.filter((p) => p.trim().length > 20).length < 3}
-                  className="gap-2 gradient-bg text-primary-foreground"
-                >
-                  {isAnalyzing ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Analyzing...
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="w-4 h-4" />
-                      Analyze My Style
-                    </>
-                  )}
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Import UI moved inside AgentTrainingSection */}
       </div>
     </DashboardLayout>
   );
