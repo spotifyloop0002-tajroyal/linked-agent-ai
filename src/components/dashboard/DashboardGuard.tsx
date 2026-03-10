@@ -24,7 +24,7 @@ const DashboardGuard = () => {
   const linkedInHook = useLinkedInAPI();
   const checkedRef = useRef(false);
   
-  const isAgentChatPage = location.pathname.includes('/agents/chat');
+  
 
   // Safety timeout: if auth check takes more than 8 seconds, redirect to login
   useEffect(() => {
