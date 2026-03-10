@@ -26,6 +26,22 @@ const CampaignsPage = () => {
       setShowSetup(false);
       const success = await generateCampaignPosts(campaign.id);
       if (success) {
+        // If user uploaded an image, apply it to all generated posts
+        if (formData.imageOption === "upload" && formData.uploadedImageUrl) {
+          try {
+            const { data: { session } } = await (await import("@/integrations/supabase/client")).supabase.auth.getSession();
+            if (session) {
+              const { supabase } = await import("@/integrations/supabase/client");
+              await supabase
+                .from("posts")
+                .update({ photo_url: formData.uploadedImageUrl })
+                .eq("campaign_id", campaign.id)
+                .eq("user_id", session.user.id);
+            }
+          } catch (e) {
+            console.error("Failed to apply uploaded image:", e);
+          }
+        }
         setPreviewCampaignId(campaign.id);
       }
     }

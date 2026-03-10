@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { CampaignFormData } from "@/hooks/useCampaigns";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,22 +7,18 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Loader2, Search, Sparkles, X, Type, Smile, Hash, Image, FileSignature, ArrowRight, ArrowLeft } from "lucide-react";
+import { CalendarIcon, Loader2, Search, Sparkles, X, Type, Smile, Hash, Image, FileSignature, ArrowRight, ArrowLeft, Upload } from "lucide-react";
 import { format, addDays } from "date-fns";
 import { cn } from "@/lib/utils";
 import { AGENT_TYPES, POSTING_DAYS, AGENT_TYPE_MAP } from "@/lib/agentTypes";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface CampaignSetupFormProps {
   onSubmit: (data: CampaignFormData) => void;
   onCancel: () => void;
   isGenerating: boolean;
 }
-
-const durationOptions = [
-  { value: "7_days", label: "Next 7 Days", desc: "One post per day for a week" },
-  { value: "alternate", label: "Alternate Days", desc: "Post every other day for 2 weeks" },
-  { value: "custom", label: "Custom Range", desc: "Pick your own dates" },
-];
 
 const contentLengthOptions = [
   { value: "short", label: "Short", desc: "100–150 words" },
@@ -46,11 +42,15 @@ const hashtagOptions = [
 const imageOptions = [
   { value: "none", label: "No Image", desc: "Text-only posts" },
   { value: "ai", label: "AI Generate", desc: "Auto-generate images" },
-  { value: "upload", label: "Upload", desc: "Upload your own (coming soon)" },
+  { value: "upload", label: "Upload Image", desc: "Upload your own image" },
 ];
+
+const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
+const ACCEPTED_FORMATS = ["image/png", "image/jpeg", "image/jpg", "image/webp"];
 
 export function CampaignSetupForm({ onSubmit, onCancel, isGenerating }: CampaignSetupFormProps) {
   const [step, setStep] = useState(1);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Step 1: Agent Type
   const [agentType, setAgentType] = useState<string | null>(null);
@@ -58,11 +58,9 @@ export function CampaignSetupForm({ onSubmit, onCancel, isGenerating }: Campaign
 
   // Step 2: Campaign Details
   const [topic, setTopic] = useState("");
-  const [durationType, setDurationType] = useState<"7_days" | "alternate" | "custom">("7_days");
   const [startDate, setStartDate] = useState<Date>(new Date());
-  const [endDate, setEndDate] = useState<Date>(addDays(new Date(), 6));
-  const [postCount, setPostCount] = useState(7);
-  const [postingDays, setPostingDays] = useState<string[]>(POSTING_DAYS.map(d => d.id));
+  const [endDate, setEndDate] = useState<Date>(addDays(new Date(), 27));
+  const [postingDays, setPostingDays] = useState<string[]>(["monday", "wednesday", "friday"]);
   const [postsPerDay, setPostsPerDay] = useState(1);
 
   // Step 3: Content & Settings
@@ -72,6 +70,8 @@ export function CampaignSetupForm({ onSubmit, onCancel, isGenerating }: Campaign
   const [fixedHashtags, setFixedHashtags] = useState("");
   const [footerText, setFooterText] = useState("");
   const [imageOption, setImageOption] = useState("none");
+  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
   const [researchMode, setResearchMode] = useState(false);
   const [autoBestTime, setAutoBestTime] = useState(true);
   const [autoApprove, setAutoApprove] = useState(false);
@@ -84,13 +84,59 @@ export function CampaignSetupForm({ onSubmit, onCancel, isGenerating }: Campaign
     const config = AGENT_TYPE_MAP[typeId];
     if (config) {
       setPostingTime(config.suggestedTime);
-      // Set emoji level based on agent type
       if (typeId === "professional" || typeId === "data-analytics") setEmojiLevel("low");
       else if (typeId === "comedy" || typeId === "motivational") setEmojiLevel("high");
       else setEmojiLevel("moderate");
-      // Set image option based on agent type
       if (typeId === "data-analytics" || typeId === "creative" || typeId === "news") setImageOption("ai");
       else setImageOption("none");
+    }
+  };
+
+  // Calculate post count from selected days within date range
+  const calculatePostCount = () => {
+    let count = 0;
+    const dayNames = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+    const current = new Date(startDate);
+    const end = new Date(endDate);
+    while (current <= end) {
+      if (postingDays.includes(dayNames[current.getDay()])) {
+        count += postsPerDay;
+      }
+      current.setDate(current.getDate() + 1);
+    }
+    return count;
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!ACCEPTED_FORMATS.includes(file.type)) {
+      toast.error("Unsupported format. Use PNG, JPG, or WEBP.");
+      return;
+    }
+    if (file.size > MAX_IMAGE_SIZE) {
+      toast.error("Image must be under 10MB.");
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const fileName = `campaign-upload-${Date.now()}-${file.name}`;
+      const { error: uploadError } = await supabase.storage
+        .from("post-images")
+        .upload(fileName, file, { contentType: file.type, upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: publicUrl } = supabase.storage.from("post-images").getPublicUrl(fileName);
+      setUploadedImageUrl(publicUrl.publicUrl);
+      toast.success("Image uploaded!");
+    } catch (err) {
+      toast.error("Failed to upload image");
+      console.error(err);
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -98,13 +144,15 @@ export function CampaignSetupForm({ onSubmit, onCancel, isGenerating }: Campaign
     e.preventDefault();
     if (!topic.trim() || !agentType) return;
 
+    const postCount = calculatePostCount();
+
     onSubmit({
       topic: topic.trim(),
-      toneType: agentType, // agent type drives the tone
-      durationType,
+      toneType: agentType,
+      durationType: "custom",
       startDate,
-      endDate: durationType === "custom" ? endDate : undefined,
-      postCount: durationType === "custom" ? postCount : undefined,
+      endDate,
+      postCount,
       postsPerDay,
       researchMode,
       autoBestTime,
@@ -117,7 +165,7 @@ export function CampaignSetupForm({ onSubmit, onCancel, isGenerating }: Campaign
       fixedHashtags: hashtagMode === "manual" ? fixedHashtags.split(",").map(h => h.trim()).filter(Boolean) : [],
       footerText: footerText.trim(),
       imageOption,
-      // New fields
+      uploadedImageUrl: imageOption === "upload" ? uploadedImageUrl : undefined,
       agentType,
       postingDays,
       campaignName: campaignName.trim(),
@@ -125,6 +173,7 @@ export function CampaignSetupForm({ onSubmit, onCancel, isGenerating }: Campaign
   };
 
   const selectedAgent = agentType ? AGENT_TYPE_MAP[agentType] : null;
+  const estimatedPosts = calculatePostCount();
 
   return (
     <div className="bg-card rounded-2xl border border-border shadow-lg p-6 animate-fade-in max-h-[85vh] overflow-y-auto">
@@ -269,34 +318,12 @@ export function CampaignSetupForm({ onSubmit, onCancel, isGenerating }: Campaign
               <p className="text-xs text-muted-foreground">Select which days the agent should post</p>
             </div>
 
-            {/* Duration */}
+            {/* Campaign Schedule — Start & End Date */}
             <div className="space-y-2">
-              <Label>Duration</Label>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                {durationOptions.map((opt) => (
-                  <button
-                    key={opt.value}
-                    type="button"
-                    onClick={() => setDurationType(opt.value as any)}
-                    className={cn(
-                      "p-4 rounded-xl border text-left transition-all",
-                      durationType === opt.value
-                        ? "border-primary bg-primary/5 ring-2 ring-primary/20"
-                        : "border-border hover:border-primary/40"
-                    )}
-                  >
-                    <p className="font-medium text-sm">{opt.label}</p>
-                    <p className="text-xs text-muted-foreground mt-1">{opt.desc}</p>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Custom date range */}
-            {durationType === "custom" && (
+              <Label>Campaign Schedule</Label>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Start Date</Label>
+                  <Label className="text-xs text-muted-foreground">Start Date</Label>
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button variant="outline" className="w-full justify-start font-normal">
@@ -316,7 +343,7 @@ export function CampaignSetupForm({ onSubmit, onCancel, isGenerating }: Campaign
                   </Popover>
                 </div>
                 <div className="space-y-2">
-                  <Label>End Date</Label>
+                  <Label className="text-xs text-muted-foreground">End Date</Label>
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button variant="outline" className="w-full justify-start font-normal">
@@ -335,18 +362,15 @@ export function CampaignSetupForm({ onSubmit, onCancel, isGenerating }: Campaign
                     </PopoverContent>
                   </Popover>
                 </div>
-                <div className="space-y-2">
-                  <Label>Number of Posts</Label>
-                  <Input
-                    type="number"
-                    min={1}
-                    max={30}
-                    value={postCount}
-                    onChange={(e) => setPostCount(parseInt(e.target.value) || 1)}
-                  />
-                </div>
               </div>
-            )}
+
+              {/* Estimated posts */}
+              <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 mt-3">
+                <p className="text-sm text-primary font-medium">
+                  📅 {estimatedPosts} posts will be scheduled on {postingDays.length} day{postingDays.length !== 1 ? "s" : ""}/week
+                </p>
+              </div>
+            </div>
 
             {/* Posts Per Day */}
             <div className="space-y-2">
@@ -493,6 +517,58 @@ export function CampaignSetupForm({ onSubmit, onCancel, isGenerating }: Campaign
                   </button>
                 ))}
               </div>
+
+              {/* Upload UI */}
+              {imageOption === "upload" && (
+                <div className="mt-3 space-y-3">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".png,.jpg,.jpeg,.webp"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                  />
+                  {uploadedImageUrl ? (
+                    <div className="relative">
+                      <img
+                        src={uploadedImageUrl}
+                        alt="Uploaded"
+                        className="w-full max-h-48 object-cover rounded-lg border border-border"
+                      />
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        className="absolute top-2 right-2 h-7 w-7"
+                        onClick={() => {
+                          setUploadedImageUrl(null);
+                          if (fileInputRef.current) fileInputRef.current.value = "";
+                        }}
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full gap-2 border-dashed h-24"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isUploading}
+                    >
+                      {isUploading ? (
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                      ) : (
+                        <Upload className="w-5 h-5" />
+                      )}
+                      {isUploading ? "Uploading..." : "Click to upload image"}
+                    </Button>
+                  )}
+                  <p className="text-xs text-muted-foreground">
+                    Supported: PNG, JPG, WEBP • Max 10MB • This image will be used for all posts in the campaign
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Footer / Signature */}
@@ -586,7 +662,7 @@ export function CampaignSetupForm({ onSubmit, onCancel, isGenerating }: Campaign
                 ) : (
                   <>
                     <Sparkles className="w-4 h-4 mr-2" />
-                    Generate Campaign
+                    Generate Campaign ({estimatedPosts} posts)
                   </>
                 )}
               </Button>

@@ -180,7 +180,7 @@ serve(async (req) => {
     const agentType = campaign.agent_type || campaign.tone_type || "professional";
     const agentConfig = AGENT_TYPE_PROMPTS[agentType] || AGENT_TYPE_PROMPTS.professional;
 
-    // Calculate posting dates
+    // Calculate posting dates — always use posting days within date range
     const startDate = new Date(campaign.start_date);
     const endDate = new Date(campaign.end_date);
     const today = new Date();
@@ -191,26 +191,14 @@ serve(async (req) => {
     
     const dayNames = ["sunday","monday","tuesday","wednesday","thursday","friday","saturday"];
 
-    if (campaign.duration_type === "alternate") {
-      let current = new Date(startDate);
-      while (current <= endDate && postDates.length < campaign.post_count) {
-        if (current >= today && postingDays.includes(dayNames[current.getDay()])) {
-          for (let p = 0; p < postsPerDay && postDates.length < campaign.post_count; p++) {
-            postDates.push(new Date(current));
-          }
+    let current = new Date(startDate);
+    while (current <= endDate && postDates.length < (campaign.post_count || 100)) {
+      if (current >= today && postingDays.includes(dayNames[current.getDay()])) {
+        for (let p = 0; p < postsPerDay && postDates.length < (campaign.post_count || 100); p++) {
+          postDates.push(new Date(current));
         }
-        current.setDate(current.getDate() + 2);
       }
-    } else {
-      let current = new Date(startDate);
-      while (current <= endDate && postDates.length < campaign.post_count) {
-        if (current >= today && postingDays.includes(dayNames[current.getDay()])) {
-          for (let p = 0; p < postsPerDay && postDates.length < campaign.post_count; p++) {
-            postDates.push(new Date(current));
-          }
-        }
-        current.setDate(current.getDate() + 1);
-      }
+      current.setDate(current.getDate() + 1);
     }
 
     if (postDates.length === 0) {
@@ -383,8 +371,16 @@ Generate exactly ${postDates.length} LinkedIn posts. Separate each with "---POST
     );
 
     // Generate AI images with agent-type-specific style
+    // Generate AI images OR use uploaded image
     let imageUrls: (string | null)[] = new Array(cleanPosts.length).fill(null);
-    if (campaign.image_option === "ai") {
+    
+    if (campaign.image_option === "upload") {
+      // Use the same uploaded image for all posts
+      // The uploaded image URL is stored as footer_text placeholder or we check posts table
+      // For uploaded images, the URL comes from the campaign creation flow
+      // We'll check if there's a photo_url pattern in existing data
+      console.log("📎 Using uploaded image for all posts (will be set from client)");
+    } else if (campaign.image_option === "ai") {
       console.log(`🎨 Generating ${agentType}-style images for campaign posts...`);
       for (let i = 0; i < cleanPosts.length; i += 3) {
         const batch = cleanPosts.slice(i, i + 3);
