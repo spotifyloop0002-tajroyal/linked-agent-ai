@@ -192,10 +192,11 @@ export function useCampaigns() {
   }, []);
 
   const generateCampaignPosts = useCallback(async (campaignId: string) => {
-    if (isGenerating) {
+    if (isGeneratingRef.current) {
       toast.info("Generation already in progress, please wait...");
       return false;
     }
+    isGeneratingRef.current = true;
     setIsGenerating(true);
     try {
       const { data, error } = await supabase.functions.invoke("generate-campaign", {
@@ -229,9 +230,10 @@ export function useCampaigns() {
       toast.error(msg);
       return false;
     } finally {
+      isGeneratingRef.current = false;
       setIsGenerating(false);
     }
-  }, [fetchCampaigns, isGenerating]);
+  }, [fetchCampaigns]);
 
   const updateCampaignStatus = useCallback(async (campaignId: string, status: string) => {
     try {
