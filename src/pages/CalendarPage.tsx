@@ -332,7 +332,7 @@ const CalendarPage = () => {
                       variant="ghost" 
                       size="icon" 
                       className="h-8 w-8"
-                      onClick={() => navigate(`/dashboard/agents?view=${post.id}`)}
+                      onClick={() => navigate(`/dashboard/campaigns`)}
                     >
                       <Eye className="w-4 h-4" />
                     </Button>
