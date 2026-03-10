@@ -45,10 +45,39 @@ interface SavedMaterial {
 }
 
 // Agent Training Section Component
-function AgentTrainingSection({ materials, onMaterialsChange }: { materials: SavedMaterial[]; onMaterialsChange: () => void }) {
+function AgentTrainingSection({ 
+  materials, 
+  onMaterialsChange,
+  onFileUpload,
+  isExtracting,
+  fileInputRef,
+  showImport,
+  setShowImport,
+  samplePosts,
+  setSamplePosts,
+  handleSavePosts,
+  isSavingPosts,
+  handleAnalyze,
+  isAnalyzing,
+}: { 
+  materials: SavedMaterial[]; 
+  onMaterialsChange: () => void;
+  onFileUpload: (e: React.ChangeEvent<HTMLInputElement>, agentId: string) => void;
+  isExtracting: boolean;
+  fileInputRef: React.RefObject<HTMLInputElement>;
+  showImport: boolean;
+  setShowImport: (v: boolean) => void;
+  samplePosts: string[];
+  setSamplePosts: React.Dispatch<React.SetStateAction<string[]>>;
+  handleSavePosts: (agentId: string) => void;
+  isSavingPosts: boolean;
+  handleAnalyze: () => void;
+  isAnalyzing: boolean;
+}) {
   const [selectedAgent, setSelectedAgent] = useState<string | null>(null);
   const [trainingText, setTrainingText] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const agentFileInputRef = useRef<HTMLInputElement>(null);
 
   // Filter materials that belong to a specific agent type
   const getAgentMaterials = (agentId: string) =>
@@ -91,6 +120,16 @@ function AgentTrainingSection({ materials, onMaterialsChange }: { materials: Sav
 
   const agentMaterials = selectedAgent ? getAgentMaterials(selectedAgent) : [];
 
+  const updateSample = (index: number, value: string) => {
+    setSamplePosts((prev) => prev.map((p, i) => (i === index ? value : p)));
+  };
+
+  const addSample = () => {
+    if (samplePosts.length < 10) {
+      setSamplePosts((prev) => [...prev, ""]);
+    }
+  };
+
   return (
     <div className="bg-card rounded-2xl border border-border p-6 shadow-sm">
       <div className="flex items-center gap-3 mb-2">
@@ -111,7 +150,10 @@ function AgentTrainingSection({ materials, onMaterialsChange }: { materials: Sav
             <button
               key={agent.id}
               type="button"
-              onClick={() => setSelectedAgent(isSelected ? null : agent.id)}
+              onClick={() => {
+                setSelectedAgent(isSelected ? null : agent.id);
+                setShowImport(false);
+              }}
               className={cn(
                 "p-3 rounded-xl border-2 text-left transition-all relative",
                 isSelected
@@ -144,6 +186,91 @@ function AgentTrainingSection({ materials, onMaterialsChange }: { materials: Sav
               Add example posts, tone guidelines, phrases to use, or topics this agent should focus on.
             </p>
           </div>
+
+          {/* Upload & Import buttons per agent */}
+          <div className="flex flex-wrap gap-2">
+            <input
+              ref={agentFileInputRef}
+              type="file"
+              accept=".pdf,.jpg,.jpeg,.png,.webp,.txt"
+              onChange={(e) => onFileUpload(e, selectedAgent)}
+              className="hidden"
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              onClick={() => agentFileInputRef.current?.click()}
+              disabled={isExtracting}
+            >
+              {isExtracting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
+              Upload PDF/Image
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              onClick={() => {
+                setShowImport(!showImport);
+                setSamplePosts(["", "", ""]);
+              }}
+            >
+              <Plus className="w-3.5 h-3.5" />
+              Import Posts
+            </Button>
+          </div>
+
+          {/* Import Posts inline for this agent */}
+          {showImport && (
+            <div className="space-y-3 p-4 rounded-xl bg-muted/30 border border-border/50 animate-fade-in">
+              <p className="text-xs font-medium text-muted-foreground">
+                Paste posts for {AGENT_TYPE_MAP[selectedAgent]?.label} agent (min 3 for analysis)
+              </p>
+              {samplePosts.map((post, index) => (
+                <div key={index} className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Post {index + 1}</Label>
+                  <Textarea
+                    value={post}
+                    onChange={(e) => updateSample(index, e.target.value)}
+                    placeholder="Paste your LinkedIn post content here..."
+                    rows={3}
+                    className="text-sm"
+                  />
+                </div>
+              ))}
+              <div className="flex flex-wrap gap-2">
+                {samplePosts.length < 10 && (
+                  <Button variant="outline" size="sm" onClick={addSample}>
+                    <Plus className="w-3.5 h-3.5 mr-1" />
+                    Add Post
+                  </Button>
+                )}
+                <div className="flex-1" />
+                <Button variant="ghost" size="sm" onClick={() => setShowImport(false)}>
+                  Cancel
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleSavePosts(selectedAgent)}
+                  disabled={isSavingPosts || samplePosts.filter((p) => p.trim().length > 10).length === 0}
+                  className="gap-1.5"
+                >
+                  {isSavingPosts ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+                  Save
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={handleAnalyze}
+                  disabled={isAnalyzing || samplePosts.filter((p) => p.trim().length > 20).length < 3}
+                  className="gap-1.5 gradient-bg text-primary-foreground"
+                >
+                  {isAnalyzing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+                  Analyze
+                </Button>
+              </div>
+            </div>
+          )}
 
           {/* Existing training materials */}
           {agentMaterials.length > 0 && (
@@ -283,7 +410,7 @@ const WritingDNAPage = () => {
     setShowImport(false);
   };
 
-  const handleSavePosts = async () => {
+  const handleSavePosts = async (agentId?: string) => {
     const validPosts = samplePosts.filter((p) => p.trim().length > 10);
     if (validPosts.length === 0) {
       toast.error("Please add at least one post with content");
@@ -294,12 +421,13 @@ const WritingDNAPage = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
+      const materialType = agentId ? `agent_training_${agentId}` : "writing_sample";
       const { error } = await supabase.from("agent_reference_materials").insert(
         validPosts.map((post, i) => ({
           user_id: user.id,
           title: `LinkedIn Post ${i + 1} - ${post.substring(0, 40)}...`,
           content: post.trim(),
-          type: "writing_sample",
+          type: materialType,
         }))
       );
 
@@ -315,17 +443,8 @@ const WritingDNAPage = () => {
     }
   };
 
-  const updateSample = (index: number, value: string) => {
-    setSamplePosts((prev) => prev.map((p, i) => (i === index ? value : p)));
-  };
 
-  const addSample = () => {
-    if (samplePosts.length < 10) {
-      setSamplePosts((prev) => [...prev, ""]);
-    }
-  };
-
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, agentId?: string) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -354,7 +473,7 @@ const WritingDNAPage = () => {
       const base64 = btoa(binary);
 
       const { data, error } = await supabase.functions.invoke("extract-document", {
-        body: { fileData: base64, fileType: file.type, fileName: file.name },
+        body: { fileData: base64, fileType: file.type, fileName: file.name, agentId },
       });
 
       if (error) throw error;
@@ -362,12 +481,11 @@ const WritingDNAPage = () => {
 
       setExtractedData(data.extracted);
       toast.success("Document extracted and saved as reference material!");
-      fetchMaterials(); // Refresh list
+      fetchMaterials();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to extract document");
     } finally {
       setIsExtracting(false);
-      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 
@@ -411,42 +529,14 @@ const WritingDNAPage = () => {
     <DashboardLayout>
       <div className="space-y-8 max-w-4xl">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold flex items-center gap-3">
-              <Dna className="w-8 h-8 text-secondary" />
-              Writing DNA
-            </h1>
-            <p className="text-muted-foreground mt-1">
-              Your unique writing style profile for AI-powered content personalization
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".pdf,.jpg,.jpeg,.png,.webp,.txt"
-              onChange={handleFileUpload}
-              className="hidden"
-            />
-            <Button
-              variant="outline"
-              className="gap-2"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isExtracting}
-            >
-              {isExtracting ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Upload className="w-4 h-4" />
-              )}
-              Upload PDF/Image
-            </Button>
-            <Button onClick={() => setShowImport(true)} className="gap-2" variant="outline">
-              <Plus className="w-4 h-4" />
-              {dna ? "Re-analyze" : "Import Posts"}
-            </Button>
-          </div>
+        <div>
+          <h1 className="text-3xl font-bold flex items-center gap-3">
+            <Dna className="w-8 h-8 text-secondary" />
+            Writing DNA
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            Your unique writing style profile for AI-powered content personalization
+          </p>
         </div>
 
         {/* DNA Profile Card */}
@@ -593,7 +683,21 @@ const WritingDNAPage = () => {
         {/* ═══════════════════════════════════════ */}
         {/* AGENT-SPECIFIC TRAINING SECTION */}
         {/* ═══════════════════════════════════════ */}
-        <AgentTrainingSection materials={materials} onMaterialsChange={fetchMaterials} />
+        <AgentTrainingSection
+          materials={materials}
+          onMaterialsChange={fetchMaterials}
+          onFileUpload={handleFileUpload}
+          isExtracting={isExtracting}
+          fileInputRef={fileInputRef}
+          showImport={showImport}
+          setShowImport={setShowImport}
+          samplePosts={samplePosts}
+          setSamplePosts={setSamplePosts}
+          handleSavePosts={handleSavePosts}
+          isSavingPosts={isSavingPosts}
+          handleAnalyze={handleAnalyze}
+          isAnalyzing={isAnalyzing}
+        />
 
         {/* ═══════════════════════════════════════ */}
         {/* SAVED REFERENCE MATERIALS SECTION */}
@@ -752,73 +856,7 @@ const WritingDNAPage = () => {
           </div>
         )}
 
-        {/* Import UI */}
-        {showImport && (
-          <div className="bg-card rounded-2xl border border-border p-6 shadow-sm animate-fade-in">
-            <h3 className="font-semibold mb-4">
-              Paste Your LinkedIn Posts
-              <span className="text-muted-foreground font-normal ml-2 text-sm">
-                (minimum 3 posts)
-              </span>
-            </h3>
-            <div className="space-y-4">
-              {samplePosts.map((post, index) => (
-                <div key={index} className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">Post {index + 1}</Label>
-                  <Textarea
-                    value={post}
-                    onChange={(e) => updateSample(index, e.target.value)}
-                    placeholder="Paste your LinkedIn post content here..."
-                    rows={4}
-                    className="text-sm"
-                  />
-                </div>
-              ))}
-              <div className="flex flex-wrap gap-3">
-                {samplePosts.length < 10 && (
-                  <Button variant="outline" size="sm" onClick={addSample}>
-                    <Plus className="w-4 h-4 mr-1" />
-                    Add Another Post
-                  </Button>
-                )}
-                <div className="flex-1" />
-                <Button variant="ghost" onClick={() => setShowImport(false)}>
-                  Cancel
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={handleSavePosts}
-                  disabled={isSavingPosts || samplePosts.filter((p) => p.trim().length > 10).length === 0}
-                  className="gap-2"
-                >
-                  {isSavingPosts ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Save className="w-4 h-4" />
-                  )}
-                  Save Posts
-                </Button>
-                <Button
-                  onClick={handleAnalyze}
-                  disabled={isAnalyzing || samplePosts.filter((p) => p.trim().length > 20).length < 3}
-                  className="gap-2 gradient-bg text-primary-foreground"
-                >
-                  {isAnalyzing ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Analyzing...
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="w-4 h-4" />
-                      Analyze My Style
-                    </>
-                  )}
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Import UI moved inside AgentTrainingSection */}
       </div>
     </DashboardLayout>
   );
