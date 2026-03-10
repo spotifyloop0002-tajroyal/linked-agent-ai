@@ -196,6 +196,9 @@ export function useCampaigns() {
       const msg = error instanceof Error ? error.message : "Failed to create campaign";
       toast.error(msg);
       return null;
+    } finally {
+      isCreatingRef.current = false;
+      setIsCreating(false);
     }
   }, []);
 
