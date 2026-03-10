@@ -45,6 +45,18 @@ const PostPreviewModal = ({ post, open, onOpenChange, profile }: Props) => {
             </div>
           </div>
 
+          {post.photo_url && (
+            <div className="rounded-lg overflow-hidden border border-border">
+              <img
+                src={post.photo_url}
+                alt="Post image"
+                className="w-full max-h-80 object-contain cursor-pointer hover:opacity-90 transition-opacity"
+                onClick={() => window.open(post.photo_url!, '_blank')}
+                title="Click to view full image"
+              />
+            </div>
+          )}
+
           <div className="text-sm whitespace-pre-wrap leading-relaxed border-l-2 border-primary/20 pl-4">
             {post.content}
           </div>
