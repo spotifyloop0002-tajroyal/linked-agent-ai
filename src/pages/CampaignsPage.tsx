@@ -122,17 +122,36 @@ const CampaignsPage = () => {
             <Button
               variant="outline"
               className="gap-2"
+              disabled={!linkedInConnected}
               onClick={() => { setShowPlanner(!showPlanner); setShowSetup(false); }}
             >
               <CalendarDays className="w-4 h-4" />
               Weekly Planner
             </Button>
-            <Button className="gap-2 gradient-bg text-primary-foreground" onClick={() => { setShowSetup(true); setShowPlanner(false); }}>
+            <Button
+              className="gap-2 gradient-bg text-primary-foreground"
+              disabled={!linkedInConnected}
+              onClick={() => { setShowSetup(true); setShowPlanner(false); }}
+            >
               <Plus className="w-4 h-4" />
               New Campaign
             </Button>
           </div>
         </div>
+
+        {/* LinkedIn connection gate */}
+        {!linkedInLoading && !linkedInConnected && (
+          <Alert className="border-destructive/50 bg-destructive/10">
+            <AlertCircle className="w-4 h-4 text-destructive" />
+            <AlertDescription className="flex items-center justify-between">
+              <span>Connect your LinkedIn account before creating campaigns.</span>
+              <Button size="sm" variant="outline" className="gap-2 ml-4" onClick={() => navigate("/dashboard/linkedin")}>
+                <Linkedin className="w-4 h-4 text-[#0A66C2]" />
+                Connect LinkedIn
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
 
         {/* Weekly Content Planner */}
         {showPlanner && (
