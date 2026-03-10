@@ -58,7 +58,7 @@ serve(async (req) => {
         .select("title, content, type")
         .eq("user_id", userId)
         .order("created_at", { ascending: false })
-        .limit(10),
+        .limit(50),
     ]);
 
     const profile = profileRes.data;
