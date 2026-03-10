@@ -64,22 +64,22 @@ export const usePostingLimits = () => {
       monthStart.setDate(1);
       monthStart.setHours(0, 0, 0, 0);
 
-      // Count posts SUCCESSFULLY POSTED today (only 'posted' status counts)
-      const { count: postsToday } = await supabase
+      // Count posts that are posted OR scheduled (pending/draft/posting) today
+      const { count: postedToday } = await supabase
         .from('posts')
         .select('*', { count: 'exact', head: true })
         .eq('user_id', user.id)
-        .eq('status', 'posted')
-        .gte('posted_at', todayStart.toISOString())
-        .lte('posted_at', todayEnd.toISOString());
+        .in('status', ['posted', 'pending', 'posting', 'draft'])
+        .gte('scheduled_time', todayStart.toISOString())
+        .lte('scheduled_time', todayEnd.toISOString());
 
-      // Count posts SUCCESSFULLY POSTED this month (only 'posted' status counts)
+      // Count ALL posts this month (posted + scheduled + draft) against monthly limit
       const { count: postsThisMonth } = await supabase
         .from('posts')
         .select('*', { count: 'exact', head: true })
         .eq('user_id', user.id)
-        .eq('status', 'posted')
-        .gte('posted_at', monthStart.toISOString());
+        .in('status', ['posted', 'pending', 'posting', 'draft'])
+        .gte('scheduled_time', monthStart.toISOString());
 
       const todayCount = postsToday || 0;
       const monthCount = postsThisMonth || 0;
