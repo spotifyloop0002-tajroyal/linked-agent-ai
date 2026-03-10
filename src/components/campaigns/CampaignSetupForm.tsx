@@ -48,6 +48,21 @@ const imageOptions = [
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
 const ACCEPTED_FORMATS = ["image/png", "image/jpeg", "image/jpg", "image/webp"];
 
+const TOPIC_SUGGESTIONS: Record<string, string[]> = {
+  comedy: ["Office Life Fails & Wins", "Corporate Buzzword Bingo", "Remote Work Struggles", "LinkedIn Clichés Roast", "Career Plot Twists"],
+  professional: ["Industry Trends & Analysis", "Leadership Best Practices", "Productivity Frameworks", "Strategic Decision Making", "Market Insights & Forecasts"],
+  storytelling: ["Founder Journey Lessons", "Career Pivot Stories", "Failure to Success Tales", "Mentorship Moments", "Behind the Scenes of Building"],
+  "thought-leadership": ["Future of Work Predictions", "Contrarian Industry Takes", "Disrupting Traditional Models", "Bold Tech Predictions", "Redefining Success Metrics"],
+  motivational: ["Morning Mindset Habits", "Overcoming Imposter Syndrome", "Goal Setting Mastery", "Resilience in Business", "Celebrating Small Wins"],
+  "data-analytics": ["Data-Driven Decision Making", "Analytics Trends & Tools", "KPI Deep Dives", "AI & Machine Learning Insights", "Growth Metrics That Matter"],
+  creative: ["Design Thinking in Business", "Creative Problem Solving", "Innovation Frameworks", "Visual Storytelling Tips", "Art Meets Technology"],
+  news: ["AI & Tech Industry Updates", "Startup Ecosystem News", "Market & Economy Shifts", "Policy & Regulation Changes", "Emerging Tech Breakthroughs"],
+};
+
+function getTopicSuggestions(agentType: string): string[] {
+  return TOPIC_SUGGESTIONS[agentType] || TOPIC_SUGGESTIONS["professional"] || [];
+}
+
 export function CampaignSetupForm({ onSubmit, onCancel, isGenerating }: CampaignSetupFormProps) {
   const [step, setStep] = useState(1);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -279,14 +294,41 @@ export function CampaignSetupForm({ onSubmit, onCancel, isGenerating }: Campaign
             {/* Topic */}
             <div className="space-y-2">
               <Label htmlFor="topic">Campaign Topic</Label>
-              <Input
-                id="topic"
-                placeholder='e.g. "AI in Healthcare", "Startup Growth Strategies"'
-                value={topic}
-                onChange={(e) => setTopic(e.target.value)}
-                className="text-base"
-                required
-              />
+              <div className="flex gap-2">
+                <Input
+                  id="topic"
+                  placeholder='e.g. "AI in Healthcare", "Startup Growth Strategies"'
+                  value={topic}
+                  onChange={(e) => setTopic(e.target.value)}
+                  className="text-base flex-1"
+                  required
+                />
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button type="button" variant="outline" className="gap-1.5 shrink-0 border-primary/30 text-primary hover:bg-primary/5">
+                      <Sparkles className="w-4 h-4" />
+                      Suggest
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-72 p-2" align="end">
+                    <p className="text-xs font-medium text-muted-foreground px-2 py-1 mb-1">
+                      Suggested topics for {selectedAgent?.label || "agent"}
+                    </p>
+                    <div className="space-y-0.5">
+                      {getTopicSuggestions(agentType || "").map((t, i) => (
+                        <button
+                          key={i}
+                          type="button"
+                          onClick={() => setTopic(t)}
+                          className="w-full text-left px-3 py-2 text-sm rounded-md hover:bg-accent transition-colors"
+                        >
+                          {t}
+                        </button>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              </div>
             </div>
 
             {/* Posting Days */}
