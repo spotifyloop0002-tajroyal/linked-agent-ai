@@ -186,7 +186,7 @@ const CampaignsPage = () => {
           <CampaignSetupForm
             onSubmit={handleCreate}
             onCancel={() => setShowSetup(false)}
-            isGenerating={isGenerating}
+            isGenerating={isGenerating || isCreating}
           />
         )}
 
