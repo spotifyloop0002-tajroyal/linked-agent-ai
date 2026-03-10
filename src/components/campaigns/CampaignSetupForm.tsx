@@ -64,7 +64,32 @@ export function CampaignSetupForm({ onSubmit, onCancel, isGenerating }: Campaign
   const [postingDays, setPostingDays] = useState<string[]>(["monday", "wednesday", "friday"]);
   const [postsPerDay, setPostsPerDay] = useState(1);
 
-  // Step 3: Content & Settings
+  // AI topic suggestions
+  const [suggestedTopics, setSuggestedTopics] = useState<string[]>([]);
+  const [isSuggestingTopics, setIsSuggestingTopics] = useState(false);
+
+  const fetchTopicSuggestions = async () => {
+    if (!agentType || isSuggestingTopics) return;
+    setIsSuggestingTopics(true);
+    setSuggestedTopics([]);
+    try {
+      const { data, error } = await supabase.functions.invoke("suggest-topics", {
+        body: { agentType },
+      });
+      if (error) throw error;
+      if (data?.topics?.length) {
+        setSuggestedTopics(data.topics);
+      } else {
+        toast.error("No suggestions returned. Try again.");
+      }
+    } catch (err) {
+      console.error("Topic suggestion error:", err);
+      toast.error("Failed to get topic suggestions");
+    } finally {
+      setIsSuggestingTopics(false);
+    }
+  };
+
   const [contentLength, setContentLength] = useState("medium");
   const [emojiLevel, setEmojiLevel] = useState("moderate");
   const [hashtagMode, setHashtagMode] = useState("auto");
