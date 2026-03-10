@@ -692,7 +692,21 @@ const WritingDNAPage = () => {
         {/* ═══════════════════════════════════════ */}
         {/* AGENT-SPECIFIC TRAINING SECTION */}
         {/* ═══════════════════════════════════════ */}
-        <AgentTrainingSection materials={materials} onMaterialsChange={fetchMaterials} />
+        <AgentTrainingSection
+          materials={materials}
+          onMaterialsChange={fetchMaterials}
+          onFileUpload={handleFileUpload}
+          isExtracting={isExtracting}
+          fileInputRef={fileInputRef}
+          showImport={showImport}
+          setShowImport={setShowImport}
+          samplePosts={samplePosts}
+          setSamplePosts={setSamplePosts}
+          handleSavePosts={handleSavePosts}
+          isSavingPosts={isSavingPosts}
+          handleAnalyze={handleAnalyze}
+          isAnalyzing={isAnalyzing}
+        />
 
         {/* ═══════════════════════════════════════ */}
         {/* SAVED REFERENCE MATERIALS SECTION */}
