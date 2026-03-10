@@ -109,9 +109,9 @@ const CalendarPage = () => {
               Schedule and manage your LinkedIn posts
             </p>
           </div>
-          <Button variant="gradient" className="gap-2" onClick={() => navigate("/dashboard/agents")}>
+          <Button variant="gradient" className="gap-2" onClick={() => navigate("/dashboard/campaigns")}>
             <Plus className="w-4 h-4" />
-            Create Post
+            New Agent Campaign
           </Button>
         </div>
         <div className="grid lg:grid-cols-3 gap-8">
@@ -230,9 +230,9 @@ const CalendarPage = () => {
                     <Clock className="w-8 h-8 text-muted-foreground" />
                   </div>
                   <p className="text-muted-foreground mb-4">No posts scheduled</p>
-                  <Button variant="outline" className="gap-2" onClick={() => navigate("/dashboard/agents")}>
+                  <Button variant="outline" className="gap-2" onClick={() => navigate("/dashboard/campaigns")}>
                     <Plus className="w-4 h-4" />
-                    Create Post
+                    New Agent Campaign
                   </Button>
                 </div>
               ) : (
@@ -256,7 +256,7 @@ const CalendarPage = () => {
                             variant="ghost" 
                             size="icon" 
                             className="h-7 w-7"
-                            onClick={() => navigate(`/dashboard/agents?view=${post.id}`)}
+                            onClick={() => navigate(`/dashboard/campaigns`)}
                           >
                             <Eye className="w-3.5 h-3.5" />
                           </Button>
@@ -264,7 +264,7 @@ const CalendarPage = () => {
                             variant="ghost" 
                             size="icon" 
                             className="h-7 w-7"
-                            onClick={() => navigate(`/dashboard/agents?edit=${post.id}`)}
+                            onClick={() => navigate(`/dashboard/campaigns`)}
                           >
                             <Edit className="w-3.5 h-3.5" />
                           </Button>
@@ -307,8 +307,8 @@ const CalendarPage = () => {
             <div className="p-12 text-center">
               <Clock className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
               <p className="text-muted-foreground mb-4">No scheduled posts yet</p>
-              <Button variant="outline" onClick={() => navigate("/dashboard/agents")}>
-                Create Your First Post
+              <Button variant="outline" onClick={() => navigate("/dashboard/campaigns")}>
+                New Agent Campaign
               </Button>
             </div>
           ) : (
@@ -332,7 +332,7 @@ const CalendarPage = () => {
                       variant="ghost" 
                       size="icon" 
                       className="h-8 w-8"
-                      onClick={() => navigate(`/dashboard/agents?view=${post.id}`)}
+                      onClick={() => navigate(`/dashboard/campaigns`)}
                     >
                       <Eye className="w-4 h-4" />
                     </Button>
@@ -340,7 +340,7 @@ const CalendarPage = () => {
                       variant="ghost" 
                       size="icon" 
                       className="h-8 w-8"
-                      onClick={() => navigate(`/dashboard/agents?edit=${post.id}`)}
+                      onClick={() => navigate(`/dashboard/campaigns`)}
                     >
                       <Edit className="w-4 h-4" />
                     </Button>

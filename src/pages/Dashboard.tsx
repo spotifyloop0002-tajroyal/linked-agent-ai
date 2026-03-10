@@ -108,8 +108,8 @@ const DashboardPage = () => {
             </h1>
             <p className="text-muted-foreground mt-1">Here's what's happening with your LinkedIn content</p>
           </div>
-          <Button variant="gradient" className="gap-2" onClick={() => navigate("/dashboard/agents")}>
-            <Plus className="w-4 h-4" /> Create New Agent
+          <Button variant="gradient" className="gap-2" onClick={() => navigate("/dashboard/campaigns")}>
+            <Plus className="w-4 h-4" /> New Agent Campaign
           </Button>
         </div>
 
@@ -145,12 +145,12 @@ const DashboardPage = () => {
         </div>
 
         <div className="animate-fade-up [animation-delay:600ms] grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <button onClick={() => navigate("/dashboard/agents")} className="group p-6 bg-card rounded-2xl border border-border shadow-sm hover:shadow-md hover:border-primary/50 transition-all text-left">
+          <button onClick={() => navigate("/dashboard/campaigns")} className="group p-6 bg-card rounded-2xl border border-border shadow-sm hover:shadow-md hover:border-primary/50 transition-all text-left">
             <div className="w-14 h-14 rounded-xl gradient-bg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
               <Bot className="w-7 h-7 text-primary-foreground" />
             </div>
-            <h3 className="font-semibold text-lg mb-1">Create New Agent</h3>
-            <p className="text-sm text-muted-foreground">Set up a new AI agent with custom posting style and topics</p>
+            <h3 className="font-semibold text-lg mb-1">New Agent Campaign</h3>
+            <p className="text-sm text-muted-foreground">Set up an AI agent campaign to auto-create and publish LinkedIn content</p>
           </button>
           <button onClick={() => navigate("/dashboard/calendar")} className="group p-6 bg-card rounded-2xl border border-border shadow-sm hover:shadow-md hover:border-secondary/50 transition-all text-left">
             <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-secondary to-secondary/60 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
