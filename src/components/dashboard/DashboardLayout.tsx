@@ -38,9 +38,8 @@ interface DashboardLayoutProps {
 
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
-  { icon: Rocket, label: "Campaigns", path: "/dashboard/campaigns" },
+  { icon: Bot, label: "Agent Campaigns", path: "/dashboard/campaigns" },
   { icon: Calendar, label: "Calendar", path: "/dashboard/calendar" },
-  { icon: Bot, label: "Agents", path: "/dashboard/agents" },
   { icon: Dna, label: "Writing DNA", path: "/dashboard/writing-dna" },
   { icon: BarChart3, label: "Analytics", path: "/dashboard/analytics" },
   { icon: Linkedin, label: "LinkedIn", path: "/dashboard/linkedin" },
