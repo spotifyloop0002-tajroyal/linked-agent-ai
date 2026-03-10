@@ -245,6 +245,12 @@ export function CampaignPreview({ campaignId, onClose, onApproveAll, onRegenerat
                   </div>
                 </div>
 
+                {post.photo_url && (
+                  <div className="mb-3 rounded-lg overflow-hidden border border-border">
+                    <img src={post.photo_url} alt="Post image" className="w-full max-h-64 object-cover" />
+                  </div>
+                )}
+
                 {editingId === post.id ? (
                   <div className="space-y-3">
                     <Textarea
