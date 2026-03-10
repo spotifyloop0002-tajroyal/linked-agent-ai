@@ -327,6 +327,7 @@ EMOJI STYLE FOR THIS AGENT: ${agentConfig.emoji}
 
 ${aiInstructions}
 ${writingDnaContext}
+${agentTrainingContext}
 
 USER PROFILE:
 - Name: ${profile.name || "Professional"}
