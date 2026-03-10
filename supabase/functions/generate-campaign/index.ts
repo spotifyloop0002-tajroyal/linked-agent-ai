@@ -172,6 +172,39 @@ serve(async (req) => {
 
     await supabase.from("campaigns").update({ status: "generating" }).eq("id", campaignId);
 
+    // --- SERVER-SIDE PLAN LIMIT CHECK ---
+    const PLAN_LIMITS: Record<string, number> = { free: 5, pro: 60, business: 100, custom: 9999 };
+    const { data: userProfile } = await supabase
+      .from("user_profiles")
+      .select("subscription_plan")
+      .eq("user_id", user.id)
+      .single();
+    const userPlan = userProfile?.subscription_plan || "free";
+    const planLimit = PLAN_LIMITS[userPlan] || 5;
+
+    const monthStart = new Date();
+    monthStart.setDate(1);
+    monthStart.setHours(0, 0, 0, 0);
+
+    const { count: existingPostCount } = await supabase
+      .from("posts")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .in("status", ["posted", "pending", "posting", "draft"])
+      .gte("scheduled_time", monthStart.toISOString());
+
+    const currentPosts = existingPostCount || 0;
+    const remaining = planLimit - currentPosts;
+
+    if (remaining <= 0) {
+      await supabase.from("campaigns").update({ status: "failed" }).eq("id", campaignId);
+      return new Response(JSON.stringify({ 
+        error: `Monthly limit reached! Your ${userPlan} plan allows ${planLimit} posts/month. Upgrade for more.` 
+      }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const profile = ctx.profile || {};
     const writingDna = ctx.writingDna || null;
     const aiInstructions = unifiedContext?.aiInstructions || "";
