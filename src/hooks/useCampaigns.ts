@@ -60,7 +60,9 @@ export function useCampaigns() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
   const isGeneratingRef = useRef(false);
+  const isCreatingRef = useRef(false);
 
   const fetchCampaigns = useCallback(async () => {
     try {
