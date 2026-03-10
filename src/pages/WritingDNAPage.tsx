@@ -453,7 +453,7 @@ const WritingDNAPage = () => {
     }
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, agentId?: string) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -482,7 +482,7 @@ const WritingDNAPage = () => {
       const base64 = btoa(binary);
 
       const { data, error } = await supabase.functions.invoke("extract-document", {
-        body: { fileData: base64, fileType: file.type, fileName: file.name },
+        body: { fileData: base64, fileType: file.type, fileName: file.name, agentId },
       });
 
       if (error) throw error;
@@ -490,12 +490,11 @@ const WritingDNAPage = () => {
 
       setExtractedData(data.extracted);
       toast.success("Document extracted and saved as reference material!");
-      fetchMaterials(); // Refresh list
+      fetchMaterials();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to extract document");
     } finally {
       setIsExtracting(false);
-      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 
