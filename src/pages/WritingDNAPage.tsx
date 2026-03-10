@@ -288,23 +288,13 @@ function AgentTrainingSection({
                   Cancel
                 </Button>
                 <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleSavePosts(selectedAgent)}
-                  disabled={isSavingPosts || samplePosts.filter((p) => p.trim().length > 10).length === 0}
-                  className="gap-1.5"
-                >
-                  {isSavingPosts ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
-                  Save
-                </Button>
-                <Button
                   size="sm"
                   onClick={handleAnalyze}
                   disabled={isAnalyzing || samplePosts.filter((p) => p.trim().length > 20).length < 3}
                   className="gap-1.5 gradient-bg text-primary-foreground"
                 >
                   {isAnalyzing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
-                  Analyze
+                  Analyze DNA
                 </Button>
               </div>
             </div>
