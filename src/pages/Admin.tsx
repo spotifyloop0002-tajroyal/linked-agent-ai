@@ -48,6 +48,7 @@ import {
   AlertCircle,
   Bot,
   HardDrive,
+  Dna,
   Target,
   Megaphone,
   Hash,
@@ -120,6 +121,9 @@ const AdminPage = () => {
   const [storageData, setStorageData] = useState<Record<string, { fileCount: number; totalBytes: number }>>({});
   const [totalStorage, setTotalStorage] = useState(0);
   const [totalFiles, setTotalFiles] = useState(0);
+  const [refMaterialsData, setRefMaterialsData] = useState<Record<string, { count: number; totalChars: number; agentsTrained: number }>>({});
+  const [totalRefCount, setTotalRefCount] = useState(0);
+  const [totalRefChars, setTotalRefChars] = useState(0);
 
   // Check if current user is admin
   useEffect(() => {
@@ -194,6 +198,11 @@ const AdminPage = () => {
           setStorageData(storageRes.perUser || {});
           setTotalStorage(storageRes.totalBytes || 0);
           setTotalFiles(storageRes.totalFiles || 0);
+          if (storageRes.refMaterials) {
+            setRefMaterialsData(storageRes.refMaterials.perUser || {});
+            setTotalRefCount(storageRes.refMaterials.totalCount || 0);
+            setTotalRefChars(storageRes.refMaterials.totalChars || 0);
+          }
         }
       } catch {
         console.log("Storage usage fetch skipped");
@@ -372,6 +381,20 @@ const AdminPage = () => {
               <p className="text-xs text-muted-foreground mt-1">{totalFiles} files</p>
             </CardContent>
           </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Training Data</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-2">
+                <Dna className="w-5 h-5 text-muted-foreground" />
+                <span className="text-2xl font-bold">{totalRefCount}</span>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                {totalRefChars < 1024 ? `${totalRefChars} chars` : `${(totalRefChars / 1024).toFixed(1)} KB`} total
+              </p>
+            </CardContent>
+          </Card>
         </motion.div>
 
         {/* Notification Sender */}
@@ -529,6 +552,11 @@ const AdminPage = () => {
                         </div>
                       ) : (
                         <span className="text-muted-foreground text-sm">0 B</span>
+                      )}
+                      {refMaterialsData[user.user_id] && (
+                        <div className="text-xs text-muted-foreground mt-0.5">
+                          {refMaterialsData[user.user_id].count} refs · {refMaterialsData[user.user_id].agentsTrained} agents
+                        </div>
                       )}
                     </TableCell>
                     <TableCell className="text-center">
@@ -788,30 +816,38 @@ const AdminPage = () => {
                   </div>
                 </div>
 
-                {/* Storage Usage */}
+                {/* Storage & Training Usage */}
                 <div className="bg-muted/50 rounded-lg p-4">
                   <h4 className="font-medium mb-3 flex items-center gap-2">
                     <HardDrive className="w-4 h-4" />
-                    Storage Usage
+                    Storage & Training
                   </h4>
-                  {storageData[selectedUser.user_id] ? (
-                    <div className="grid grid-cols-2 gap-4 text-center">
-                      <div>
-                        <p className="text-2xl font-bold">
-                          {formatBytes(storageData[selectedUser.user_id].totalBytes)}
-                        </p>
-                        <p className="text-xs text-muted-foreground">Total Size</p>
-                      </div>
-                      <div>
-                        <p className="text-2xl font-bold">
-                          {storageData[selectedUser.user_id].fileCount}
-                        </p>
-                        <p className="text-xs text-muted-foreground">Files</p>
-                      </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+                    <div>
+                      <p className="text-xl font-bold">
+                        {storageData[selectedUser.user_id] ? formatBytes(storageData[selectedUser.user_id].totalBytes) : "0 B"}
+                      </p>
+                      <p className="text-xs text-muted-foreground">File Storage</p>
                     </div>
-                  ) : (
-                    <p className="text-sm text-muted-foreground text-center">No files uploaded</p>
-                  )}
+                    <div>
+                      <p className="text-xl font-bold">
+                        {storageData[selectedUser.user_id]?.fileCount || 0}
+                      </p>
+                      <p className="text-xs text-muted-foreground">Files</p>
+                    </div>
+                    <div>
+                      <p className="text-xl font-bold">
+                        {refMaterialsData[selectedUser.user_id]?.count || 0}
+                      </p>
+                      <p className="text-xs text-muted-foreground">Ref Materials</p>
+                    </div>
+                    <div>
+                      <p className="text-xl font-bold">
+                        {refMaterialsData[selectedUser.user_id]?.agentsTrained || 0}
+                      </p>
+                      <p className="text-xs text-muted-foreground">Agents Trained</p>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Dates */}

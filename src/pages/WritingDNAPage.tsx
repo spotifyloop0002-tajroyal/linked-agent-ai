@@ -528,15 +528,42 @@ const WritingDNAPage = () => {
   return (
     <DashboardLayout>
       <div className="space-y-8 max-w-4xl">
-        {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-3">
-            <Dna className="w-8 h-8 text-secondary" />
-            Writing DNA
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            Your unique writing style profile for AI-powered content personalization
-          </p>
+        {/* Header + Storage Stats */}
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold flex items-center gap-3">
+              <Dna className="w-8 h-8 text-secondary" />
+              Writing DNA
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              Your unique writing style profile for AI-powered content personalization
+            </p>
+          </div>
+          {materials.length > 0 && (
+            <div className="flex gap-3 flex-shrink-0">
+              <div className="px-4 py-2.5 rounded-xl bg-muted/50 border border-border text-center min-w-[80px]">
+                <p className="text-lg font-bold">{materials.length}</p>
+                <p className="text-[10px] text-muted-foreground">Materials</p>
+              </div>
+              <div className="px-4 py-2.5 rounded-xl bg-muted/50 border border-border text-center min-w-[80px]">
+                <p className="text-lg font-bold">
+                  {(() => {
+                    const bytes = materials.reduce((sum, m) => sum + (m.content?.length || 0), 0);
+                    if (bytes < 1024) return `${bytes} B`;
+                    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+                    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+                  })()}
+                </p>
+                <p className="text-[10px] text-muted-foreground">Storage</p>
+              </div>
+              <div className="px-4 py-2.5 rounded-xl bg-muted/50 border border-border text-center min-w-[80px]">
+                <p className="text-lg font-bold">
+                  {new Set(materials.filter(m => m.type.startsWith("agent_training_")).map(m => m.type)).size}
+                </p>
+                <p className="text-[10px] text-muted-foreground">Agents Trained</p>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* DNA Profile Card */}
