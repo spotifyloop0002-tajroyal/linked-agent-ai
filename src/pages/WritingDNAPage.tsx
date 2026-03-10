@@ -84,22 +84,60 @@ function AgentTrainingSection({
     materials.filter((m) => m.type === `agent_training_${agentId}`);
 
   const handleSaveTraining = async () => {
-    if (!selectedAgent || !trainingText.trim()) return;
+    if (!selectedAgent) return;
+    
+    const hasText = trainingText.trim().length > 0;
+    const validPosts = samplePosts.filter((p) => p.trim().length > 10);
+    const hasPosts = showImport && validPosts.length > 0;
+    
+    if (!hasText && !hasPosts) {
+      toast.error("Add some training text or import posts first");
+      return;
+    }
+    
     setIsSaving(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
       const agentConfig = AGENT_TYPE_MAP[selectedAgent];
-      await supabase.from("agent_reference_materials").insert({
-        user_id: user.id,
-        title: `${agentConfig?.label || selectedAgent} Training — ${trainingText.substring(0, 40)}...`,
-        content: trainingText.trim(),
-        type: `agent_training_${selectedAgent}`,
-      });
+      const inserts: { user_id: string; title: string; content: string; type: string }[] = [];
 
-      toast.success(`Training saved for ${agentConfig?.label || selectedAgent} agent!`);
+      // Add textarea text
+      if (hasText) {
+        inserts.push({
+          user_id: user.id,
+          title: `${agentConfig?.label || selectedAgent} Training — ${trainingText.substring(0, 40)}...`,
+          content: trainingText.trim(),
+          type: `agent_training_${selectedAgent}`,
+        });
+      }
+
+      // Add imported posts
+      if (hasPosts) {
+        validPosts.forEach((post, i) => {
+          inserts.push({
+            user_id: user.id,
+            title: `${agentConfig?.label || selectedAgent} Post ${i + 1} — ${post.substring(0, 40)}...`,
+            content: post.trim(),
+            type: `agent_training_${selectedAgent}`,
+          });
+        });
+      }
+
+      const { error } = await supabase.from("agent_reference_materials").insert(inserts);
+      if (error) throw error;
+
+      const parts = [];
+      if (hasText) parts.push("training text");
+      if (hasPosts) parts.push(`${validPosts.length} post(s)`);
+      toast.success(`Saved ${parts.join(" + ")} for ${agentConfig?.label || selectedAgent} agent!`);
+      
       setTrainingText("");
+      if (hasPosts) {
+        setSamplePosts(["", "", ""]);
+        setShowImport(false);
+      }
       onMaterialsChange();
     } catch {
       toast.error("Failed to save training");
