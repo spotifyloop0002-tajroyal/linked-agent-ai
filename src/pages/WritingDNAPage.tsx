@@ -443,15 +443,6 @@ const WritingDNAPage = () => {
     }
   };
 
-  const updateSample = (index: number, value: string) => {
-    setSamplePosts((prev) => prev.map((p, i) => (i === index ? value : p)));
-  };
-
-  const addSample = () => {
-    if (samplePosts.length < 10) {
-      setSamplePosts((prev) => [...prev, ""]);
-    }
-  };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, agentId?: string) => {
     const file = e.target.files?.[0];
