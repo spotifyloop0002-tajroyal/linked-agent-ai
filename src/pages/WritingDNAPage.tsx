@@ -330,7 +330,7 @@ function AgentTrainingSection({
           <div className="flex justify-end">
             <Button
               onClick={handleSaveTraining}
-              disabled={isSaving || !trainingText.trim()}
+              disabled={isSaving || (!trainingText.trim() && !(showImport && samplePosts.some(p => p.trim().length > 10)))}
               className="gap-2"
               size="sm"
             >
