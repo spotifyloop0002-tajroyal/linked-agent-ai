@@ -122,6 +122,7 @@ export function useCampaigns() {
           fixed_hashtags: formData.fixedHashtags,
           footer_text: formData.footerText,
           image_option: formData.imageOption,
+          uploaded_image_url: formData.uploadedImageUrl || null,
           agent_type: formData.agentType || "professional",
           posting_days: formData.postingDays || ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"],
           campaign_name: formData.campaignName || "",

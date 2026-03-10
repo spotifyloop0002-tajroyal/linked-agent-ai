@@ -248,6 +248,7 @@ export type Database = {
           tone_type: string | null
           topic: string
           updated_at: string
+          uploaded_image_url: string | null
           user_id: string
         }
         Insert: {
@@ -275,6 +276,7 @@ export type Database = {
           tone_type?: string | null
           topic: string
           updated_at?: string
+          uploaded_image_url?: string | null
           user_id: string
         }
         Update: {
@@ -302,6 +304,7 @@ export type Database = {
           tone_type?: string | null
           topic?: string
           updated_at?: string
+          uploaded_image_url?: string | null
           user_id?: string
         }
         Relationships: []

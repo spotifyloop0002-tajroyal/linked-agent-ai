@@ -374,12 +374,9 @@ Generate exactly ${postDates.length} LinkedIn posts. Separate each with "---POST
     // Generate AI images OR use uploaded image
     let imageUrls: (string | null)[] = new Array(cleanPosts.length).fill(null);
     
-    if (campaign.image_option === "upload") {
-      // Use the same uploaded image for all posts
-      // The uploaded image URL is stored as footer_text placeholder or we check posts table
-      // For uploaded images, the URL comes from the campaign creation flow
-      // We'll check if there's a photo_url pattern in existing data
-      console.log("📎 Using uploaded image for all posts (will be set from client)");
+    if (campaign.image_option === "upload" && campaign.uploaded_image_url) {
+      console.log("📎 Using uploaded image for all posts:", campaign.uploaded_image_url);
+      imageUrls = new Array(cleanPosts.length).fill(campaign.uploaded_image_url);
     } else if (campaign.image_option === "ai") {
       console.log(`🎨 Generating ${agentType}-style images for campaign posts...`);
       for (let i = 0; i < cleanPosts.length; i += 3) {
