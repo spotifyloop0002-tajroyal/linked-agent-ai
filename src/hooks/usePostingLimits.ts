@@ -74,12 +74,17 @@ export const usePostingLimits = () => {
         .lte('scheduled_time', todayEnd.toISOString());
 
       // Count ALL posts this month (posted + scheduled + draft) against monthly limit
+      // Use created_at as fallback when scheduled_time is null
+      const monthEnd = new Date();
+      monthEnd.setMonth(monthEnd.getMonth() + 1, 0);
+      monthEnd.setHours(23, 59, 59, 999);
+
       const { count: postsThisMonth } = await supabase
         .from('posts')
         .select('*', { count: 'exact', head: true })
         .eq('user_id', user.id)
         .in('status', ['posted', 'pending', 'posting', 'draft'])
-        .gte('scheduled_time', monthStart.toISOString());
+        .gte('created_at', monthStart.toISOString());
 
       const todayCount = postedToday || 0;
       const monthCount = postsThisMonth || 0;
