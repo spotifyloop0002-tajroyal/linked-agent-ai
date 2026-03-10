@@ -25,6 +25,9 @@ export interface Campaign {
   footer_text: string;
   image_option: string;
   posting_time: string;
+  agent_type: string;
+  posting_days: string[];
+  campaign_name: string;
 }
 
 export interface CampaignFormData {
@@ -46,6 +49,9 @@ export interface CampaignFormData {
   fixedHashtags: string[];
   footerText: string;
   imageOption: string;
+  agentType?: string;
+  postingDays?: string[];
+  campaignName?: string;
 }
 
 export function useCampaigns() {
@@ -118,8 +124,11 @@ export function useCampaigns() {
           fixed_hashtags: formData.fixedHashtags,
           footer_text: formData.footerText,
           image_option: formData.imageOption,
+          agent_type: formData.agentType || "professional",
+          posting_days: formData.postingDays || ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"],
+          campaign_name: formData.campaignName || "",
           status: "draft",
-        })
+        } as any)
         .select()
         .single();
 
@@ -224,9 +233,6 @@ export function useCampaigns() {
   useEffect(() => {
     fetchCampaigns();
   }, [fetchCampaigns]);
-
-  // Realtime subscription removed — it was unfiltered (triggered on ALL users' campaign changes)
-  // and caused unnecessary refetches. Campaign data is fetched on mount and after mutations.
 
   return {
     campaigns,
