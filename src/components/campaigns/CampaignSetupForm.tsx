@@ -48,6 +48,21 @@ const imageOptions = [
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
 const ACCEPTED_FORMATS = ["image/png", "image/jpeg", "image/jpg", "image/webp"];
 
+const TOPIC_SUGGESTIONS: Record<string, string[]> = {
+  comedy: ["Office Life Fails & Wins", "Corporate Buzzword Bingo", "Remote Work Struggles", "LinkedIn Clichés Roast", "Career Plot Twists"],
+  professional: ["Industry Trends & Analysis", "Leadership Best Practices", "Productivity Frameworks", "Strategic Decision Making", "Market Insights & Forecasts"],
+  storytelling: ["Founder Journey Lessons", "Career Pivot Stories", "Failure to Success Tales", "Mentorship Moments", "Behind the Scenes of Building"],
+  "thought-leadership": ["Future of Work Predictions", "Contrarian Industry Takes", "Disrupting Traditional Models", "Bold Tech Predictions", "Redefining Success Metrics"],
+  motivational: ["Morning Mindset Habits", "Overcoming Imposter Syndrome", "Goal Setting Mastery", "Resilience in Business", "Celebrating Small Wins"],
+  "data-analytics": ["Data-Driven Decision Making", "Analytics Trends & Tools", "KPI Deep Dives", "AI & Machine Learning Insights", "Growth Metrics That Matter"],
+  creative: ["Design Thinking in Business", "Creative Problem Solving", "Innovation Frameworks", "Visual Storytelling Tips", "Art Meets Technology"],
+  news: ["AI & Tech Industry Updates", "Startup Ecosystem News", "Market & Economy Shifts", "Policy & Regulation Changes", "Emerging Tech Breakthroughs"],
+};
+
+function getTopicSuggestions(agentType: string): string[] {
+  return TOPIC_SUGGESTIONS[agentType] || TOPIC_SUGGESTIONS["professional"] || [];
+}
+
 export function CampaignSetupForm({ onSubmit, onCancel, isGenerating }: CampaignSetupFormProps) {
   const [step, setStep] = useState(1);
   const fileInputRef = useRef<HTMLInputElement>(null);
