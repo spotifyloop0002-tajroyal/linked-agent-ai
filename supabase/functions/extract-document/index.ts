@@ -34,7 +34,7 @@ serve(async (req) => {
       });
     }
 
-    const { fileData, fileType, fileName } = await req.json();
+    const { fileData, fileType, fileName, agentId } = await req.json();
 
     if (!fileData || !fileType) {
       return new Response(JSON.stringify({ error: "fileData and fileType are required" }), {
@@ -166,13 +166,17 @@ serve(async (req) => {
 
     console.log(`✅ Extracted: "${extracted.title}", type: ${extracted.type}, content length: ${extracted.content?.length}`);
 
-    // Save as reference material
+    // Save as reference material — use agent-specific type if agentId provided
+    const materialType = agentId 
+      ? `agent_training_${agentId}` 
+      : (extracted.type === "writing_sample" ? "writing_sample" : 
+         extracted.type === "brand_guidelines" ? "brand_guidelines" : "topic_notes");
+    
     const { error: insertErr } = await supabase.from("agent_reference_materials").insert({
       user_id: user.id,
       title: extracted.title || fileName || "Uploaded Document",
       content: extracted.content,
-      type: extracted.type === "writing_sample" ? "writing_sample" : 
-            extracted.type === "brand_guidelines" ? "brand_guidelines" : "topic_notes",
+      type: materialType,
     });
 
     if (insertErr) console.error("Failed to save reference material:", insertErr);
