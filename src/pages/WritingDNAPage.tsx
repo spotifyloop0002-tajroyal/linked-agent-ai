@@ -410,7 +410,7 @@ const WritingDNAPage = () => {
     setShowImport(false);
   };
 
-  const handleSavePosts = async () => {
+  const handleSavePosts = async (agentId?: string) => {
     const validPosts = samplePosts.filter((p) => p.trim().length > 10);
     if (validPosts.length === 0) {
       toast.error("Please add at least one post with content");
@@ -421,12 +421,13 @@ const WritingDNAPage = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
+      const materialType = agentId ? `agent_training_${agentId}` : "writing_sample";
       const { error } = await supabase.from("agent_reference_materials").insert(
         validPosts.map((post, i) => ({
           user_id: user.id,
           title: `LinkedIn Post ${i + 1} - ${post.substring(0, 40)}...`,
           content: post.trim(),
-          type: "writing_sample",
+          type: materialType,
         }))
       );
 
