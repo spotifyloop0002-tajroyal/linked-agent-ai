@@ -230,9 +230,9 @@ const CalendarPage = () => {
                     <Clock className="w-8 h-8 text-muted-foreground" />
                   </div>
                   <p className="text-muted-foreground mb-4">No posts scheduled</p>
-                  <Button variant="outline" className="gap-2" onClick={() => navigate("/dashboard/agents")}>
+                  <Button variant="outline" className="gap-2" onClick={() => navigate("/dashboard/campaigns")}>
                     <Plus className="w-4 h-4" />
-                    Create Post
+                    New Agent Campaign
                   </Button>
                 </div>
               ) : (
