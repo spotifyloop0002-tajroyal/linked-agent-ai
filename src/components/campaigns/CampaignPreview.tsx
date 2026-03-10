@@ -25,6 +25,7 @@ interface CampaignPost {
   content: string;
   scheduled_time: string;
   status: string;
+  photo_url: string | null;
 }
 
 interface CampaignDetails {
@@ -73,7 +74,7 @@ export function CampaignPreview({ campaignId, onClose, onApproveAll, onRegenerat
       const [postsRes, campaignRes] = await Promise.all([
         supabase
           .from("posts")
-          .select("id, content, scheduled_time, status")
+          .select("id, content, scheduled_time, status, photo_url")
           .eq("campaign_id", campaignId)
           .order("scheduled_time", { ascending: true }),
         supabase
@@ -244,6 +245,12 @@ export function CampaignPreview({ campaignId, onClose, onApproveAll, onRegenerat
                       : "Not scheduled"}
                   </div>
                 </div>
+
+                {post.photo_url && (
+                  <div className="mb-3 rounded-lg overflow-hidden border border-border">
+                    <img src={post.photo_url} alt="Post image" className="w-full max-h-64 object-cover" />
+                  </div>
+                )}
 
                 {editingId === post.id ? (
                   <div className="space-y-3">
