@@ -75,7 +75,7 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        sender: { name: "LinkedBot", email: "noreply@linkedbot.co" },
+        sender: { name: "LINKEDBOT", email: "aryanbhatnagar.2601@gmail.com" },
         to: [{ email: profile.email, name: profile.name || "User" }],
         subject: `📋 Post Preview – Scheduled for ${scheduledTime}`,
         htmlContent: `
