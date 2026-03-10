@@ -109,9 +109,9 @@ const CalendarPage = () => {
               Schedule and manage your LinkedIn posts
             </p>
           </div>
-          <Button variant="gradient" className="gap-2" onClick={() => navigate("/dashboard/agents")}>
+          <Button variant="gradient" className="gap-2" onClick={() => navigate("/dashboard/campaigns")}>
             <Plus className="w-4 h-4" />
-            Create Post
+            New Agent Campaign
           </Button>
         </div>
         <div className="grid lg:grid-cols-3 gap-8">
