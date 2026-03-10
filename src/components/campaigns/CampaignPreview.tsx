@@ -25,6 +25,7 @@ interface CampaignPost {
   content: string;
   scheduled_time: string;
   status: string;
+  photo_url: string | null;
 }
 
 interface CampaignDetails {
