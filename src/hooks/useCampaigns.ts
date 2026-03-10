@@ -49,6 +49,7 @@ export interface CampaignFormData {
   fixedHashtags: string[];
   footerText: string;
   imageOption: string;
+  uploadedImageUrl?: string | null;
   agentType?: string;
   postingDays?: string[];
   campaignName?: string;
