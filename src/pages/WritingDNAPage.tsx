@@ -9,6 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { AGENT_TYPES, AGENT_TYPE_MAP } from "@/lib/agentTypes";
+import { cn } from "@/lib/utils";
 import {
   Dna,
   Plus,
