@@ -816,30 +816,38 @@ const AdminPage = () => {
                   </div>
                 </div>
 
-                {/* Storage Usage */}
+                {/* Storage & Training Usage */}
                 <div className="bg-muted/50 rounded-lg p-4">
                   <h4 className="font-medium mb-3 flex items-center gap-2">
                     <HardDrive className="w-4 h-4" />
-                    Storage Usage
+                    Storage & Training
                   </h4>
-                  {storageData[selectedUser.user_id] ? (
-                    <div className="grid grid-cols-2 gap-4 text-center">
-                      <div>
-                        <p className="text-2xl font-bold">
-                          {formatBytes(storageData[selectedUser.user_id].totalBytes)}
-                        </p>
-                        <p className="text-xs text-muted-foreground">Total Size</p>
-                      </div>
-                      <div>
-                        <p className="text-2xl font-bold">
-                          {storageData[selectedUser.user_id].fileCount}
-                        </p>
-                        <p className="text-xs text-muted-foreground">Files</p>
-                      </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+                    <div>
+                      <p className="text-xl font-bold">
+                        {storageData[selectedUser.user_id] ? formatBytes(storageData[selectedUser.user_id].totalBytes) : "0 B"}
+                      </p>
+                      <p className="text-xs text-muted-foreground">File Storage</p>
                     </div>
-                  ) : (
-                    <p className="text-sm text-muted-foreground text-center">No files uploaded</p>
-                  )}
+                    <div>
+                      <p className="text-xl font-bold">
+                        {storageData[selectedUser.user_id]?.fileCount || 0}
+                      </p>
+                      <p className="text-xs text-muted-foreground">Files</p>
+                    </div>
+                    <div>
+                      <p className="text-xl font-bold">
+                        {refMaterialsData[selectedUser.user_id]?.count || 0}
+                      </p>
+                      <p className="text-xs text-muted-foreground">Ref Materials</p>
+                    </div>
+                    <div>
+                      <p className="text-xl font-bold">
+                        {refMaterialsData[selectedUser.user_id]?.agentsTrained || 0}
+                      </p>
+                      <p className="text-xs text-muted-foreground">Agents Trained</p>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Dates */}
