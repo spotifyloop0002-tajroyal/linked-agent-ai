@@ -132,7 +132,7 @@ export const usePostingLimits = () => {
     isLoading,
     checkLimits,
     incrementPostCount,
-    canPost: status?.canPost ?? true,
+    canPost: isLoading ? false : (status?.canPost ?? false),
     limitMessage: status?.limitMessage ?? null,
   };
 };
