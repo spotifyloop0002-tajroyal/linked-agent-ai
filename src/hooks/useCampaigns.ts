@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { MONTHLY_LIMITS, type PlanType } from "@/hooks/usePostingLimits";
@@ -60,6 +60,7 @@ export function useCampaigns() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
+  const isGeneratingRef = useRef(false);
 
   const fetchCampaigns = useCallback(async () => {
     try {
@@ -191,10 +192,11 @@ export function useCampaigns() {
   }, []);
 
   const generateCampaignPosts = useCallback(async (campaignId: string) => {
-    if (isGenerating) {
+    if (isGeneratingRef.current) {
       toast.info("Generation already in progress, please wait...");
       return false;
     }
+    isGeneratingRef.current = true;
     setIsGenerating(true);
     try {
       const { data, error } = await supabase.functions.invoke("generate-campaign", {
@@ -228,9 +230,10 @@ export function useCampaigns() {
       toast.error(msg);
       return false;
     } finally {
+      isGeneratingRef.current = false;
       setIsGenerating(false);
     }
-  }, [fetchCampaigns, isGenerating]);
+  }, [fetchCampaigns]);
 
   const updateCampaignStatus = useCallback(async (campaignId: string, status: string) => {
     try {
