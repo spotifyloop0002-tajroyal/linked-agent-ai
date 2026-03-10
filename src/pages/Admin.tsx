@@ -120,6 +120,9 @@ const AdminPage = () => {
   const [storageData, setStorageData] = useState<Record<string, { fileCount: number; totalBytes: number }>>({});
   const [totalStorage, setTotalStorage] = useState(0);
   const [totalFiles, setTotalFiles] = useState(0);
+  const [refMaterialsData, setRefMaterialsData] = useState<Record<string, { count: number; totalChars: number; agentsTrained: number }>>({});
+  const [totalRefCount, setTotalRefCount] = useState(0);
+  const [totalRefChars, setTotalRefChars] = useState(0);
 
   // Check if current user is admin
   useEffect(() => {
