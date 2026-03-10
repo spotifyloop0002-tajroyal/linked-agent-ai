@@ -14,7 +14,6 @@ import {
   X,
   ChevronDown,
   User,
-  Rocket,
   Dna,
 } from "lucide-react";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
