@@ -380,6 +380,20 @@ const AdminPage = () => {
               <p className="text-xs text-muted-foreground mt-1">{totalFiles} files</p>
             </CardContent>
           </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Training Data</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-2">
+                <Dna className="w-5 h-5 text-muted-foreground" />
+                <span className="text-2xl font-bold">{totalRefCount}</span>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                {totalRefChars < 1024 ? `${totalRefChars} chars` : `${(totalRefChars / 1024).toFixed(1)} KB`} total
+              </p>
+            </CardContent>
+          </Card>
         </motion.div>
 
         {/* Notification Sender */}
