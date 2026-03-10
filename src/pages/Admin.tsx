@@ -197,6 +197,11 @@ const AdminPage = () => {
           setStorageData(storageRes.perUser || {});
           setTotalStorage(storageRes.totalBytes || 0);
           setTotalFiles(storageRes.totalFiles || 0);
+          if (storageRes.refMaterials) {
+            setRefMaterialsData(storageRes.refMaterials.perUser || {});
+            setTotalRefCount(storageRes.refMaterials.totalCount || 0);
+            setTotalRefChars(storageRes.refMaterials.totalChars || 0);
+          }
         }
       } catch {
         console.log("Storage usage fetch skipped");
