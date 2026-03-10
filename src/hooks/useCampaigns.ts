@@ -299,6 +299,7 @@ export function useCampaigns() {
     campaigns,
     isLoading,
     isGenerating,
+    isCreating,
     fetchCampaigns,
     createCampaign,
     generateCampaignPosts,
