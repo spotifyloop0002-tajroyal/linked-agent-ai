@@ -538,42 +538,14 @@ const WritingDNAPage = () => {
     <DashboardLayout>
       <div className="space-y-8 max-w-4xl">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold flex items-center gap-3">
-              <Dna className="w-8 h-8 text-secondary" />
-              Writing DNA
-            </h1>
-            <p className="text-muted-foreground mt-1">
-              Your unique writing style profile for AI-powered content personalization
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".pdf,.jpg,.jpeg,.png,.webp,.txt"
-              onChange={handleFileUpload}
-              className="hidden"
-            />
-            <Button
-              variant="outline"
-              className="gap-2"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isExtracting}
-            >
-              {isExtracting ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Upload className="w-4 h-4" />
-              )}
-              Upload PDF/Image
-            </Button>
-            <Button onClick={() => setShowImport(true)} className="gap-2" variant="outline">
-              <Plus className="w-4 h-4" />
-              {dna ? "Re-analyze" : "Import Posts"}
-            </Button>
-          </div>
+        <div>
+          <h1 className="text-3xl font-bold flex items-center gap-3">
+            <Dna className="w-8 h-8 text-secondary" />
+            Writing DNA
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            Your unique writing style profile for AI-powered content personalization
+          </p>
         </div>
 
         {/* DNA Profile Card */}
