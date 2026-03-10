@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { MONTHLY_LIMITS, type PlanType } from "@/hooks/usePostingLimits";
 
 export interface Campaign {
   id: string;
