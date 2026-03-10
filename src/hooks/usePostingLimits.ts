@@ -81,7 +81,7 @@ export const usePostingLimits = () => {
         .in('status', ['posted', 'pending', 'posting', 'draft'])
         .gte('scheduled_time', monthStart.toISOString());
 
-      const todayCount = postsToday || 0;
+      const todayCount = postedToday || 0;
       const monthCount = postsThisMonth || 0;
 
       const canPostDaily = todayCount < dailyLimit;
