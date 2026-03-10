@@ -143,7 +143,7 @@ const CampaignsPage = () => {
               variant="outline"
               className="gap-2"
               disabled={!linkedInConnected}
-              onClick={() => { setShowPlanner(!showPlanner); setShowSetup(false); }}
+              onClick={handleWeeklyPlannerClick}
             >
               <CalendarDays className="w-4 h-4" />
               Weekly Planner
@@ -151,7 +151,7 @@ const CampaignsPage = () => {
             <Button
               className="gap-2 gradient-bg text-primary-foreground"
               disabled={!linkedInConnected}
-              onClick={() => { setShowSetup(true); setShowPlanner(false); }}
+              onClick={handleNewCampaignClick}
             >
               <Plus className="w-4 h-4" />
               New Campaign
