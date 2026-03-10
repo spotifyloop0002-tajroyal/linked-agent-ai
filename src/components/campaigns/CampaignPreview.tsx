@@ -68,6 +68,7 @@ export function CampaignPreview({ campaignId, onClose, onApproveAll, onRegenerat
   const [isLoading, setIsLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState("");
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
 
   const fetchData = async () => {
     const [postsRes, campaignRes] = await Promise.all([
@@ -271,7 +272,7 @@ export function CampaignPreview({ campaignId, onClose, onApproveAll, onRegenerat
                 </div>
 
                 {post.photo_url && (
-                  <div className="mb-3 rounded-lg overflow-hidden border border-border cursor-pointer" onClick={() => window.open(post.photo_url!, '_blank')}>
+                  <div className="mb-3 rounded-lg overflow-hidden border border-border cursor-pointer" onClick={() => setLightboxUrl(post.photo_url)}>
                     <img src={post.photo_url} alt="Post image" className="w-full max-h-64 object-cover hover:opacity-90 transition-opacity" title="Click to view full image" />
                   </div>
                 )}
@@ -327,6 +328,25 @@ export function CampaignPreview({ campaignId, onClose, onApproveAll, onRegenerat
               </div>
             );
           })}
+        </div>
+      )}
+      {lightboxUrl && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 cursor-pointer"
+          onClick={() => setLightboxUrl(null)}
+        >
+          <button
+            className="absolute top-4 right-4 text-white bg-black/50 rounded-full p-2 hover:bg-black/70 transition-colors"
+            onClick={() => setLightboxUrl(null)}
+          >
+            <X className="w-6 h-6" />
+          </button>
+          <img
+            src={lightboxUrl}
+            alt="Full size"
+            className="max-w-full max-h-[90vh] object-contain rounded-lg"
+            onClick={(e) => e.stopPropagation()}
+          />
         </div>
       )}
     </div>
