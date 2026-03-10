@@ -279,14 +279,41 @@ export function CampaignSetupForm({ onSubmit, onCancel, isGenerating }: Campaign
             {/* Topic */}
             <div className="space-y-2">
               <Label htmlFor="topic">Campaign Topic</Label>
-              <Input
-                id="topic"
-                placeholder='e.g. "AI in Healthcare", "Startup Growth Strategies"'
-                value={topic}
-                onChange={(e) => setTopic(e.target.value)}
-                className="text-base"
-                required
-              />
+              <div className="flex gap-2">
+                <Input
+                  id="topic"
+                  placeholder='e.g. "AI in Healthcare", "Startup Growth Strategies"'
+                  value={topic}
+                  onChange={(e) => setTopic(e.target.value)}
+                  className="text-base flex-1"
+                  required
+                />
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button type="button" variant="outline" className="gap-1.5 shrink-0 border-primary/30 text-primary hover:bg-primary/5">
+                      <Sparkles className="w-4 h-4" />
+                      Suggest
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-72 p-2" align="end">
+                    <p className="text-xs font-medium text-muted-foreground px-2 py-1 mb-1">
+                      Suggested topics for {selectedAgent?.label || "agent"}
+                    </p>
+                    <div className="space-y-0.5">
+                      {getTopicSuggestions(agentType || "").map((t, i) => (
+                        <button
+                          key={i}
+                          type="button"
+                          onClick={() => setTopic(t)}
+                          className="w-full text-left px-3 py-2 text-sm rounded-md hover:bg-accent transition-colors"
+                        >
+                          {t}
+                        </button>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              </div>
             </div>
 
             {/* Posting Days */}
