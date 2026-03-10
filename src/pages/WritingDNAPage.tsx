@@ -45,10 +45,39 @@ interface SavedMaterial {
 }
 
 // Agent Training Section Component
-function AgentTrainingSection({ materials, onMaterialsChange }: { materials: SavedMaterial[]; onMaterialsChange: () => void }) {
+function AgentTrainingSection({ 
+  materials, 
+  onMaterialsChange,
+  onFileUpload,
+  isExtracting,
+  fileInputRef,
+  showImport,
+  setShowImport,
+  samplePosts,
+  setSamplePosts,
+  handleSavePosts,
+  isSavingPosts,
+  handleAnalyze,
+  isAnalyzing,
+}: { 
+  materials: SavedMaterial[]; 
+  onMaterialsChange: () => void;
+  onFileUpload: (e: React.ChangeEvent<HTMLInputElement>, agentId: string) => void;
+  isExtracting: boolean;
+  fileInputRef: React.RefObject<HTMLInputElement>;
+  showImport: boolean;
+  setShowImport: (v: boolean) => void;
+  samplePosts: string[];
+  setSamplePosts: React.Dispatch<React.SetStateAction<string[]>>;
+  handleSavePosts: (agentId: string) => void;
+  isSavingPosts: boolean;
+  handleAnalyze: () => void;
+  isAnalyzing: boolean;
+}) {
   const [selectedAgent, setSelectedAgent] = useState<string | null>(null);
   const [trainingText, setTrainingText] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const agentFileInputRef = useRef<HTMLInputElement>(null);
 
   // Filter materials that belong to a specific agent type
   const getAgentMaterials = (agentId: string) =>
@@ -91,6 +120,16 @@ function AgentTrainingSection({ materials, onMaterialsChange }: { materials: Sav
 
   const agentMaterials = selectedAgent ? getAgentMaterials(selectedAgent) : [];
 
+  const updateSample = (index: number, value: string) => {
+    setSamplePosts((prev) => prev.map((p, i) => (i === index ? value : p)));
+  };
+
+  const addSample = () => {
+    if (samplePosts.length < 10) {
+      setSamplePosts((prev) => [...prev, ""]);
+    }
+  };
+
   return (
     <div className="bg-card rounded-2xl border border-border p-6 shadow-sm">
       <div className="flex items-center gap-3 mb-2">
@@ -111,7 +150,10 @@ function AgentTrainingSection({ materials, onMaterialsChange }: { materials: Sav
             <button
               key={agent.id}
               type="button"
-              onClick={() => setSelectedAgent(isSelected ? null : agent.id)}
+              onClick={() => {
+                setSelectedAgent(isSelected ? null : agent.id);
+                setShowImport(false);
+              }}
               className={cn(
                 "p-3 rounded-xl border-2 text-left transition-all relative",
                 isSelected
@@ -144,6 +186,91 @@ function AgentTrainingSection({ materials, onMaterialsChange }: { materials: Sav
               Add example posts, tone guidelines, phrases to use, or topics this agent should focus on.
             </p>
           </div>
+
+          {/* Upload & Import buttons per agent */}
+          <div className="flex flex-wrap gap-2">
+            <input
+              ref={agentFileInputRef}
+              type="file"
+              accept=".pdf,.jpg,.jpeg,.png,.webp,.txt"
+              onChange={(e) => onFileUpload(e, selectedAgent)}
+              className="hidden"
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              onClick={() => agentFileInputRef.current?.click()}
+              disabled={isExtracting}
+            >
+              {isExtracting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
+              Upload PDF/Image
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              onClick={() => {
+                setShowImport(!showImport);
+                setSamplePosts(["", "", ""]);
+              }}
+            >
+              <Plus className="w-3.5 h-3.5" />
+              Import Posts
+            </Button>
+          </div>
+
+          {/* Import Posts inline for this agent */}
+          {showImport && (
+            <div className="space-y-3 p-4 rounded-xl bg-muted/30 border border-border/50 animate-fade-in">
+              <p className="text-xs font-medium text-muted-foreground">
+                Paste posts for {AGENT_TYPE_MAP[selectedAgent]?.label} agent (min 3 for analysis)
+              </p>
+              {samplePosts.map((post, index) => (
+                <div key={index} className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Post {index + 1}</Label>
+                  <Textarea
+                    value={post}
+                    onChange={(e) => updateSample(index, e.target.value)}
+                    placeholder="Paste your LinkedIn post content here..."
+                    rows={3}
+                    className="text-sm"
+                  />
+                </div>
+              ))}
+              <div className="flex flex-wrap gap-2">
+                {samplePosts.length < 10 && (
+                  <Button variant="outline" size="sm" onClick={addSample}>
+                    <Plus className="w-3.5 h-3.5 mr-1" />
+                    Add Post
+                  </Button>
+                )}
+                <div className="flex-1" />
+                <Button variant="ghost" size="sm" onClick={() => setShowImport(false)}>
+                  Cancel
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleSavePosts(selectedAgent)}
+                  disabled={isSavingPosts || samplePosts.filter((p) => p.trim().length > 10).length === 0}
+                  className="gap-1.5"
+                >
+                  {isSavingPosts ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+                  Save
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={handleAnalyze}
+                  disabled={isAnalyzing || samplePosts.filter((p) => p.trim().length > 20).length < 3}
+                  className="gap-1.5 gradient-bg text-primary-foreground"
+                >
+                  {isAnalyzing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+                  Analyze
+                </Button>
+              </div>
+            </div>
+          )}
 
           {/* Existing training materials */}
           {agentMaterials.length > 0 && (
