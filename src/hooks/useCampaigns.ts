@@ -86,23 +86,20 @@ export function useCampaigns() {
       if (!session) throw new Error("Not authenticated");
 
       const startDate = formData.startDate;
-      let endDate: Date;
-      let postCount: number;
-
-      if (formData.durationType === "7_days") {
-        endDate = new Date(startDate);
-        endDate.setDate(endDate.getDate() + 6);
-        postCount = 7;
-      } else if (formData.durationType === "alternate") {
-        endDate = new Date(startDate);
-        endDate.setDate(endDate.getDate() + 13);
-        postCount = 7;
-      } else {
-        endDate = formData.endDate || new Date(startDate);
-        endDate.setDate(endDate.getDate() + 6);
-        const totalDays = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
-        postCount = formData.postCount || totalDays;
+      const endDate = formData.endDate || new Date(startDate.getTime() + 6 * 86400000);
+      
+      // Calculate post count from posting days
+      const dayNames = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+      const postingDays = formData.postingDays || dayNames.slice(1).concat("sunday");
+      let postCount = 0;
+      const current = new Date(startDate);
+      while (current <= endDate) {
+        if (postingDays.includes(dayNames[current.getDay()])) {
+          postCount += formData.postsPerDay || 1;
+        }
+        current.setDate(current.getDate() + 1);
       }
+      postCount = formData.postCount || postCount || 7;
 
       const { data, error } = await supabase
         .from("campaigns")
@@ -110,7 +107,7 @@ export function useCampaigns() {
           user_id: session.user.id,
           topic: formData.topic,
           tone_type: formData.toneType,
-          duration_type: formData.durationType,
+          duration_type: "custom",
           start_date: startDate.toISOString().split("T")[0],
           end_date: endDate.toISOString().split("T")[0],
           post_count: postCount,
@@ -142,6 +139,11 @@ export function useCampaigns() {
       supabase.functions.invoke("send-campaign-email", {
         body: { campaignId: campaign.id, type: "campaign_created" },
       }).catch(() => {});
+
+      // Store uploaded image URL for post generation
+      if (formData.uploadedImageUrl) {
+        (campaign as any)._uploadedImageUrl = formData.uploadedImageUrl;
+      }
 
       return campaign;
     } catch (error) {
