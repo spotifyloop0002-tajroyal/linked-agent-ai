@@ -69,30 +69,54 @@ export function CampaignPreview({ campaignId, onClose, onApproveAll, onRegenerat
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState("");
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const [postsRes, campaignRes] = await Promise.all([
-        supabase
-          .from("posts")
-          .select("id, content, scheduled_time, status, photo_url")
-          .eq("campaign_id", campaignId)
-          .order("scheduled_time", { ascending: true }),
-        supabase
-          .from("campaigns")
-          .select("*")
-          .eq("id", campaignId)
-          .single(),
-      ]);
+  const fetchData = async () => {
+    const [postsRes, campaignRes] = await Promise.all([
+      supabase
+        .from("posts")
+        .select("id, content, scheduled_time, status, photo_url")
+        .eq("campaign_id", campaignId)
+        .order("scheduled_time", { ascending: true }),
+      supabase
+        .from("campaigns")
+        .select("*")
+        .eq("id", campaignId)
+        .single(),
+    ]);
 
-      if (!postsRes.error && postsRes.data) {
-        setPosts(postsRes.data as CampaignPost[]);
+    if (!campaignRes.error && campaignRes.data) {
+      setCampaign(campaignRes.data as unknown as CampaignDetails);
+    }
+
+    if (!postsRes.error && postsRes.data) {
+      setPosts(postsRes.data as CampaignPost[]);
+      if (postsRes.data.length > 0) {
+        setIsLoading(false);
+        return true; // posts found
       }
-      if (!campaignRes.error && campaignRes.data) {
-        setCampaign(campaignRes.data as unknown as CampaignDetails);
+    }
+    return false; // no posts yet
+  };
+
+  useEffect(() => {
+    let cancelled = false;
+    let retryCount = 0;
+    const maxRetries = 20; // poll for ~60 seconds
+    const pollInterval = 3000;
+
+    const poll = async () => {
+      if (cancelled) return;
+      const found = await fetchData();
+      if (!found && retryCount < maxRetries) {
+        retryCount++;
+        setTimeout(poll, pollInterval);
+      } else if (!found) {
+        setIsLoading(false); // stop loading after max retries
       }
-      setIsLoading(false);
     };
-    fetchData();
+
+    poll();
+
+    return () => { cancelled = true; };
   }, [campaignId]);
 
   const handleSaveEdit = async (postId: string) => {
