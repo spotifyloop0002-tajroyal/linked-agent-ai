@@ -628,26 +628,6 @@ const WritingDNAPage = () => {
               </div>
             )}
           </div>
-        ) : !showImport ? (
-          <div className="bg-card rounded-2xl border border-border p-12 text-center">
-            <div className="w-20 h-20 rounded-full bg-secondary/10 flex items-center justify-center mx-auto mb-6">
-              <Dna className="w-10 h-10 text-secondary" />
-            </div>
-            <h3 className="text-xl font-semibold mb-2">Create Your Writing DNA</h3>
-            <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-              Paste posts, upload PDFs, or upload images — our AI will analyze your unique writing style.
-            </p>
-            <div className="flex justify-center gap-3">
-              <Button onClick={() => setShowImport(true)} className="gap-2 gradient-bg text-primary-foreground">
-                <Plus className="w-4 h-4" />
-                Import Your Posts
-              </Button>
-              <Button variant="outline" className="gap-2" onClick={() => fileInputRef.current?.click()} disabled={isExtracting}>
-                {isExtracting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
-                Upload PDF/Image
-              </Button>
-            </div>
-          </div>
         ) : null}
 
         {/* Extracted Document Results */}
