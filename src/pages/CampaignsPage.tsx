@@ -6,10 +6,10 @@ import { CampaignSetupForm } from "@/components/campaigns/CampaignSetupForm";
 import { CampaignList } from "@/components/campaigns/CampaignList";
 import { CampaignPreview } from "@/components/campaigns/CampaignPreview";
 import { Button } from "@/components/ui/button";
-import { Plus, Rocket } from "lucide-react";
+import { Plus, Bot } from "lucide-react";
 
 const CampaignsPage = () => {
-  usePageTitle("Smart Campaigns");
+  usePageTitle("Agent Campaigns");
   const { campaigns, isLoading, isGenerating, createCampaign, generateCampaignPosts, updateCampaignStatus, deleteCampaign, approveCampaignPosts } = useCampaigns();
   const [showSetup, setShowSetup] = useState(false);
   const [previewCampaignId, setPreviewCampaignId] = useState<string | null>(null);
@@ -32,16 +32,16 @@ const CampaignsPage = () => {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold flex items-center gap-3">
-              <Rocket className="w-8 h-8 text-primary" />
-              Smart Campaigns
+              <Bot className="w-8 h-8 text-primary" />
+              Agent Campaigns
             </h1>
             <p className="text-muted-foreground mt-1">
-              Automate multi-day LinkedIn content campaigns with AI
+              Your AI intern creates & posts LinkedIn content automatically
             </p>
           </div>
           <Button className="gap-2 gradient-bg text-primary-foreground" onClick={() => setShowSetup(true)}>
             <Plus className="w-4 h-4" />
-            New Campaign
+            New Agent Campaign
           </Button>
         </div>
 

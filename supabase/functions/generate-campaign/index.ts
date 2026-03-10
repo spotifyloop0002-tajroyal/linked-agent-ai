@@ -6,11 +6,64 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+// Agent type configurations for post generation
+const AGENT_TYPE_PROMPTS: Record<string, { style: string; emoji: string; imageStyle: string; suggestedHour: number }> = {
+  comedy: {
+    style: "Write funny, relatable LinkedIn posts. Use humor to make a point. Include a twist or punchline. Be genuinely funny like a comedian who works in tech. Self-deprecating humor works great.",
+    emoji: "Use humor emojis like 😂🤣💀🫠 sparingly for punchlines",
+    imageStyle: "meme-style, cartoon, funny reaction images",
+    suggestedHour: 21,
+  },
+  professional: {
+    style: "Write authoritative industry analysis posts. Share expert insights with data backing. Professional but not boring — be the smartest person in the room without being arrogant.",
+    emoji: "Minimal emojis. Use 📊📈💡 only at paragraph starts for scannability",
+    imageStyle: "minimal business graphics, clean professional design",
+    suggestedHour: 10,
+  },
+  storytelling: {
+    style: "Write personal stories with a clear narrative arc: setup → conflict → resolution → lesson. Be vulnerable and authentic. Every story should teach something. Use 'I' and share real experiences.",
+    emoji: "Warm emojis like ❤️🙏✨🌟 to enhance emotional moments",
+    imageStyle: "emotional visual scenes, cinematic moments",
+    suggestedHour: 12,
+  },
+  "thought-leadership": {
+    style: "Write posts with strong, sometimes contrarian opinions. Challenge conventional thinking. Start with a bold claim, then back it up. Be the industry voice people follow for hot takes.",
+    emoji: "Strategic emojis like 🔥💡🎯⚡ for emphasis on key points",
+    imageStyle: "bold typography graphics, quote cards, futuristic design",
+    suggestedHour: 11,
+  },
+  motivational: {
+    style: "Write posts that motivate people to take action. Share lessons from failures and wins. Use power words. End with a call-to-action or challenge. Morning energy vibes.",
+    emoji: "Energetic emojis like 🚀💪🔥✨🌟 throughout for energy",
+    imageStyle: "sunrise/nature scenes, achievement moments, inspirational",
+    suggestedHour: 8,
+  },
+  "data-analytics": {
+    style: "Write posts built around compelling statistics and data. Lead with a surprising number. Break down complex data into simple insights. Use bullet points for key stats.",
+    emoji: "Data emojis like 📊📈🔢📉 at key stat callouts",
+    imageStyle: "charts, graphs, data visualizations, infographic style",
+    suggestedHour: 16,
+  },
+  creative: {
+    style: "Write posts about creative thinking, design principles, and innovation. Use vivid metaphors and visual language. Share creative processes and 'aha' moments.",
+    emoji: "Creative emojis like 🎨✨🎭🌈 to match artistic tone",
+    imageStyle: "AI illustrations, abstract art, creative designs",
+    suggestedHour: 19,
+  },
+  news: {
+    style: "Write posts analyzing latest industry news and trends. Be the first to break down what a development means. Add your own take on why it matters.",
+    emoji: "News emojis like 🗞️📰🔔⚡ for urgency and relevance",
+    imageStyle: "headline-style news graphics, breaking news format",
+    suggestedHour: 9,
+  },
+};
+
 // Best posting times in IST (hours in 24h format)
 const BEST_TIMES_IST = [8, 9, 10, 12, 14, 17, 18];
 
-function pickBestTime(dayIndex: number): { hour: number; minute: number } {
-  const hour = BEST_TIMES_IST[dayIndex % BEST_TIMES_IST.length];
+function pickBestTime(dayIndex: number, agentType?: string): { hour: number; minute: number } {
+  const agentConfig = agentType ? AGENT_TYPE_PROMPTS[agentType] : null;
+  const hour = agentConfig?.suggestedHour || BEST_TIMES_IST[dayIndex % BEST_TIMES_IST.length];
   const minute = Math.random() > 0.5 ? 0 : 30;
   return { hour, minute };
 }
@@ -33,9 +86,6 @@ const EMOJI_RULES: Record<string, string> = {
   high: "Use 8-12+ emojis liberally throughout the post. Almost every paragraph should have 1-2 emojis. Make it visually rich and expressive.",
 };
 
-// ============================================
-// FETCH UNIFIED CONTEXT via get-agent-context
-// ============================================
 async function fetchUnifiedContext(authHeader: string): Promise<any | null> {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -95,7 +145,6 @@ serve(async (req) => {
       });
     }
 
-    // Fetch campaign AND unified context in parallel
     const [campaignRes, unifiedContext] = await Promise.all([
       supabase.from("campaigns").select("*").eq("id", campaignId).eq("user_id", user.id).single(),
       fetchUnifiedContext(authHeader),
@@ -109,7 +158,7 @@ serve(async (req) => {
       });
     }
 
-    // Check LinkedIn connection before generating campaign posts
+    // Check LinkedIn connection
     const ctx = unifiedContext?.context || {};
     const linkedinConnected = ctx.linkedinConnected === true;
     if (!linkedinConnected) {
@@ -121,26 +170,31 @@ serve(async (req) => {
       });
     }
 
-    // Update campaign status to generating
     await supabase.from("campaigns").update({ status: "generating" }).eq("id", campaignId);
 
-    // Extract data from unified context
     const profile = ctx.profile || {};
     const writingDna = ctx.writingDna || null;
     const aiInstructions = unifiedContext?.aiInstructions || "";
 
-    // Calculate posting dates — skip past dates
+    // Get agent type config
+    const agentType = campaign.agent_type || campaign.tone_type || "professional";
+    const agentConfig = AGENT_TYPE_PROMPTS[agentType] || AGENT_TYPE_PROMPTS.professional;
+
+    // Calculate posting dates
     const startDate = new Date(campaign.start_date);
     const endDate = new Date(campaign.end_date);
     const today = new Date();
     today.setUTCHours(0, 0, 0, 0);
     const postDates: Date[] = [];
     const postsPerDay = campaign.posts_per_day || 1;
+    const postingDays: string[] = campaign.posting_days || ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"];
+    
+    const dayNames = ["sunday","monday","tuesday","wednesday","thursday","friday","saturday"];
 
     if (campaign.duration_type === "alternate") {
       let current = new Date(startDate);
       while (current <= endDate && postDates.length < campaign.post_count) {
-        if (current >= today) {
+        if (current >= today && postingDays.includes(dayNames[current.getDay()])) {
           for (let p = 0; p < postsPerDay && postDates.length < campaign.post_count; p++) {
             postDates.push(new Date(current));
           }
@@ -150,7 +204,7 @@ serve(async (req) => {
     } else {
       let current = new Date(startDate);
       while (current <= endDate && postDates.length < campaign.post_count) {
-        if (current >= today) {
+        if (current >= today && postingDays.includes(dayNames[current.getDay()])) {
           for (let p = 0; p < postsPerDay && postDates.length < campaign.post_count; p++) {
             postDates.push(new Date(current));
           }
@@ -161,12 +215,12 @@ serve(async (req) => {
 
     if (postDates.length === 0) {
       await supabase.from("campaigns").update({ status: "failed" }).eq("id", campaignId);
-      return new Response(JSON.stringify({ error: "All campaign dates are in the past. Please update the start date." }), {
+      return new Response(JSON.stringify({ error: "All campaign dates are in the past or no matching posting days. Please update the schedule." }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Research if enabled
+    // Research
     let researchInsights = "";
     if (campaign.research_mode) {
       const TAVILY_API_KEY = Deno.env.get("TAVILY_API_KEY");
@@ -193,11 +247,9 @@ serve(async (req) => {
       }
     }
 
-    // Content settings from campaign
     const contentLengthRule = CONTENT_LENGTH_RULES[campaign.content_length || "medium"] || CONTENT_LENGTH_RULES.medium;
     const emojiRule = EMOJI_RULES[campaign.emoji_level || "moderate"] || EMOJI_RULES.moderate;
 
-    // Hashtag rules — #LinkedBot is ALWAYS appended
     let hashtagRule = "";
     if (campaign.hashtag_mode === "none") {
       hashtagRule = "Add ONLY #LinkedBot as the last line of the post. No other hashtags.";
@@ -208,20 +260,39 @@ serve(async (req) => {
       hashtagRule = "Add 3-5 relevant hashtags at the end of each post. ALWAYS include #LinkedBot as the very last hashtag.";
     }
 
-    // Footer
     const footerRule = campaign.footer_text
       ? `\nIMPORTANT: Append this exact footer at the end of every post (after a blank line):\n"${campaign.footer_text}"\nDo NOT modify or paraphrase the footer.`
       : "";
 
-    // Generate all posts with Lovable AI Gateway
+    // Build Writing DNA context
+    let writingDnaContext = "";
+    if (writingDna) {
+      writingDnaContext = `\nUSER'S WRITING DNA (IMPORTANT - blend this with agent style):
+- Tone: ${writingDna.toneType || "auto"}
+- Avg Post Length: ${writingDna.avgPostLength || 200} words
+- Uses Emojis: ${writingDna.usesEmojis ? "Yes" : "No"}, Frequency: ${writingDna.emojiFrequency || "moderate"}
+- Hook Style: ${writingDna.hookStyle || "question"}
+- Uses Bullet Points: ${writingDna.usesBulletPoints ? "Yes" : "No"}
+- Signature Phrases: ${writingDna.signaturePhrases?.join(", ") || "none"}
+- Topics: ${writingDna.topicsHistory?.join(", ") || "various"}
+
+CRITICAL: The user's Writing DNA represents their personal voice. The agent type (${agentType}) should influence the FORMAT and STRUCTURE of posts, but the VOICE and PERSONALITY should come from the Writing DNA. Think of it as: the user's voice + the agent's format.`;
+    }
+
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY not configured");
     }
 
-    const systemPrompt = `You are a LinkedIn content expert generating a campaign of ${postDates.length} posts about "${campaign.topic}".
+    const systemPrompt = `You are a LinkedIn content expert acting as the user's AI intern. You are generating a campaign of ${postDates.length} posts about "${campaign.topic}".
+
+AGENT TYPE: ${agentType.toUpperCase()}
+${agentConfig.style}
+
+EMOJI STYLE FOR THIS AGENT: ${agentConfig.emoji}
 
 ${aiInstructions}
+${writingDnaContext}
 
 USER PROFILE:
 - Name: ${profile.name || "Professional"}
@@ -245,27 +316,9 @@ ${footerRule}
 FORMATTING RULES — SUPER IMPORTANT:
 - Use DOUBLE line breaks (\\n\\n) between EVERY paragraph. LinkedIn collapses single line breaks.
 - Each thought gets its OWN paragraph with a blank line before and after
-- Start key paragraphs with relevant emojis to make the post scannable
 - Keep paragraphs SHORT (1-3 lines max)
 - The post should be AIRY and EASY TO READ with lots of white space
 - ALWAYS end every post with #LinkedBot as the very last hashtag on its own line
-
-EXAMPLE OF GOOD FORMATTING:
-"Did you know LinkedIn drives 75-85% of ALL B2B leads? 🤯
-
-That's a massive stat!
-
-But here's the kicker: just "being" on LinkedIn isn't enough. 📈
-
-You need consistent, valuable content to capture those leads.
-
-This is where it gets interesting... ✨
-
-Think less "generic AI post" and more "you, but on your best day, consistently."
-
-Stop leaving leads on the table! 🚀
-
-#B2BLeads #LinkedInGrowth #LinkedBot"
 
 HUMANIZATION RULES:
 - Use contractions: "I'm" not "I am", "don't" not "do not"
@@ -286,7 +339,7 @@ Generate exactly ${postDates.length} LinkedIn posts. Separate each with "---POST
         model: "google/gemini-2.5-flash",
         messages: [
           { role: "system", content: systemPrompt },
-          { role: "user", content: `Generate ${postDates.length} LinkedIn posts about "${campaign.topic}". Each post should have a different angle. Separate posts with "---POST_SEPARATOR---"` },
+          { role: "user", content: `Generate ${postDates.length} LinkedIn posts about "${campaign.topic}" using the ${agentType} agent style. Each post should have a different angle. Separate posts with "---POST_SEPARATOR---"` },
         ],
       }),
     });
@@ -313,7 +366,6 @@ Generate exactly ${postDates.length} LinkedIn posts. Separate each with "---POST
     const aiData = await aiResponse.json();
     const fullContent = aiData.choices?.[0]?.message?.content || "";
 
-    // Parse posts
     const rawPosts = fullContent
       .split("---POST_SEPARATOR---")
       .map((p: string) => p.trim())
@@ -326,21 +378,19 @@ Generate exactly ${postDates.length} LinkedIn posts. Separate each with "---POST
       });
     }
 
-    // Clean post content
     const cleanPosts = rawPosts.map((p: string) =>
       p.replace(/^Post\s*\d+\s*:\s*/i, "").trim()
     );
 
-    // Generate AI images if campaign has image_option = 'ai'
+    // Generate AI images with agent-type-specific style
     let imageUrls: (string | null)[] = new Array(cleanPosts.length).fill(null);
     if (campaign.image_option === "ai") {
-      console.log("🎨 Generating AI images for campaign posts...");
-      // Generate images in batches of 3 to avoid rate limits
+      console.log(`🎨 Generating ${agentType}-style images for campaign posts...`);
       for (let i = 0; i < cleanPosts.length; i += 3) {
         const batch = cleanPosts.slice(i, i + 3);
         const imagePromises = batch.map(async (content: string, batchIdx: number) => {
           try {
-            const prompt = generateImagePrompt(content, profile);
+            const prompt = generateImagePrompt(content, profile, agentConfig.imageStyle);
             const imgResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
               method: "POST",
               headers: {
@@ -358,7 +408,6 @@ Generate exactly ${postDates.length} LinkedIn posts. Separate each with "---POST
               const imgData = await imgResponse.json();
               const base64Url = imgData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
               if (base64Url) {
-                // Upload to storage
                 const fileName = `campaign-${campaignId}-post-${i + batchIdx}-${Date.now()}.png`;
                 const base64Data = base64Url.replace(/^data:image\/\w+;base64,/, "");
                 const binaryData = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
@@ -385,7 +434,6 @@ Generate exactly ${postDates.length} LinkedIn posts. Separate each with "---POST
           imageUrls[i + batchIdx] = url;
         });
         
-        // Small delay between batches to avoid rate limits
         if (i + 3 < cleanPosts.length) {
           await new Promise(resolve => setTimeout(resolve, 2000));
         }
@@ -393,13 +441,13 @@ Generate exactly ${postDates.length} LinkedIn posts. Separate each with "---POST
       console.log(`✅ Generated ${imageUrls.filter(u => u).length}/${cleanPosts.length} images`);
     }
 
-    // Create posts in database
+    // Create posts
     const postsToInsert = cleanPosts.slice(0, postDates.length).map((content: string, i: number) => {
       const postDate = postDates[i];
       
       let hour: number, minute: number;
       if (campaign.auto_best_time) {
-        ({ hour, minute } = pickBestTime(i));
+        ({ hour, minute } = pickBestTime(i, agentType));
       } else {
         ({ hour, minute } = parsePostingTime(campaign.posting_time || "09:00"));
       }
@@ -435,7 +483,6 @@ Generate exactly ${postDates.length} LinkedIn posts. Separate each with "---POST
       throw insertErr;
     }
 
-    // Update campaign status
     await supabase.from("campaigns").update({
       status: campaign.auto_approve ? "active" : "draft",
       post_count: createdPosts?.length || postsToInsert.length,
@@ -462,7 +509,7 @@ Generate exactly ${postDates.length} LinkedIn posts. Separate each with "---POST
   }
 });
 
-function generateImagePrompt(content: string, profile: any): string {
+function generateImagePrompt(content: string, profile: any, agentImageStyle: string): string {
   const firstLine = content.split('\n').filter((l: string) => l.trim())[0]?.trim() || 'Professional content';
   const clean = firstLine.replace(/[\u{1F300}-\u{1F9FF}]/gu, '').replace(/[^\w\s.,!?-]/g, '').trim().substring(0, 120);
   
@@ -476,5 +523,5 @@ function generateImagePrompt(content: string, profile: any): string {
   if (profile?.industry) themes.push(profile.industry);
   
   const themeStr = themes.length > 0 ? themes.join(', ') : 'professional business';
-  return `Professional LinkedIn post image: ${clean}, ${themeStr}, modern clean design, high quality, no text overlay`;
+  return `LinkedIn post image in ${agentImageStyle} style: ${clean}, ${themeStr}, modern design, high quality, no text overlay`;
 }

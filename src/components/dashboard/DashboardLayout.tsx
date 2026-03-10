@@ -14,7 +14,6 @@ import {
   X,
   ChevronDown,
   User,
-  Rocket,
   Dna,
 } from "lucide-react";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
@@ -38,9 +37,8 @@ interface DashboardLayoutProps {
 
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
-  { icon: Rocket, label: "Campaigns", path: "/dashboard/campaigns" },
+  { icon: Bot, label: "Agent Campaigns", path: "/dashboard/campaigns" },
   { icon: Calendar, label: "Calendar", path: "/dashboard/calendar" },
-  { icon: Bot, label: "Agents", path: "/dashboard/agents" },
   { icon: Dna, label: "Writing DNA", path: "/dashboard/writing-dna" },
   { icon: BarChart3, label: "Analytics", path: "/dashboard/analytics" },
   { icon: Linkedin, label: "LinkedIn", path: "/dashboard/linkedin" },
@@ -53,7 +51,6 @@ const routeImports: Record<string, () => Promise<unknown>> = {
   "/dashboard": () => import("@/pages/Dashboard"),
   "/dashboard/campaigns": () => import("@/pages/CampaignsPage"),
   "/dashboard/calendar": () => import("@/pages/CalendarPage"),
-  "/dashboard/agents": () => import("@/pages/Agents"),
   "/dashboard/writing-dna": () => import("@/pages/WritingDNAPage"),
   "/dashboard/analytics": () => import("@/pages/Analytics"),
   "/dashboard/linkedin": () => import("@/pages/LinkedInConnection"),

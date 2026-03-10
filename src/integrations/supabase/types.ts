@@ -224,8 +224,10 @@ export type Database = {
       }
       campaigns: {
         Row: {
+          agent_type: string | null
           auto_approve: boolean | null
           auto_best_time: boolean | null
+          campaign_name: string | null
           content_length: string | null
           created_at: string
           duration_type: string
@@ -237,6 +239,7 @@ export type Database = {
           id: string
           image_option: string | null
           post_count: number
+          posting_days: string[] | null
           posting_time: string | null
           posts_per_day: number
           research_mode: boolean | null
@@ -248,8 +251,10 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          agent_type?: string | null
           auto_approve?: boolean | null
           auto_best_time?: boolean | null
+          campaign_name?: string | null
           content_length?: string | null
           created_at?: string
           duration_type?: string
@@ -261,6 +266,7 @@ export type Database = {
           id?: string
           image_option?: string | null
           post_count?: number
+          posting_days?: string[] | null
           posting_time?: string | null
           posts_per_day?: number
           research_mode?: boolean | null
@@ -272,8 +278,10 @@ export type Database = {
           user_id: string
         }
         Update: {
+          agent_type?: string | null
           auto_approve?: boolean | null
           auto_best_time?: boolean | null
+          campaign_name?: string | null
           content_length?: string | null
           created_at?: string
           duration_type?: string
@@ -285,6 +293,7 @@ export type Database = {
           id?: string
           image_option?: string | null
           post_count?: number
+          posting_days?: string[] | null
           posting_time?: string | null
           posts_per_day?: number
           research_mode?: boolean | null

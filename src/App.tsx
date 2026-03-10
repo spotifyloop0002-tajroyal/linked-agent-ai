@@ -16,8 +16,7 @@ const Signup = lazy(() => import("./pages/Signup"));
 // Lazy load all other pages
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
-const Agents = lazy(() => import("./pages/Agents"));
-const AgentChat = lazy(() => import("./pages/AgentChat"));
+// Agents page removed — replaced by Agent Campaigns
 const CalendarPage = lazy(() => import("./pages/CalendarPage"));
 const CampaignsPage = lazy(() => import("./pages/CampaignsPage"));
 const WritingDNAPage = lazy(() => import("./pages/WritingDNAPage"));
@@ -107,8 +106,7 @@ const AppContent = () => {
             {/* Dashboard routes: DashboardGuard runs ONCE as layout route */}
             <Route path="/dashboard" element={<DashboardGuard />}>
               <Route index element={<Dashboard />} />
-              <Route path="agents" element={<Agents />} />
-              <Route path="agents/chat" element={<AgentChat />} />
+              {/* Agents page removed — campaigns are now agent campaigns */}
               <Route path="calendar" element={<CalendarPage />} />
               <Route path="campaigns" element={<CampaignsPage />} />
               <Route path="writing-dna" element={<WritingDNAPage />} />
