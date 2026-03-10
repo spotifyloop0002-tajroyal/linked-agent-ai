@@ -85,6 +85,12 @@ export function useCampaigns() {
   }, []);
 
   const createCampaign = useCallback(async (formData: CampaignFormData) => {
+    if (isCreatingRef.current) {
+      toast.info("Campaign creation already in progress, please wait...");
+      return null;
+    }
+    isCreatingRef.current = true;
+    setIsCreating(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("Not authenticated");
