@@ -5,14 +5,20 @@ import { useCampaigns, CampaignFormData } from "@/hooks/useCampaigns";
 import { CampaignSetupForm } from "@/components/campaigns/CampaignSetupForm";
 import { CampaignList } from "@/components/campaigns/CampaignList";
 import { CampaignPreview } from "@/components/campaigns/CampaignPreview";
+import { WeeklyContentPlanner, WeeklyPlan } from "@/components/campaigns/WeeklyContentPlanner";
 import { Button } from "@/components/ui/button";
-import { Plus, Bot } from "lucide-react";
+import { Plus, Bot, CalendarDays } from "lucide-react";
+import { AGENT_TYPE_MAP } from "@/lib/agentTypes";
+import { toast } from "sonner";
+import { addDays } from "date-fns";
 
 const CampaignsPage = () => {
   usePageTitle("Agent Campaigns");
   const { campaigns, isLoading, isGenerating, createCampaign, generateCampaignPosts, updateCampaignStatus, deleteCampaign, approveCampaignPosts } = useCampaigns();
   const [showSetup, setShowSetup] = useState(false);
+  const [showPlanner, setShowPlanner] = useState(false);
   const [previewCampaignId, setPreviewCampaignId] = useState<string | null>(null);
+  const [isCreatingWeekly, setIsCreatingWeekly] = useState(false);
 
   const handleCreate = async (formData: CampaignFormData) => {
     const campaign = await createCampaign(formData);
@@ -22,6 +28,58 @@ const CampaignsPage = () => {
       if (success) {
         setPreviewCampaignId(campaign.id);
       }
+    }
+  };
+
+  const handleCreateWeeklyCampaigns = async (plan: WeeklyPlan) => {
+    setIsCreatingWeekly(true);
+    let created = 0;
+
+    try {
+      for (const [day, agentId] of Object.entries(plan)) {
+        if (!agentId) continue;
+        const agentConfig = AGENT_TYPE_MAP[agentId];
+        if (!agentConfig) continue;
+
+        const startDate = new Date();
+        const formData: CampaignFormData = {
+          topic: `${agentConfig.label} content`,
+          toneType: agentId,
+          durationType: "custom",
+          startDate,
+          endDate: addDays(startDate, 28), // 4 weeks
+          postCount: 4, // 4 posts (one per week on this day)
+          postsPerDay: 1,
+          researchMode: agentId === "news" || agentId === "data-analytics",
+          autoBestTime: false,
+          autoApprove: false,
+          postingTime: agentConfig.suggestedTime,
+          contentLength: "medium",
+          emojiLevel: ["comedy", "motivational"].includes(agentId) ? "high" : "moderate",
+          hashtagMode: "auto",
+          fixedHashtags: [],
+          footerText: "",
+          imageOption: ["data-analytics", "creative", "news"].includes(agentId) ? "ai" : "none",
+          agentType: agentId,
+          postingDays: [day],
+          campaignName: `${agentConfig.label} – ${day.charAt(0).toUpperCase() + day.slice(1)}`,
+        };
+
+        const campaign = await createCampaign(formData);
+        if (campaign) {
+          await generateCampaignPosts(campaign.id);
+          created++;
+        }
+      }
+
+      if (created > 0) {
+        toast.success(`Created ${created} weekly campaigns!`);
+        setShowPlanner(false);
+      }
+    } catch (err) {
+      toast.error("Failed to create some campaigns");
+    } finally {
+      setIsCreatingWeekly(false);
     }
   };
 
@@ -39,11 +97,29 @@ const CampaignsPage = () => {
               Your AI intern creates & posts LinkedIn content automatically
             </p>
           </div>
-          <Button className="gap-2 gradient-bg text-primary-foreground" onClick={() => setShowSetup(true)}>
-            <Plus className="w-4 h-4" />
-            New Agent Campaign
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              className="gap-2"
+              onClick={() => { setShowPlanner(!showPlanner); setShowSetup(false); }}
+            >
+              <CalendarDays className="w-4 h-4" />
+              Weekly Planner
+            </Button>
+            <Button className="gap-2 gradient-bg text-primary-foreground" onClick={() => { setShowSetup(true); setShowPlanner(false); }}>
+              <Plus className="w-4 h-4" />
+              New Campaign
+            </Button>
+          </div>
         </div>
+
+        {/* Weekly Content Planner */}
+        {showPlanner && (
+          <WeeklyContentPlanner
+            onCreateCampaigns={handleCreateWeeklyCampaigns}
+            isCreating={isCreatingWeekly}
+          />
+        )}
 
         {/* Campaign Setup Modal */}
         {showSetup && (
