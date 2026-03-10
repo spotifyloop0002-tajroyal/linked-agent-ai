@@ -189,7 +189,7 @@ const DashboardGuard = () => {
   return (
     <DashboardContext.Provider value={contextValue}>
       <Outlet />
-      {!isAgentChatPage && <LiveChatWidget />}
+      <LiveChatWidget />
     </DashboardContext.Provider>
   );
 };
