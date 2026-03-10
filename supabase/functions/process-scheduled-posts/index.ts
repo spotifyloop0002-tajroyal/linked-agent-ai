@@ -7,25 +7,10 @@ const corsHeaders = {
 };
 
 /**
- * DEPRECATED: Scheduling is now handled entirely by the Chrome extension.
- * 
- * This function only performs status checks and cleanup - it does NOT execute posts.
- * The Chrome extension is the single source of truth for scheduling and publishing.
- * 
- * Website responsibilities:
- * - Collect post content, date, time
- * - Save to database
- * - Send payload to Chrome extension
- * 
- * Extension responsibilities:
- * - Store scheduling data locally
- * - Execute posts at exact scheduled time
- * - Send post results back to website
+ * Auto-posting cron function.
+ * Runs every 5 minutes via pg_cron.
+ * Finds pending posts whose scheduled_time has passed and publishes them via linkedin-post.
  */
-
-function getCurrentTimeIST(): string {
-  return new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
-}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -34,78 +19,121 @@ serve(async (req) => {
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-
+  const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
   try {
-    console.log(`[${getCurrentTimeIST()} IST] Post status check (execution handled by extension)...`);
-
     const now = new Date().toISOString();
-    
-    // Only check for stale posts that might need attention
-    // This is for monitoring only - NOT for execution
-    const { data: stalePosts, error: fetchError } = await supabase
-      .from('posts')
-      .select('id, status, scheduled_time, sent_to_extension_at')
-      .eq('status', 'scheduled')
-      .lte('scheduled_time', now)
-      .order('scheduled_time', { ascending: true })
-      .limit(50);
+    console.log(`[AUTO-POST] Processing scheduled posts at ${now}`);
+
+    // Find pending posts that are due (scheduled_time <= now)
+    // Also include posts up to 7 days overdue
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+
+    const { data: duePosts, error: fetchError } = await supabase
+      .from("posts")
+      .select("id, content, photo_url, user_id, scheduled_time, campaign_id")
+      .eq("status", "pending")
+      .lte("scheduled_time", now)
+      .gte("scheduled_time", sevenDaysAgo)
+      .order("scheduled_time", { ascending: true })
+      .limit(10);
 
     if (fetchError) {
-      console.error('Error fetching posts:', fetchError);
+      console.error("[AUTO-POST] Fetch error:", fetchError);
       throw fetchError;
     }
 
-    // Posts that are overdue but never sent to extension - flag them
-    const notSentToExtension = (stalePosts || []).filter(
-      p => !p.sent_to_extension_at
-    );
+    if (!duePosts || duePosts.length === 0) {
+      console.log("[AUTO-POST] No posts due for publishing.");
+      return new Response(
+        JSON.stringify({ success: true, postsProcessed: 0 }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
-    // Posts that were sent but are still scheduled (extension may have failed)
-    const possiblyStuck = (stalePosts || []).filter(
-      p => p.sent_to_extension_at
-    );
+    console.log(`[AUTO-POST] Found ${duePosts.length} posts to publish`);
 
-    console.log(`[${getCurrentTimeIST()} IST] Status check complete:`, {
-      totalOverdue: stalePosts?.length || 0,
-      notSentToExtension: notSentToExtension.length,
-      possiblyStuck: possiblyStuck.length,
-    });
+    const results: { postId: string; success: boolean; error?: string }[] = [];
+
+    for (const post of duePosts) {
+      try {
+        console.log(`[AUTO-POST] Publishing post ${post.id} for user ${post.user_id}`);
+
+        // Mark as posting to prevent double-processing
+        await supabase.from("posts").update({ status: "posting" }).eq("id", post.id);
+
+        // Call linkedin-post edge function
+        const response = await fetch(`${supabaseUrl}/functions/v1/linkedin-post`, {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${supabaseAnonKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            postId: post.id,
+            content: post.content,
+            imageUrl: post.photo_url || undefined,
+            userId: post.user_id,
+          }),
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+          console.log(`[AUTO-POST] ✅ Post ${post.id} published successfully`);
+          results.push({ postId: post.id, success: true });
+        } else {
+          const errorMsg = result.error || "Unknown error";
+          console.error(`[AUTO-POST] ❌ Post ${post.id} failed: ${errorMsg}`);
+          // linkedin-post already marks as failed, but ensure it
+          await supabase.from("posts").update({
+            status: "failed",
+            last_error: errorMsg,
+          }).eq("id", post.id);
+          results.push({ postId: post.id, success: false, error: errorMsg });
+        }
+      } catch (postError) {
+        const errorMsg = postError instanceof Error ? postError.message : String(postError);
+        console.error(`[AUTO-POST] ❌ Post ${post.id} exception: ${errorMsg}`);
+        await supabase.from("posts").update({
+          status: "failed",
+          last_error: errorMsg,
+        }).eq("id", post.id);
+        results.push({ postId: post.id, success: false, error: errorMsg });
+      }
+
+      // Small delay between posts to avoid rate limiting
+      if (duePosts.indexOf(post) < duePosts.length - 1) {
+        await new Promise(resolve => setTimeout(resolve, 3000));
+      }
+    }
+
+    const succeeded = results.filter(r => r.success).length;
+    const failed = results.filter(r => !r.success).length;
+
+    console.log(`[AUTO-POST] Done: ${succeeded} published, ${failed} failed`);
 
     return new Response(
       JSON.stringify({
         success: true,
-        message: "Status check only - execution handled by Chrome extension",
-        timestamp: new Date().toISOString(),
-        timestampIST: getCurrentTimeIST(),
-        stats: {
-          overduePostsFound: stalePosts?.length || 0,
-          notSentToExtension: notSentToExtension.length,
-          possiblyStuckInExtension: possiblyStuck.length,
-        },
-        // These posts may need manual attention
-        postsNeedingAttention: notSentToExtension.map(p => ({
-          id: p.id,
-          scheduledTime: p.scheduled_time,
-          issue: "Never sent to extension"
-        })),
+        postsProcessed: results.length,
+        succeeded,
+        failed,
+        results,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
-
   } catch (error) {
-    console.error(`[${getCurrentTimeIST()} IST] Status check error:`, error);
+    console.error("[AUTO-POST] Fatal error:", error);
     return new Response(
       JSON.stringify({
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-        timestamp: new Date().toISOString(),
-        timestampIST: getCurrentTimeIST(),
+        error: error instanceof Error ? error.message : "Unknown error",
       }),
-      { 
+      {
         status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" } 
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       }
     );
   }
