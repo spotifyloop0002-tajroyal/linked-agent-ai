@@ -48,6 +48,7 @@ import {
   AlertCircle,
   Bot,
   HardDrive,
+  Dna,
   Target,
   Megaphone,
   Hash,
