@@ -59,7 +59,7 @@ const plans = [
     description: "For teams and agencies managing multiple brands",
     features: [
       "7 Active Agents",
-      "60 posts per month",
+      "100 posts per month",
       "Full analytics suite",
       "AI photo generation",
       "Smart scheduling",
