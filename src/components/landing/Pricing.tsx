@@ -37,7 +37,7 @@ const plans = [
     description: "For professionals serious about LinkedIn growth",
     features: [
       "3 Active Agents",
-      "30 posts per month",
+      "60 posts per month",
       "Advanced analytics",
       "AI photo generation",
       "Smart scheduling",
@@ -59,7 +59,7 @@ const plans = [
     description: "For teams and agencies managing multiple brands",
     features: [
       "7 Active Agents",
-      "60 posts per month",
+      "100 posts per month",
       "Full analytics suite",
       "AI photo generation",
       "Smart scheduling",
@@ -98,8 +98,8 @@ const plans = [
 
 export const PLAN_LIMITS = {
   free: { agents: 1, postsPerMonth: 5, postsPerDay: 1 },
-  pro: { agents: 3, postsPerMonth: 30, postsPerDay: 2 },
-  business: { agents: 7, postsPerMonth: 60, postsPerDay: 3 },
+  pro: { agents: 3, postsPerMonth: 60, postsPerDay: 3 },
+  business: { agents: 7, postsPerMonth: 100, postsPerDay: 4 },
   custom: { agents: 999, postsPerMonth: 9999, postsPerDay: 999 },
 };
 const Pricing = forwardRef<HTMLElement>((_, ref) => {
