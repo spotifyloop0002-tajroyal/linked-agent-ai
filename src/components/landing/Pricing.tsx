@@ -37,7 +37,7 @@ const plans = [
     description: "For professionals serious about LinkedIn growth",
     features: [
       "3 Active Agents",
-      "30 posts per month",
+      "60 posts per month",
       "Advanced analytics",
       "AI photo generation",
       "Smart scheduling",
