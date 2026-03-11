@@ -98,8 +98,8 @@ const plans = [
 
 export const PLAN_LIMITS = {
   free: { agents: 1, postsPerMonth: 5, postsPerDay: 1 },
-  pro: { agents: 3, postsPerMonth: 30, postsPerDay: 2 },
-  business: { agents: 7, postsPerMonth: 60, postsPerDay: 3 },
+  pro: { agents: 3, postsPerMonth: 60, postsPerDay: 3 },
+  business: { agents: 7, postsPerMonth: 100, postsPerDay: 4 },
   custom: { agents: 999, postsPerMonth: 9999, postsPerDay: 999 },
 };
 const Pricing = forwardRef<HTMLElement>((_, ref) => {
