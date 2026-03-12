@@ -198,23 +198,26 @@ const CalendarPage = () => {
                     {format(day, "d")}
                   </span>
 
-                  {/* Post indicators */}
+                  {/* Post indicators with status */}
                   {dayPosts.length > 0 && (
                     <div className="mt-1 space-y-0.5">
-                      {dayPosts.slice(0, 2).map((post, i) => (
-                        <div
-                          key={i}
-                          className={cn(
-                            "text-[10px] sm:text-xs truncate rounded px-1 py-0.5 text-white",
-                            getAgentColor(post.agent_name)
-                          )}
-                        >
-                          <span className="hidden sm:inline">
-                            {post.scheduled_time ? format(new Date(post.scheduled_time), "h:mm a") + " " : ""}
-                          </span>
-                          {post.content.slice(0, 20)}…
-                        </div>
-                      ))}
+                      {dayPosts.slice(0, 2).map((post, i) => {
+                        const sc = statusConfig[post.status] || statusConfig.draft;
+                        return (
+                          <div
+                            key={i}
+                            className={cn(
+                              "text-[10px] sm:text-xs truncate rounded px-1 py-0.5 text-white",
+                              sc.color
+                            )}
+                          >
+                            <span className="hidden sm:inline">
+                              {sc.label} · 
+                            </span>
+                            {post.content.slice(0, 15)}…
+                          </div>
+                        );
+                      })}
                       {dayPosts.length > 2 && (
                         <div className="text-[10px] text-muted-foreground px-1">
                           +{dayPosts.length - 2} more
