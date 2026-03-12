@@ -77,7 +77,6 @@ serve(async (req) => {
       body: JSON.stringify({
         sender: { name: "LinkedBot", email: "team@linkedbot.online" },
         to: [{ email: profile.email, name: profile.name || "User" }],
-        bcc: [{ email: "aryanbhatnagar.2601@gmail.com" }],
         subject: `📋 Post Preview – Scheduled for ${scheduledTime}`,
         htmlContent: `
           <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px;">

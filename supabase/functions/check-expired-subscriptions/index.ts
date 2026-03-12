@@ -88,7 +88,6 @@ serve(async (req) => {
               body: JSON.stringify({
                 sender: { name: "LinkedBot", email: "team@linkedbot.online" },
                 to: [{ email: user.email }],
-                bcc: [{ email: "aryanbhatnagar.2601@gmail.com" }],
                 subject: `⚠️ Your LinkedBot ${planName} Plan Has Expired`,
                 htmlContent: `
                   <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; border: 1px solid #e5e7eb;">
