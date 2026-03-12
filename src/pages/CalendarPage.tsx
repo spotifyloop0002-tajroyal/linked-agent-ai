@@ -172,7 +172,7 @@ const CalendarPage = () => {
               return (
                 <button
                   key={idx}
-                  onClick={() => setSelectedDate(isSelected ? null : day)}
+                  onClick={() => setSelectedDate(day)}
                   className={cn(
                     "relative min-h-[80px] sm:min-h-[100px] p-1.5 sm:p-2 border-b border-r border-border text-left transition-colors hover:bg-muted/50 focus:outline-none",
                     !isCurrentMonth && "opacity-40",
