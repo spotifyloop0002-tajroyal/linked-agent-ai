@@ -74,16 +74,16 @@ function parsePostingTime(timeStr: string): { hour: number; minute: number } {
 }
 
 const CONTENT_LENGTH_RULES: Record<string, string> = {
-  short: "Keep each post between 100-150 words. Be concise and impactful.",
+  short: "Keep each post between 100-150 words. Be concise and impactful. Every word must earn its place.",
   medium: "Keep each post between 200-300 words. Good balance of depth and readability.",
   long: "Write detailed posts of 400+ words. Deep insights, thorough coverage.",
 };
 
 const EMOJI_RULES: Record<string, string> = {
-  none: "Do NOT use any emojis at all.",
-  low: "Use 3-4 emojis per post. Place them at the start of key paragraphs to make the post scannable.",
-  moderate: "Use 5-7 emojis per post. Start key paragraphs with emojis to add visual energy and make the post engaging.",
-  high: "Use 8-12+ emojis liberally throughout the post. Almost every paragraph should have 1-2 emojis. Make it visually rich and expressive.",
+  none: "Do NOT use any emojis at all. Zero emojis.",
+  low: "Use only 1-2 relevant emojis per post. Place them only at the most impactful moments.",
+  moderate: "Use 3-5 relevant emojis per post. Start key paragraphs or bullet points with emojis to add visual energy and scannability.",
+  high: "Use emojis frequently and naturally throughout the post (8+). Almost every paragraph or bullet should start with a relevant emoji. Make the post visually rich and expressive.",
 };
 
 async function fetchUnifiedContext(authHeader: string): Promise<any | null> {
