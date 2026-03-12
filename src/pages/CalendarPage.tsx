@@ -54,7 +54,7 @@ const CalendarPage = () => {
   usePageTitle("Content Calendar");
   const navigate = useNavigate();
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
   const [previewPostId, setPreviewPostId] = useState<string | null>(null);
   const [filterAgent, setFilterAgent] = useState("all");
 
