@@ -39,6 +39,14 @@ import { PostSourceBadge } from "@/components/posts/PostSourceBadge";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
+const statusConfig: Record<string, { color: string; label: string }> = {
+  posted: { color: "bg-green-500", label: "Posted" },
+  pending: { color: "bg-yellow-500", label: "Scheduled" },
+  posting: { color: "bg-blue-500", label: "Posting" },
+  draft: { color: "bg-gray-400", label: "Draft" },
+  failed: { color: "bg-red-500", label: "Failed" },
+};
+
 const agentColors: Record<string, string> = {
   comedy: "bg-warning",
   professional: "bg-primary",
@@ -152,6 +160,16 @@ const CalendarPage = () => {
             </Button>
           </div>
 
+          {/* Status legend */}
+          <div className="flex items-center gap-4 px-4 py-2 border-b border-border flex-wrap">
+            {Object.entries(statusConfig).map(([key, { color, label }]) => (
+              <div key={key} className="flex items-center gap-1.5">
+                <span className={cn("w-2.5 h-2.5 rounded-full", color)} />
+                <span className="text-xs text-muted-foreground">{label}</span>
+              </div>
+            ))}
+          </div>
+
           {/* Weekday headers */}
           <div className="grid grid-cols-7 border-b border-border">
             {weekDays.map((day) => (
@@ -190,23 +208,26 @@ const CalendarPage = () => {
                     {format(day, "d")}
                   </span>
 
-                  {/* Post indicators */}
+                  {/* Post indicators with status */}
                   {dayPosts.length > 0 && (
                     <div className="mt-1 space-y-0.5">
-                      {dayPosts.slice(0, 2).map((post, i) => (
-                        <div
-                          key={i}
-                          className={cn(
-                            "text-[10px] sm:text-xs truncate rounded px-1 py-0.5 text-white",
-                            getAgentColor(post.agent_name)
-                          )}
-                        >
-                          <span className="hidden sm:inline">
-                            {post.scheduled_time ? format(new Date(post.scheduled_time), "h:mm a") + " " : ""}
-                          </span>
-                          {post.content.slice(0, 20)}…
-                        </div>
-                      ))}
+                      {dayPosts.slice(0, 2).map((post, i) => {
+                        const sc = statusConfig[post.status] || statusConfig.draft;
+                        return (
+                          <div
+                            key={i}
+                            className={cn(
+                              "text-[10px] sm:text-xs truncate rounded px-1 py-0.5 text-white",
+                              sc.color
+                            )}
+                          >
+                            <span className="hidden sm:inline">
+                              {sc.label} · 
+                            </span>
+                            {post.content.slice(0, 15)}…
+                          </div>
+                        );
+                      })}
                       {dayPosts.length > 2 && (
                         <div className="text-[10px] text-muted-foreground px-1">
                           +{dayPosts.length - 2} more
@@ -255,9 +276,11 @@ const CalendarPage = () => {
                     key={post.id}
                     className="p-4 rounded-xl bg-muted/50 border border-border hover:border-primary/30 transition-colors"
                   >
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className={`w-2.5 h-2.5 rounded-full ${getAgentColor(post.agent_name)}`} />
-                      <span className="text-xs font-medium text-muted-foreground">
+                    <div className="flex items-center gap-2 mb-2 flex-wrap">
+                      <span className={cn("px-1.5 py-0.5 rounded text-[10px] font-medium text-white", (statusConfig[post.status] || statusConfig.draft).color)}>
+                        {(statusConfig[post.status] || statusConfig.draft).label}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
                         {post.scheduled_time ? format(new Date(post.scheduled_time), "h:mm a") : "No time"}
                       </span>
                       <PostSourceBadge agentName={post.agent_name} campaignId={(post as any).campaign_id} />
