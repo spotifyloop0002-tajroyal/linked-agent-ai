@@ -39,8 +39,14 @@ import { PostSourceBadge } from "@/components/posts/PostSourceBadge";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
-const agentColors: Record<string, string> = {
-  comedy: "bg-warning",
+const statusConfig: Record<string, { color: string; label: string }> = {
+  posted: { color: "bg-green-500", label: "Posted" },
+  pending: { color: "bg-yellow-500", label: "Scheduled" },
+  posting: { color: "bg-blue-500", label: "Posting" },
+  draft: { color: "bg-gray-400", label: "Draft" },
+  failed: { color: "bg-red-500", label: "Failed" },
+};
+
   professional: "bg-primary",
   storytelling: "bg-secondary",
   "thought-leadership": "bg-success",
