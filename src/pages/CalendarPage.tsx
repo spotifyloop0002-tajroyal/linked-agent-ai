@@ -47,6 +47,8 @@ const statusConfig: Record<string, { color: string; label: string }> = {
   failed: { color: "bg-red-500", label: "Failed" },
 };
 
+const agentColors: Record<string, string> = {
+  comedy: "bg-warning",
   professional: "bg-primary",
   storytelling: "bg-secondary",
   "thought-leadership": "bg-success",
