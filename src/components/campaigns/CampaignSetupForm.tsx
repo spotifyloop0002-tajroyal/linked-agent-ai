@@ -172,7 +172,10 @@ export function CampaignSetupForm({ onSubmit, onCancel, isGenerating }: Campaign
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!topic.trim() || !agentType || isGenerating || isSubmittingRef.current) return;
+    const finalTopic = multiTopicMode && topics.length > 0
+      ? topics.join("|||")
+      : topic.trim();
+    if (!finalTopic || !agentType || isGenerating || isSubmittingRef.current) return;
     isSubmittingRef.current = true;
     // Reset after a delay to allow the async flow to set isGenerating
     setTimeout(() => { isSubmittingRef.current = false; }, 3000);
