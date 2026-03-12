@@ -40,6 +40,8 @@ export default defineConfig(({ mode }) => ({
           'vendor-charts': ['recharts'],
           'vendor-motion': ['framer-motion'],
           'vendor-query': ['@tanstack/react-query'],
+          'vendor-date': ['date-fns'],
+          'vendor-forms': ['react-hook-form', '@hookform/resolvers', 'zod'],
         },
       },
     },
