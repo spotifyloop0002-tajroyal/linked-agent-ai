@@ -123,9 +123,8 @@ serve(async (req) => {
         Accept: "application/json",
       },
       body: JSON.stringify({
-        sender: { name: "LINKEDBOT", email: "aryanbhatnagar.2601@gmail.com" },
+        sender: { name: "LinkedBot", email: "team@linkedbot.online" },
         to: [{ email: normalizedEmail }],
-        bcc: [{ email: "aryanbhatnagar.2601@gmail.com" }],
         subject: `${otp} is your LinkedBot verification code`,
         htmlContent: `
           <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px;">

@@ -159,7 +159,7 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        sender: { name: "LINKEDBOT", email: "aryanbhatnagar.2601@gmail.com" },
+        sender: { name: "LinkedBot", email: "team@linkedbot.online" },
         to: [{ email: profile.email, name: profile.name || "User" }],
         subject,
         htmlContent,
