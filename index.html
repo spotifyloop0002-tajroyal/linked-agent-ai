@@ -6,7 +6,6 @@
 
     <!-- Google tag (gtag.js) - deferred to not block rendering -->
     <script>
-      // Defer GA loading until after page load
       window.addEventListener('load', function() {
         var s = document.createElement('script');
         s.src = 'https://www.googletagmanager.com/gtag/js?id=G-G4F2D83P2Y';
@@ -30,10 +29,11 @@
     <link rel="dns-prefetch" href="https://suznvphdiuyqxsduycty.supabase.co" />
     <link rel="preconnect" href="https://suznvphdiuyqxsduycty.supabase.co" crossorigin />
 
-    <!-- Google Fonts - optimized loading with font-display:swap -->
+    <!-- Google Fonts - optimized: only needed weights, swap display -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'" />
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" /></noscript>
 
     <!-- Preload hero image (LCP element) -->
     <link rel="preload" href="/images/dashboard-preview.webp" as="image" type="image/webp" />
@@ -48,25 +48,17 @@
 
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
-    
-    
+    <meta property="og:title" content="LinkedBot - AI LinkedIn Automation">
+    <meta property="og:description" content="Your AI LinkedIn Intern - Automate LinkedIn posting with AI-powered content creation">
     <meta property="og:image" content="/linkedbot-icon.png">
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@LinkedBot" />
-    
-    
+    <meta name="twitter:title" content="LinkedBot - AI LinkedIn Automation">
+    <meta name="twitter:description" content="Your AI LinkedIn Intern - Automate LinkedIn posting with AI-powered content creation">
     <meta name="twitter:image" content="/linkedbot-icon.png">
-    
-  
-  
-  
-  <meta property="og:title" content="LinkedBot - AI LinkedIn Automation">
-  <meta name="twitter:title" content="LinkedBot - AI LinkedIn Automation">
-  <meta property="og:description" content="Your AI LinkedIn Intern - Automate LinkedIn posting with AI-powered content creation">
-  <meta name="twitter:description" content="Your AI LinkedIn Intern - Automate LinkedIn posting with AI-powered content creation">
-</head>
+  </head>
 
   <body>
     <div id="root"></div>

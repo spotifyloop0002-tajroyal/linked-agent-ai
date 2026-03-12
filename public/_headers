@@ -1,8 +1,9 @@
-# Cache static assets aggressively (JS, CSS, images with hashed filenames)
+# Cache hashed static assets forever (JS, CSS with content hash in filename)
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
+  X-Content-Type-Options: nosniff
 
-# Cache images
+# Cache images for 30 days
 *.png
   Cache-Control: public, max-age=2592000
 *.jpg
@@ -14,19 +15,20 @@
 *.ico
   Cache-Control: public, max-age=2592000
 
-# Cache fonts
+# Cache fonts forever (immutable)
 *.woff2
   Cache-Control: public, max-age=31536000, immutable
 *.woff
   Cache-Control: public, max-age=31536000, immutable
 
-# HTML - short cache to pick up new deployments
+# HTML - revalidate on every request for fresh deployments
 /index.html
   Cache-Control: public, max-age=0, must-revalidate
 
-# Security headers
+# Global security and performance headers
 /*
   X-Content-Type-Options: nosniff
   X-Frame-Options: SAMEORIGIN
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=()
+  Content-Security-Policy: upgrade-insecure-requests
