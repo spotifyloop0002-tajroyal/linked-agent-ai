@@ -526,6 +526,9 @@ serve(async (req) => {
         await sendPaymentEmail(profileData2.email, profileData2.name, payment.plan, payment.amount, payment.discount_amount || 0, expiryDate.toISOString(), period);
       }
 
+      // Send admin notification
+      await sendAdminNotificationEmail(supabase, user.id, payment.plan, payment.amount, payment.final_amount, payment.discount_amount || 0, period, payment.coupon_code || null, paymentId, new Date());
+
       return new Response(
         JSON.stringify({
           success: true,
