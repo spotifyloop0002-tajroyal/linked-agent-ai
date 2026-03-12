@@ -74,16 +74,16 @@ function parsePostingTime(timeStr: string): { hour: number; minute: number } {
 }
 
 const CONTENT_LENGTH_RULES: Record<string, string> = {
-  short: "Keep each post between 100-150 words. Be concise and impactful.",
+  short: "Keep each post between 100-150 words. Be concise and impactful. Every word must earn its place.",
   medium: "Keep each post between 200-300 words. Good balance of depth and readability.",
   long: "Write detailed posts of 400+ words. Deep insights, thorough coverage.",
 };
 
 const EMOJI_RULES: Record<string, string> = {
-  none: "Do NOT use any emojis at all.",
-  low: "Use 3-4 emojis per post. Place them at the start of key paragraphs to make the post scannable.",
-  moderate: "Use 5-7 emojis per post. Start key paragraphs with emojis to add visual energy and make the post engaging.",
-  high: "Use 8-12+ emojis liberally throughout the post. Almost every paragraph should have 1-2 emojis. Make it visually rich and expressive.",
+  none: "Do NOT use any emojis at all. Zero emojis.",
+  low: "Use only 1-2 relevant emojis per post. Place them only at the most impactful moments.",
+  moderate: "Use 3-5 relevant emojis per post. Start key paragraphs or bullet points with emojis to add visual energy and scannability.",
+  high: "Use emojis frequently and naturally throughout the post (8+). Almost every paragraph or bullet should start with a relevant emoji. Make the post visually rich and expressive.",
 };
 
 async function fetchUnifiedContext(authHeader: string): Promise<any | null> {
@@ -318,7 +318,9 @@ ${agentTrainingMaterials.map((m: any, i: number) => `${i + 1}. ${m.content}`).jo
       throw new Error("LOVABLE_API_KEY not configured");
     }
 
-    const systemPrompt = `You are a LinkedIn content expert acting as the user's AI intern. You are generating a campaign of ${postDates.length} posts about "${campaign.topic}".
+    const systemPrompt = `You are the content generation engine for LinkedBot — a LinkedIn automation SaaS.
+
+You must strictly respect the user's campaign settings when generating content.
 
 AGENT TYPE: ${agentType.toUpperCase()}
 ${agentConfig.style}
@@ -339,7 +341,7 @@ ${researchInsights}
 
 CONTENT RULES:
 1. Each post MUST be unique with a different angle on the topic
-2. Vary post structure across the campaign (hooks, stories, data, questions)
+2. Vary post structure across the campaign (hooks, stories, data, questions, lists)
 3. Write as the user, not as an AI
 4. ${contentLengthRule}
 5. ${emojiRule}
@@ -348,19 +350,24 @@ CONTENT RULES:
 8. Number each post clearly as "Post 1:", "Post 2:", etc.
 ${footerRule}
 
-FORMATTING RULES — SUPER IMPORTANT:
-- Use DOUBLE line breaks (\\n\\n) between EVERY paragraph. LinkedIn collapses single line breaks.
-- Each thought gets its OWN paragraph with a blank line before and after
-- Keep paragraphs SHORT (1-3 lines max)
-- The post should be AIRY and EASY TO READ with lots of white space
+FORMATTING RULES — CRITICAL (LinkedIn collapses single line breaks):
+- Use DOUBLE line breaks (\\n\\n) between EVERY paragraph
+- NEVER write large paragraphs. Keep them to 1-2 sentences max
+- Each thought gets its OWN short paragraph with a blank line before and after
+- The post must look AIRY and EASY TO READ with lots of white space
+- Start with a strong hook (question, bold claim, surprising stat, or personal story opener)
+- Use bullet points (•) when listing ideas, benefits, or examples
+- End with a clear takeaway, call-to-action, or thought-provoking question
 - ALWAYS end every post with #LinkedBot as the very last hashtag on its own line
 
 HUMANIZATION RULES:
-- Use contractions: "I'm" not "I am", "don't" not "do not"
-- Be conversational like talking to a smart colleague
-- BANNED: "Let me share", "In conclusion", "Furthermore", "Moreover", "leverage", "synergy", "optimize", "utilize"
-- Mix short and long sentences
-- Start with hooks, not generic intros
+- Use contractions: "I'm" not "I am", "don't" not "do not", "can't" not "cannot"
+- Be conversational like talking to a smart colleague over coffee
+- BANNED WORDS/PHRASES: "Let me share", "In conclusion", "Furthermore", "Moreover", "leverage", "synergy", "optimize", "utilize", "In today's fast-paced world", "In this article", "As we all know"
+- Mix short punchy sentences with slightly longer ones for rhythm
+- Start with hooks, NEVER with generic intros
+- Use "you" and "your" to speak directly to the reader
+- Include a human touch: personal opinion, a lesson learned, or a relatable moment
 
 Generate exactly ${postDates.length} LinkedIn posts. Separate each with "---POST_SEPARATOR---"`;
 
