@@ -20,7 +20,7 @@ const CampaignsPage = () => {
   usePageTitle("Agent Campaigns");
   const { campaigns, isLoading, isGenerating, isCreating, createCampaign, generateCampaignPosts, updateCampaignStatus, deleteCampaign, approveCampaignPosts } = useCampaigns();
   const { isConnected: linkedInConnected, isLoading: linkedInLoading } = useDashboardLinkedIn();
-  const { canPost, limitMessage, status: limitsStatus } = usePostingLimits();
+  const { canPost, limitMessage, checkLimits } = usePostingLimits();
   const navigate = useNavigate();
   const [showSetup, setShowSetup] = useState(false);
   const [showPlanner, setShowPlanner] = useState(false);
@@ -209,7 +209,10 @@ const CampaignsPage = () => {
           onPreview={setPreviewCampaignId}
           onPause={(id) => updateCampaignStatus(id, "paused")}
           onResume={(id) => updateCampaignStatus(id, "active")}
-          onDelete={deleteCampaign}
+          onDelete={async (id) => {
+            await deleteCampaign(id);
+            checkLimits();
+          }}
           onActivate={(id) => approveCampaignPosts(id)}
           onRegenerate={async (id) => {
             const success = await generateCampaignPosts(id);
