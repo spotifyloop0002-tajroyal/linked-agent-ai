@@ -7,7 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Loader2, Search, Sparkles, X, Type, Smile, Hash, Image, FileSignature, ArrowRight, ArrowLeft, Upload } from "lucide-react";
+import { CalendarIcon, Loader2, Search, Sparkles, X, Type, Smile, Hash, Image, FileSignature, ArrowRight, ArrowLeft, Upload, Plus } from "lucide-react";
 import { format, addDays } from "date-fns";
 import { cn } from "@/lib/utils";
 import { AGENT_TYPES, POSTING_DAYS, AGENT_TYPE_MAP } from "@/lib/agentTypes";
@@ -59,6 +59,8 @@ export function CampaignSetupForm({ onSubmit, onCancel, isGenerating }: Campaign
 
   // Step 2: Campaign Details
   const [topic, setTopic] = useState("");
+  const [topics, setTopics] = useState<string[]>([]);
+  const [multiTopicMode, setMultiTopicMode] = useState(false);
   const [startDate, setStartDate] = useState<Date>(new Date());
   const [endDate, setEndDate] = useState<Date>(addDays(new Date(), 27));
   const [postingDays, setPostingDays] = useState<string[]>(["monday", "wednesday", "friday"]);
@@ -170,7 +172,10 @@ export function CampaignSetupForm({ onSubmit, onCancel, isGenerating }: Campaign
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!topic.trim() || !agentType || isGenerating || isSubmittingRef.current) return;
+    const finalTopic = multiTopicMode && topics.length > 0
+      ? topics.join("|||")
+      : topic.trim();
+    if (!finalTopic || !agentType || isGenerating || isSubmittingRef.current) return;
     isSubmittingRef.current = true;
     // Reset after a delay to allow the async flow to set isGenerating
     setTimeout(() => { isSubmittingRef.current = false; }, 3000);
@@ -178,7 +183,7 @@ export function CampaignSetupForm({ onSubmit, onCancel, isGenerating }: Campaign
     const postCount = calculatePostCount();
 
     onSubmit({
-      topic: topic.trim(),
+      topic: finalTopic,
       toneType: agentType,
       durationType: "custom",
       startDate,
@@ -307,73 +312,211 @@ export function CampaignSetupForm({ onSubmit, onCancel, isGenerating }: Campaign
         {/* ==================== STEP 2: Schedule ==================== */}
         {step === 2 && (
           <>
-            {/* Topic */}
-            <div className="space-y-2">
-              <Label htmlFor="topic">Campaign Topic</Label>
-              <div className="flex gap-2">
-                <Input
-                  id="topic"
-                  placeholder='e.g. "AI in Healthcare", "Startup Growth Strategies"'
-                  value={topic}
-                  onChange={(e) => setTopic(e.target.value)}
-                  className="text-base flex-1"
-                  required
-                />
-                <Popover>
-                  <PopoverTrigger asChild>
+            {/* Topic Mode Toggle */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label>Campaign Topic{multiTopicMode ? "s" : ""}</Label>
+                <button
+                  type="button"
+                  onClick={() => setMultiTopicMode(!multiTopicMode)}
+                  className={cn(
+                    "text-xs px-3 py-1 rounded-full border transition-all font-medium",
+                    multiTopicMode
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border text-muted-foreground hover:border-primary/40"
+                  )}
+                >
+                  {multiTopicMode ? "✓ Multi-Topic Mode" : "Enable Multi-Topic"}
+                </button>
+              </div>
+
+              {multiTopicMode ? (
+                <div className="space-y-3">
+                  <p className="text-xs text-muted-foreground">
+                    Add multiple topics — each post will use a different topic in rotation
+                  </p>
+                  {/* Added topics */}
+                  {topics.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {topics.map((t, i) => (
+                        <span
+                          key={i}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 border border-primary/20 text-sm"
+                        >
+                          <span className="text-xs font-bold text-primary/60">#{i + 1}</span>
+                          {t}
+                          <button
+                            type="button"
+                            onClick={() => setTopics(prev => prev.filter((_, idx) => idx !== i))}
+                            className="ml-0.5 text-muted-foreground hover:text-destructive transition-colors"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {/* Add new topic input */}
+                  <div className="flex gap-2">
+                    <Input
+                      id="topic"
+                      placeholder='Type a topic and press Add'
+                      value={topic}
+                      onChange={(e) => setTopic(e.target.value)}
+                      className="text-base flex-1"
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && topic.trim()) {
+                          e.preventDefault();
+                          setTopics(prev => [...prev, topic.trim()]);
+                          setTopic("");
+                        }
+                      }}
+                    />
                     <Button
                       type="button"
                       variant="outline"
-                      className="gap-1.5 shrink-0 border-primary/30 text-primary hover:bg-primary/5"
-                      onClick={fetchTopicSuggestions}
-                      disabled={isSuggestingTopics}
+                      className="gap-1.5 shrink-0"
+                      disabled={!topic.trim()}
+                      onClick={() => {
+                        if (topic.trim()) {
+                          setTopics(prev => [...prev, topic.trim()]);
+                          setTopic("");
+                        }
+                      }}
                     >
-                      {isSuggestingTopics ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <Sparkles className="w-4 h-4" />
-                      )}
-                      {isSuggestingTopics ? "Loading..." : "Suggest"}
+                      <Plus className="w-4 h-4" />
+                      Add
                     </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-80 p-2" align="end">
-                    <p className="text-xs font-medium text-muted-foreground px-2 py-1 mb-1">
-                      🔥 Trending topics for {selectedAgent?.label || "agent"}
-                    </p>
-                    {isSuggestingTopics ? (
-                      <div className="flex items-center justify-center py-6 gap-2 text-sm text-muted-foreground">
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        Researching latest trends...
-                      </div>
-                    ) : suggestedTopics.length > 0 ? (
-                      <div className="space-y-0.5">
-                        {suggestedTopics.map((t, i) => (
-                          <button
-                            key={i}
-                            type="button"
-                            onClick={() => setTopic(t)}
-                            className="w-full text-left px-3 py-2 text-sm rounded-md hover:bg-accent transition-colors"
-                          >
-                            {t}
-                          </button>
-                        ))}
-                        <button
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
                           type="button"
+                          variant="outline"
+                          className="gap-1.5 shrink-0 border-primary/30 text-primary hover:bg-primary/5"
                           onClick={fetchTopicSuggestions}
-                          className="w-full text-left px-3 py-2 text-xs text-primary rounded-md hover:bg-primary/5 transition-colors flex items-center gap-1.5 mt-1"
+                          disabled={isSuggestingTopics}
                         >
-                          <Sparkles className="w-3 h-3" />
-                          Refresh suggestions
-                        </button>
-                      </div>
-                    ) : (
-                      <p className="text-sm text-muted-foreground px-2 py-4 text-center">
-                        Click "Suggest" to get AI-powered trending topics
+                          {isSuggestingTopics ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <Sparkles className="w-4 h-4" />
+                          )}
+                          {isSuggestingTopics ? "..." : "Suggest"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-80 p-2" align="end">
+                        <p className="text-xs font-medium text-muted-foreground px-2 py-1 mb-1">
+                          🔥 Click to add topics
+                        </p>
+                        {isSuggestingTopics ? (
+                          <div className="flex items-center justify-center py-6 gap-2 text-sm text-muted-foreground">
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            Researching...
+                          </div>
+                        ) : suggestedTopics.length > 0 ? (
+                          <div className="space-y-0.5">
+                            {suggestedTopics.map((t, i) => (
+                              <button
+                                key={i}
+                                type="button"
+                                onClick={() => {
+                                  if (!topics.includes(t)) setTopics(prev => [...prev, t]);
+                                }}
+                                className={cn(
+                                  "w-full text-left px-3 py-2 text-sm rounded-md hover:bg-accent transition-colors",
+                                  topics.includes(t) && "opacity-50"
+                                )}
+                              >
+                                {topics.includes(t) ? "✓ " : ""}{t}
+                              </button>
+                            ))}
+                            <button
+                              type="button"
+                              onClick={fetchTopicSuggestions}
+                              className="w-full text-left px-3 py-2 text-xs text-primary rounded-md hover:bg-primary/5 transition-colors flex items-center gap-1.5 mt-1"
+                            >
+                              <Sparkles className="w-3 h-3" />
+                              Refresh suggestions
+                            </button>
+                          </div>
+                        ) : (
+                          <p className="text-sm text-muted-foreground px-2 py-4 text-center">
+                            Click "Suggest" to get AI topics
+                          </p>
+                        )}
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {topics.length} topic{topics.length !== 1 ? "s" : ""} added · Posts will rotate through these topics
+                  </p>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <Input
+                    id="topic"
+                    placeholder='e.g. "AI in Healthcare", "Startup Growth Strategies"'
+                    value={topic}
+                    onChange={(e) => setTopic(e.target.value)}
+                    className="text-base flex-1"
+                    required={!multiTopicMode}
+                  />
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="gap-1.5 shrink-0 border-primary/30 text-primary hover:bg-primary/5"
+                        onClick={fetchTopicSuggestions}
+                        disabled={isSuggestingTopics}
+                      >
+                        {isSuggestingTopics ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Sparkles className="w-4 h-4" />
+                        )}
+                        {isSuggestingTopics ? "Loading..." : "Suggest"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-80 p-2" align="end">
+                      <p className="text-xs font-medium text-muted-foreground px-2 py-1 mb-1">
+                        🔥 Trending topics for {selectedAgent?.label || "agent"}
                       </p>
-                    )}
-                  </PopoverContent>
-                </Popover>
-              </div>
+                      {isSuggestingTopics ? (
+                        <div className="flex items-center justify-center py-6 gap-2 text-sm text-muted-foreground">
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Researching latest trends...
+                        </div>
+                      ) : suggestedTopics.length > 0 ? (
+                        <div className="space-y-0.5">
+                          {suggestedTopics.map((t, i) => (
+                            <button
+                              key={i}
+                              type="button"
+                              onClick={() => setTopic(t)}
+                              className="w-full text-left px-3 py-2 text-sm rounded-md hover:bg-accent transition-colors"
+                            >
+                              {t}
+                            </button>
+                          ))}
+                          <button
+                            type="button"
+                            onClick={fetchTopicSuggestions}
+                            className="w-full text-left px-3 py-2 text-xs text-primary rounded-md hover:bg-primary/5 transition-colors flex items-center gap-1.5 mt-1"
+                          >
+                            <Sparkles className="w-3 h-3" />
+                            Refresh suggestions
+                          </button>
+                        </div>
+                      ) : (
+                        <p className="text-sm text-muted-foreground px-2 py-4 text-center">
+                          Click "Suggest" to get AI-powered trending topics
+                        </p>
+                      )}
+                    </PopoverContent>
+                  </Popover>
+                </div>
+              )}
             </div>
 
             {/* Posting Days */}
