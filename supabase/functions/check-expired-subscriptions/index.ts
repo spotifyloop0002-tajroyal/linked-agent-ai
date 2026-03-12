@@ -86,7 +86,7 @@ serve(async (req) => {
                 Accept: "application/json",
               },
               body: JSON.stringify({
-                sender: { name: "LinkedBot", email: "aryanbhatnagar.2601@gmail.com" },
+                sender: { name: "LinkedBot", email: "team@linkedbot.online" },
                 to: [{ email: user.email }],
                 subject: `⚠️ Your LinkedBot ${planName} Plan Has Expired`,
                 htmlContent: `
