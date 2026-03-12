@@ -209,7 +209,10 @@ const CampaignsPage = () => {
           onPreview={setPreviewCampaignId}
           onPause={(id) => updateCampaignStatus(id, "paused")}
           onResume={(id) => updateCampaignStatus(id, "active")}
-          onDelete={deleteCampaign}
+          onDelete={async (id) => {
+            await deleteCampaign(id);
+            checkLimits();
+          }}
           onActivate={(id) => approveCampaignPosts(id)}
           onRegenerate={async (id) => {
             const success = await generateCampaignPosts(id);
