@@ -59,6 +59,8 @@ export function CampaignSetupForm({ onSubmit, onCancel, isGenerating }: Campaign
 
   // Step 2: Campaign Details
   const [topic, setTopic] = useState("");
+  const [topics, setTopics] = useState<string[]>([]);
+  const [multiTopicMode, setMultiTopicMode] = useState(false);
   const [startDate, setStartDate] = useState<Date>(new Date());
   const [endDate, setEndDate] = useState<Date>(addDays(new Date(), 27));
   const [postingDays, setPostingDays] = useState<string[]>(["monday", "wednesday", "friday"]);
