@@ -25,6 +25,103 @@ function getDurationLabel(billingPeriod: string): string {
   return "1 month (30 days)";
 }
 
+async function sendAdminNotificationEmail(
+  supabase: any,
+  userId: string,
+  plan: string,
+  amount: number,
+  finalAmount: number,
+  discountAmount: number,
+  billingPeriod: string,
+  couponCode: string | null,
+  paymentId: string | null,
+  paymentDate: Date
+) {
+  const brevoApiKey = Deno.env.get("BREVO_API_KEY");
+  if (!brevoApiKey) {
+    console.error("BREVO_API_KEY not configured, skipping admin notification email");
+    return;
+  }
+
+  // Fetch user profile
+  const { data: profile } = await supabase
+    .from("user_profiles")
+    .select("name, email, country, city, linkedin_id, created_at")
+    .eq("user_id", userId)
+    .single();
+
+  const planName = plan.charAt(0).toUpperCase() + plan.slice(1);
+  const billingLabel = billingPeriod === "yearly" ? "Yearly" : billingPeriod === "quarterly" ? "3 Months" : "Monthly";
+  const dateStr = paymentDate.toLocaleString("en-IN", { dateStyle: "full", timeStyle: "short", timeZone: "Asia/Kolkata" });
+  const signupDate = profile?.created_at ? new Date(profile.created_at).toLocaleDateString("en-IN", { year: "numeric", month: "long", day: "numeric" }) : "N/A";
+  const linkedinConnected = profile?.linkedin_id ? "Yes" : "No";
+
+  const html = `
+    <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 640px; margin: 0 auto; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden;">
+      <div style="background: linear-gradient(135deg, #059669, #10b981); padding: 28px 32px; text-align: center;">
+        <h1 style="color: #ffffff; margin: 0; font-size: 22px;">💰 New LinkedBot User Payment Received</h1>
+      </div>
+      <div style="padding: 28px 32px; color: #374151; font-size: 15px; line-height: 1.7;">
+        <p>A new user has completed onboarding and purchased a plan.</p>
+        
+        <h3 style="margin: 20px 0 8px; color: #111827; border-bottom: 1px solid #e5e7eb; padding-bottom: 6px;">👤 User Information</h3>
+        <table style="width: 100%; border-collapse: collapse;">
+          <tr><td style="padding: 6px 0; color: #6b7280;">Name</td><td style="padding: 6px 0; text-align: right; font-weight: 600;">${profile?.name || "N/A"}</td></tr>
+          <tr><td style="padding: 6px 0; color: #6b7280;">Email</td><td style="padding: 6px 0; text-align: right; font-weight: 600;">${profile?.email || "N/A"}</td></tr>
+          <tr><td style="padding: 6px 0; color: #6b7280;">Country</td><td style="padding: 6px 0; text-align: right; font-weight: 600;">${profile?.country || "N/A"}</td></tr>
+          <tr><td style="padding: 6px 0; color: #6b7280;">City</td><td style="padding: 6px 0; text-align: right; font-weight: 600;">${profile?.city || "N/A"}</td></tr>
+        </table>
+
+        <h3 style="margin: 20px 0 8px; color: #111827; border-bottom: 1px solid #e5e7eb; padding-bottom: 6px;">📋 Plan Information</h3>
+        <table style="width: 100%; border-collapse: collapse;">
+          <tr><td style="padding: 6px 0; color: #6b7280;">Plan</td><td style="padding: 6px 0; text-align: right; font-weight: 600;">${planName}</td></tr>
+          <tr><td style="padding: 6px 0; color: #6b7280;">Billing Cycle</td><td style="padding: 6px 0; text-align: right; font-weight: 600;">${billingLabel}</td></tr>
+          <tr><td style="padding: 6px 0; color: #6b7280;">Plan Price</td><td style="padding: 6px 0; text-align: right;">₹${amount}</td></tr>
+          ${discountAmount > 0 ? `<tr><td style="padding: 6px 0; color: #059669;">Discount</td><td style="padding: 6px 0; text-align: right; color: #059669;">-₹${discountAmount}</td></tr>` : ""}
+          <tr><td style="padding: 6px 0; color: #6b7280;">Amount Paid</td><td style="padding: 6px 0; text-align: right; font-weight: 700; color: #111827;">₹${finalAmount}</td></tr>
+          <tr><td style="padding: 6px 0; color: #6b7280;">Coupon Used</td><td style="padding: 6px 0; text-align: right;">${couponCode || "None"}</td></tr>
+        </table>
+
+        <h3 style="margin: 20px 0 8px; color: #111827; border-bottom: 1px solid #e5e7eb; padding-bottom: 6px;">💳 Payment Information</h3>
+        <table style="width: 100%; border-collapse: collapse;">
+          <tr><td style="padding: 6px 0; color: #6b7280;">Transaction ID</td><td style="padding: 6px 0; text-align: right; font-weight: 600;">${paymentId || "Coupon (Free)"}</td></tr>
+          <tr><td style="padding: 6px 0; color: #6b7280;">Payment Date</td><td style="padding: 6px 0; text-align: right;">${dateStr}</td></tr>
+        </table>
+
+        <h3 style="margin: 20px 0 8px; color: #111827; border-bottom: 1px solid #e5e7eb; padding-bottom: 6px;">🔗 Platform Details</h3>
+        <table style="width: 100%; border-collapse: collapse;">
+          <tr><td style="padding: 6px 0; color: #6b7280;">User ID</td><td style="padding: 6px 0; text-align: right; font-size: 12px;">${userId}</td></tr>
+          <tr><td style="padding: 6px 0; color: #6b7280;">Signup Date</td><td style="padding: 6px 0; text-align: right;">${signupDate}</td></tr>
+          <tr><td style="padding: 6px 0; color: #6b7280;">LinkedIn Connected</td><td style="padding: 6px 0; text-align: right; font-weight: 600;">${linkedinConnected}</td></tr>
+        </table>
+      </div>
+      <div style="background: #f9fafb; padding: 14px 32px; text-align: center; border-top: 1px solid #e5e7eb;">
+        <p style="font-size: 12px; color: #9ca3af; margin: 0;">LinkedBot Admin Notification • ${new Date().getFullYear()}</p>
+      </div>
+    </div>
+  `;
+
+  try {
+    await fetch("https://api.brevo.com/v3/smtp/email", {
+      method: "POST",
+      headers: {
+        "api-key": brevoApiKey,
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({
+        sender: { name: "LinkedBot", email: "team@linkedbot.online" },
+        to: [{ email: "topcarszone@gmail.com" }],
+        subject: "New LinkedBot User Payment Received",
+        htmlContent: html,
+      }),
+    });
+    console.log("Admin notification email sent for user:", userId);
+  } catch (err) {
+    console.error("Failed to send admin notification email:", err);
+  }
+}
+
 async function sendPaymentEmail(
   email: string,
   name: string | null,
@@ -246,6 +343,9 @@ serve(async (req) => {
           await sendPaymentEmail(profileData.email, profileData.name, plan, amount, discountAmount, expiryDate.toISOString(), billingPeriod);
         }
 
+        // Send admin notification
+        await sendAdminNotificationEmail(supabase, user.id, plan, amount, 0, discountAmount, billingPeriod, couponCode || null, null, new Date());
+
         return new Response(
           JSON.stringify({
             success: true,
@@ -425,6 +525,9 @@ serve(async (req) => {
       if (profileData2?.email) {
         await sendPaymentEmail(profileData2.email, profileData2.name, payment.plan, payment.amount, payment.discount_amount || 0, expiryDate.toISOString(), period);
       }
+
+      // Send admin notification
+      await sendAdminNotificationEmail(supabase, user.id, payment.plan, payment.amount, payment.final_amount, payment.discount_amount || 0, period, payment.coupon_code || null, paymentId, new Date());
 
       return new Response(
         JSON.stringify({
