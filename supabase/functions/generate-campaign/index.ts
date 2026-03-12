@@ -371,6 +371,19 @@ HUMANIZATION RULES:
 
 Generate exactly ${postDates.length} LinkedIn posts. Separate each with "---POST_SEPARATOR---"`;
 
+    // Multi-topic support: topics separated by |||
+    const topicStr = campaign.topic || "";
+    const topicsList = topicStr.includes("|||") ? topicStr.split("|||").map((t: string) => t.trim()).filter(Boolean) : [topicStr];
+    const isMultiTopic = topicsList.length > 1;
+
+    let userPrompt = "";
+    if (isMultiTopic) {
+      const topicAssignments = postDates.map((_, i) => `Post ${i + 1}: "${topicsList[i % topicsList.length]}"`).join("\n");
+      userPrompt = `Generate ${postDates.length} LinkedIn posts using the ${agentType} agent style. Each post MUST be about its assigned topic:\n${topicAssignments}\n\nEach post should have a unique angle on its assigned topic. Separate posts with "---POST_SEPARATOR---"`;
+    } else {
+      userPrompt = `Generate ${postDates.length} LinkedIn posts about "${campaign.topic}" using the ${agentType} agent style. Each post should have a different angle. Separate posts with "---POST_SEPARATOR---"`;
+    }
+
     const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -381,7 +394,7 @@ Generate exactly ${postDates.length} LinkedIn posts. Separate each with "---POST
         model: "google/gemini-2.5-flash",
         messages: [
           { role: "system", content: systemPrompt },
-          { role: "user", content: `Generate ${postDates.length} LinkedIn posts about "${campaign.topic}" using the ${agentType} agent style. Each post should have a different angle. Separate posts with "---POST_SEPARATOR---"` },
+          { role: "user", content: userPrompt },
         ],
       }),
     });
