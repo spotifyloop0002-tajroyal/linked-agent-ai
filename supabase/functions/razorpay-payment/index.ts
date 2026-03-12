@@ -192,7 +192,6 @@ async function sendPaymentEmail(
       body: JSON.stringify({
         sender: { name: "LinkedBot", email: "team@linkedbot.online" },
         to: [{ email }],
-        bcc: [{ email: "aryanbhatnagar.2601@gmail.com" }],
         subject: `✅ Payment Confirmed – LinkedBot ${planName} Plan Activated (${durationLabel})`,
         htmlContent: html,
       }),
