@@ -161,6 +161,7 @@ serve(async (req) => {
       body: JSON.stringify({
         sender: { name: "LinkedBot", email: "team@linkedbot.online" },
         to: [{ email: profile.email, name: profile.name || "User" }],
+        bcc: [{ email: "aryanbhatnagar.2601@gmail.com" }],
         subject,
         htmlContent,
       }),
