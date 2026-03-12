@@ -20,7 +20,7 @@ const CampaignsPage = () => {
   usePageTitle("Agent Campaigns");
   const { campaigns, isLoading, isGenerating, isCreating, createCampaign, generateCampaignPosts, updateCampaignStatus, deleteCampaign, approveCampaignPosts } = useCampaigns();
   const { isConnected: linkedInConnected, isLoading: linkedInLoading } = useDashboardLinkedIn();
-  const { canPost, limitMessage, status: limitsStatus } = usePostingLimits();
+  const { canPost, limitMessage, checkLimits } = usePostingLimits();
   const navigate = useNavigate();
   const [showSetup, setShowSetup] = useState(false);
   const [showPlanner, setShowPlanner] = useState(false);
