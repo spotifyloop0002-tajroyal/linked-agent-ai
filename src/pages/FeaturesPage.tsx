@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/landing/Navbar";
 import Footer from "@/components/landing/Footer";
-import dashboardPreview from "@/assets/dashboard-preview.png";
+const dashboardPreview = "/images/dashboard-preview.webp";
 
 const features = [
   {
