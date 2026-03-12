@@ -220,6 +220,20 @@ serve(async (req) => {
       }
 
       console.log(`Subscription activated via webhook: user=${existingPayment.user_id}, plan=${existingPayment.plan}`);
+
+      // Send admin notification email
+      await sendAdminNotificationEmail(
+        supabase,
+        existingPayment.user_id,
+        existingPayment.plan,
+        existingPayment.amount,
+        existingPayment.final_amount,
+        existingPayment.discount_amount || 0,
+        billingPeriod,
+        existingPayment.coupon_code || null,
+        paymentId,
+        new Date()
+      );
     }
 
     // Handle payment.failed event
