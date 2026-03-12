@@ -183,7 +183,7 @@ export function CampaignSetupForm({ onSubmit, onCancel, isGenerating }: Campaign
     const postCount = calculatePostCount();
 
     onSubmit({
-      topic: topic.trim(),
+      topic: finalTopic,
       toneType: agentType,
       durationType: "custom",
       startDate,
