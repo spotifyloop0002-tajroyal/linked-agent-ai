@@ -276,9 +276,11 @@ const CalendarPage = () => {
                     key={post.id}
                     className="p-4 rounded-xl bg-muted/50 border border-border hover:border-primary/30 transition-colors"
                   >
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className={`w-2.5 h-2.5 rounded-full ${getAgentColor(post.agent_name)}`} />
-                      <span className="text-xs font-medium text-muted-foreground">
+                    <div className="flex items-center gap-2 mb-2 flex-wrap">
+                      <span className={cn("px-1.5 py-0.5 rounded text-[10px] font-medium text-white", (statusConfig[post.status] || statusConfig.draft).color)}>
+                        {(statusConfig[post.status] || statusConfig.draft).label}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
                         {post.scheduled_time ? format(new Date(post.scheduled_time), "h:mm a") : "No time"}
                       </span>
                       <PostSourceBadge agentName={post.agent_name} campaignId={(post as any).campaign_id} />
