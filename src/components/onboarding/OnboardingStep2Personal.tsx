@@ -84,8 +84,7 @@ export const OnboardingStep2Personal = ({
     background.trim() && 
     phoneNumber.trim() &&
     city.trim() &&
-    country.trim() &&
-    isValidLinkedInUrl(linkedinUrl);
+    country.trim();
 
   const handleSelectChange = (
     value: string,
