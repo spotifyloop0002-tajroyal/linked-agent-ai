@@ -127,36 +127,6 @@ export const OnboardingStep2Personal = ({
           )}
         </div>
 
-        {/* LinkedIn Profile URL - CRITICAL FIELD */}
-        <div>
-          <Label htmlFor="linkedinUrl" className="flex items-center gap-2">
-            <Linkedin className="w-4 h-4 text-[#0A66C2]" />
-            LinkedIn Profile URL *
-          </Label>
-          <Input
-            id="linkedinUrl"
-            value={linkedinUrl}
-            onChange={(e) => setLinkedinUrl(e.target.value)}
-            placeholder="https://linkedin.com/in/your-profile"
-            className="mt-1.5"
-            required
-          />
-          {linkedinUrl && !isValidLinkedInUrl(linkedinUrl) && (
-            <p className="text-xs text-destructive mt-1 flex items-center gap-1">
-              <AlertCircle className="w-3 h-3" />
-              Please enter a valid LinkedIn profile URL (e.g., https://linkedin.com/in/username)
-            </p>
-          )}
-          {!linkedinUrl && (
-            <p className="text-xs text-destructive mt-1">LinkedIn URL is required</p>
-          )}
-          <Alert className="mt-2 border-warning/50 bg-warning/10">
-            <AlertCircle className="w-4 h-4 text-warning" />
-            <AlertDescription className="text-xs text-warning">
-              <strong>Important:</strong> This URL cannot be changed after setup. All posting and scraping will happen on this profile only.
-            </AlertDescription>
-          </Alert>
-        </div>
 
         <div>
           <Label htmlFor="phoneNumber">Phone Number *</Label>
