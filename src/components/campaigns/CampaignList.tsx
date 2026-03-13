@@ -15,6 +15,13 @@ import {
 import { format } from "date-fns";
 import { AGENT_TYPE_MAP } from "@/lib/agentTypes";
 
+function formatTopics(topic: string): string {
+  if (!topic?.includes("|||")) return topic;
+  const topics = topic.split("|||").map(t => t.trim()).filter(Boolean);
+  if (topics.length <= 2) return topics.join(", ");
+  return `${topics[0]}, ${topics[1]} +${topics.length - 2} more`;
+}
+
 interface CampaignListProps {
   campaigns: Campaign[];
   isLoading: boolean;
