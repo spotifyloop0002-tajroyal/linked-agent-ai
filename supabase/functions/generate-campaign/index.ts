@@ -608,14 +608,12 @@ Generate exactly ${postDates.length} LinkedIn posts. Separate each with "---POST
         ({ hour, minute } = parsePostingTime(campaign.posting_time || "09:00"));
       }
 
-      const scheduledTime = new Date(postDate);
-      scheduledTime.setUTCHours(0, 0, 0, 0);
-      const istOffsetMs = 5.5 * 60 * 60 * 1000;
-      const timeOfDayMs = (hour * 60 + minute) * 60 * 1000;
-      const finalMs = scheduledTime.getTime() + timeOfDayMs - istOffsetMs;
-      const finalScheduledTime = new Date(finalMs);
+      const dateKey = postDate.toISOString().slice(0, 10);
+      const finalScheduledTime = convertCountryLocalToUTC(dateKey, hour, minute, campaignTimezone);
 
-      console.log(`[TZ] Post ${i}: ${hour}:${String(minute).padStart(2, '0')} IST → ${finalScheduledTime.toISOString()} UTC`);
+      console.log(
+        `[TZ] Post ${i + 1}: ${hour}:${String(minute).padStart(2, "0")} ${campaignTimezone} on ${dateKey} → ${finalScheduledTime.toISOString()} UTC`
+      );
 
       return {
         user_id: user.id,
