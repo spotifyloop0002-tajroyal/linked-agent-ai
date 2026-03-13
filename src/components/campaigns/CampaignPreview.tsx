@@ -18,7 +18,7 @@ import {
   Type,
   RefreshCw,
 } from "lucide-react";
-import { format } from "date-fns";
+import { formatDateLocal, formatTimeLocal } from "@/lib/timezoneUtils";
 
 interface CampaignPost {
   id: string;
@@ -188,7 +188,7 @@ export function CampaignPreview({ campaignId, onClose, onApproveAll, onRegenerat
               <p className="text-xs text-muted-foreground">Duration</p>
               <p className="text-sm font-medium">{durationLabel(campaign.duration_type)}</p>
               <p className="text-xs text-muted-foreground">
-                {format(new Date(campaign.start_date), "MMM d")} – {format(new Date(campaign.end_date), "MMM d")}
+                {new Date(campaign.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} – {new Date(campaign.end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
               </p>
             </div>
           </div>
@@ -266,7 +266,7 @@ export function CampaignPreview({ campaignId, onClose, onApproveAll, onRegenerat
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <Calendar className="w-3 h-3" />
                     {post.scheduled_time
-                      ? format(new Date(post.scheduled_time), "MMM d, h:mm a")
+                      ? formatDateLocal(post.scheduled_time)
                       : "Not scheduled"}
                   </div>
                 </div>

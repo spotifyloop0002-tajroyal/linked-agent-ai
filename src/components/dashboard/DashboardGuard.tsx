@@ -5,6 +5,7 @@ import { useUserProfile } from "@/hooks/useUserProfile";
 import { useLinkedInAPI } from "@/hooks/useLinkedInAPI";
 import { DashboardContext } from "@/contexts/DashboardContext";
 import { startAnalyticsCron, stopAnalyticsCron } from "@/lib/analytics-cron";
+import { useTimezoneSync } from "@/hooks/useTimezoneSync";
 import { Loader2 } from "lucide-react";
 import LiveChatWidget from "@/components/support/LiveChatWidget";
 
@@ -24,6 +25,8 @@ const DashboardGuard = () => {
   const linkedInHook = useLinkedInAPI();
   const checkedRef = useRef(false);
   
+  // Sync timezone from saved profile on dashboard load
+  useTimezoneSync(profileHook.profile);
   
 
   // Safety timeout: if auth check takes more than 8 seconds, redirect to login

@@ -38,6 +38,7 @@ import { usePageTitle } from "@/hooks/usePageTitle";
 import { PostSourceBadge } from "@/components/posts/PostSourceBadge";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { formatTimeLocal, formatDateLocal, getTimezoneLabel } from "@/lib/timezoneUtils";
 
 const statusConfig: Record<string, { color: string; label: string }> = {
   posted: { color: "bg-green-500", label: "Posted" },
@@ -281,7 +282,7 @@ const CalendarPage = () => {
                         {(statusConfig[post.status] || statusConfig.draft).label}
                       </span>
                       <span className="text-xs text-muted-foreground">
-                        {post.scheduled_time ? format(new Date(post.scheduled_time), "h:mm a") : "No time"}
+                        {post.scheduled_time ? formatTimeLocal(post.scheduled_time) : "No time"}
                       </span>
                       <PostSourceBadge agentName={post.agent_name} campaignId={(post as any).campaign_id} />
                     </div>
@@ -330,7 +331,7 @@ const CalendarPage = () => {
               <div className="flex items-center gap-2 mb-3">
                 <span className={`w-2.5 h-2.5 rounded-full ${getAgentColor(previewPost.agent_name)}`} />
                 <span className="text-sm text-muted-foreground">
-                  {previewPost.scheduled_time ? format(new Date(previewPost.scheduled_time), "MMM d, yyyy · h:mm a") : "No schedule"}
+                  {previewPost.scheduled_time ? formatDateLocal(previewPost.scheduled_time) : "No schedule"}
                 </span>
                 <PostSourceBadge agentName={previewPost.agent_name} campaignId={(previewPost as any).campaign_id} />
               </div>
@@ -381,8 +382,8 @@ const CalendarPage = () => {
                   <div className="flex-1 min-w-0">
                     <p className="text-sm truncate">{post.content}</p>
                     <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
-                      <span>{post.scheduled_time ? format(new Date(post.scheduled_time), "MMM d, yyyy") : "No date"}</span>
-                      <span>{post.scheduled_time ? format(new Date(post.scheduled_time), "h:mm a") : ""}</span>
+                      <span>{post.scheduled_time ? formatDateLocal(post.scheduled_time).split(',')[0] : "No date"}</span>
+                      <span>{post.scheduled_time ? formatTimeLocal(post.scheduled_time) : ""}</span>
                       <PostSourceBadge agentName={post.agent_name} campaignId={(post as any).campaign_id} />
                     </div>
                   </div>

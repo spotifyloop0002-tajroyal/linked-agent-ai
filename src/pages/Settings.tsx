@@ -47,11 +47,15 @@ import {
   CheckCircle2,
   Wifi,
   Trash2,
+  Globe,
+  Clock,
 } from "lucide-react";
 import { format } from "date-fns";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useDashboardLinkedIn } from "@/contexts/DashboardContext";
 import { useNavigate } from "react-router-dom";
+import { getTimezonesForCountry, getTimezoneDisplayLabel, getCurrentTimeInTimezone, isMultiTimezoneCountry } from "@/lib/countryTimezones";
+import { setUserTimezone } from "@/lib/timezoneUtils";
 
 const SettingsPage = () => {
   usePageTitle("Settings");
@@ -75,11 +79,15 @@ const SettingsPage = () => {
   const [phoneNumber, setPhoneNumber] = useState(profile?.phone_number || "");
   const [city, setCity] = useState(profile?.city || "");
   const [country, setCountry] = useState(profile?.country || "");
+  const [selectedTimezone, setSelectedTimezone] = useState(profile?.timezone || "");
   const [role, setRole] = useState(profile?.role || "");
   const [background, setBackground] = useState(profile?.background || "");
   const [preferredTone, setPreferredTone] = useState(profile?.preferred_tone || "");
   const [postFrequency, setPostFrequency] = useState(profile?.post_frequency || "");
   const [linkedinUrl, setLinkedinUrl] = useState(profile?.linkedin_profile_url || "");
+
+  // Timezone options based on country
+  const timezoneOptions = getTimezonesForCountry(country);
 
   // LinkedIn URL edit logic: can only be edited once after initial entry
   const editCount = profile?.linkedin_profile_edit_count || 0;
@@ -99,6 +107,7 @@ const SettingsPage = () => {
       setPhoneNumber(profile.phone_number || "");
       setCity(profile.city || "");
       setCountry(profile.country || "");
+      setSelectedTimezone((profile as any)?.timezone || "");
       setRole(profile.role || "");
       setBackground(profile.background || "");
       setPreferredTone(profile.preferred_tone || "");
@@ -175,6 +184,7 @@ const SettingsPage = () => {
         phone_number: phoneNumber,
         city,
         country,
+        timezone: selectedTimezone || undefined,
         role,
         background,
         preferred_tone: preferredTone,
@@ -362,11 +372,72 @@ const SettingsPage = () => {
                   <Input
                     id="country"
                     value={country}
-                    onChange={(e) => setCountry(e.target.value)}
+                    onChange={(e) => {
+                      setCountry(e.target.value);
+                      // Reset timezone when country changes
+                      const tzs = getTimezonesForCountry(e.target.value);
+                      if (tzs.length === 1) {
+                        setSelectedTimezone(tzs[0]);
+                      } else if (tzs.length > 1) {
+                        // Keep if still valid, else reset
+                        if (!tzs.includes(selectedTimezone)) {
+                          setSelectedTimezone(tzs[0]);
+                        }
+                      }
+                    }}
                     placeholder="India"
                     className="mt-1.5"
                   />
                 </div>
+              </div>
+
+              {/* Timezone Section */}
+              <div className="rounded-lg border border-border p-4 bg-muted/30">
+                <div className="flex items-center gap-2 mb-3">
+                  <Globe className="w-4 h-4 text-primary" />
+                  <h4 className="font-medium text-sm">Timezone</h4>
+                </div>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <Label>Your Timezone</Label>
+                    {timezoneOptions.length > 1 ? (
+                      <Select value={selectedTimezone} onValueChange={(v) => {
+                        setSelectedTimezone(v);
+                        setUserTimezone(v);
+                      }}>
+                        <SelectTrigger className="mt-1.5">
+                          <SelectValue placeholder="Select timezone" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {timezoneOptions.map((tz) => (
+                            <SelectItem key={tz} value={tz}>
+                              {getTimezoneDisplayLabel(tz)} — {tz}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <Input
+                        value={selectedTimezone ? `${getTimezoneDisplayLabel(selectedTimezone)} (${selectedTimezone})` : "Auto-detected from country"}
+                        disabled
+                        className="mt-1.5 bg-muted"
+                      />
+                    )}
+                  </div>
+                  <div>
+                    <Label>Current Local Time</Label>
+                    <div className="mt-1.5 flex items-center gap-2 px-3 py-2 rounded-md border border-border bg-background">
+                      <Clock className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-sm font-medium">
+                        {selectedTimezone ? getCurrentTimeInTimezone(selectedTimezone) : "—"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
+                  <Globe className="w-3 h-3" />
+                  All scheduled times are shown in your local timezone: {selectedTimezone || "auto-detected"}
+                </p>
               </div>
 
               {/* Professional Info */}

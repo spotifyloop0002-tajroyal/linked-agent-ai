@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { OnboardingStep1 } from "@/components/onboarding/OnboardingStep1";
 import { OnboardingStep2Company } from "@/components/onboarding/OnboardingStep2Company";
 import { OnboardingStep2Personal } from "@/components/onboarding/OnboardingStep2Personal";
+import { resolveTimezone } from "@/lib/countryTimezones";
 
 const Onboarding = () => {
   const [checkingAuth, setCheckingAuth] = useState(true);
@@ -76,6 +77,10 @@ const Onboarding = () => {
     setIsSaving(true);
     
     try {
+      // Resolve timezone from country selection
+      const browserTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const { timezone: resolvedTimezone } = resolveTimezone(country, browserTz);
+
       const profileData = {
         user_type: accountType,
         linkedin_profile_url: linkedinUrl,
@@ -83,6 +88,8 @@ const Onboarding = () => {
         phone_number: phoneNumber,
         city,
         country,
+        timezone: resolvedTimezone,
+        browser_detected_timezone: browserTz,
         ...(accountType === "company"
           ? {
               name: companyName,

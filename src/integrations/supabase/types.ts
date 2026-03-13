@@ -1132,6 +1132,7 @@ export type Database = {
         Row: {
           background: string | null
           billing_period: string | null
+          browser_detected_timezone: string | null
           city: string | null
           company_description: string | null
           company_name: string | null
@@ -1176,6 +1177,7 @@ export type Database = {
           subscription_expires_at: string | null
           subscription_plan: string | null
           target_audience: string | null
+          timezone: string | null
           updated_at: string
           user_id: string
           user_type: string | null
@@ -1183,6 +1185,7 @@ export type Database = {
         Insert: {
           background?: string | null
           billing_period?: string | null
+          browser_detected_timezone?: string | null
           city?: string | null
           company_description?: string | null
           company_name?: string | null
@@ -1227,6 +1230,7 @@ export type Database = {
           subscription_expires_at?: string | null
           subscription_plan?: string | null
           target_audience?: string | null
+          timezone?: string | null
           updated_at?: string
           user_id: string
           user_type?: string | null
@@ -1234,6 +1238,7 @@ export type Database = {
         Update: {
           background?: string | null
           billing_period?: string | null
+          browser_detected_timezone?: string | null
           city?: string | null
           company_description?: string | null
           company_name?: string | null
@@ -1278,6 +1283,7 @@ export type Database = {
           subscription_expires_at?: string | null
           subscription_plan?: string | null
           target_audience?: string | null
+          timezone?: string | null
           updated_at?: string
           user_id?: string
           user_type?: string | null
@@ -1436,6 +1442,7 @@ export type Database = {
       user_profiles_safe: {
         Row: {
           background: string | null
+          browser_detected_timezone: string | null
           city: string | null
           company_description: string | null
           company_name: string | null
@@ -1473,12 +1480,14 @@ export type Database = {
           subscription_expires_at: string | null
           subscription_plan: string | null
           target_audience: string | null
+          timezone: string | null
           updated_at: string | null
           user_id: string | null
           user_type: string | null
         }
         Insert: {
           background?: string | null
+          browser_detected_timezone?: string | null
           city?: string | null
           company_description?: string | null
           company_name?: string | null
@@ -1516,12 +1525,14 @@ export type Database = {
           subscription_expires_at?: string | null
           subscription_plan?: string | null
           target_audience?: string | null
+          timezone?: string | null
           updated_at?: string | null
           user_id?: string | null
           user_type?: string | null
         }
         Update: {
           background?: string | null
+          browser_detected_timezone?: string | null
           city?: string | null
           company_description?: string | null
           company_name?: string | null
@@ -1559,6 +1570,7 @@ export type Database = {
           subscription_expires_at?: string | null
           subscription_plan?: string | null
           target_audience?: string | null
+          timezone?: string | null
           updated_at?: string | null
           user_id?: string | null
           user_type?: string | null

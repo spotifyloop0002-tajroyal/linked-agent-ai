@@ -44,6 +44,8 @@ export interface UserProfile {
   phone_number: string | null;
   city: string | null;
   country: string | null;
+  timezone: string | null;
+  browser_detected_timezone: string | null;
   subscription_plan: string | null;
   subscription_expires_at: string | null;
   posts_created_count: number;
@@ -79,6 +81,8 @@ export interface ProfileData {
   phone_number?: string;
   city?: string;
   country?: string;
+  timezone?: string;
+  browser_detected_timezone?: string;
 }
 
 export const useUserProfile = () => {
