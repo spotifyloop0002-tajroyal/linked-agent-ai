@@ -71,7 +71,6 @@ export const OnboardingStep2Personal = ({
     if (!country || countryOther) return [];
     return getCitiesForCountry(country);
   }, [country, countryOther]);
-  
 
   const isValidLinkedInUrl = (url: string) => {
     if (!url) return false;
@@ -101,6 +100,8 @@ export const OnboardingStep2Personal = ({
       setter(value);
     }
   };
+
+  const isCityDisabled = !country || (!countryOther && !country.trim());
 
   return (
     <motion.div
@@ -158,40 +159,97 @@ export const OnboardingStep2Personal = ({
           </Alert>
         </div>
 
+        <div>
+          <Label htmlFor="phoneNumber">Phone Number *</Label>
+          <Input
+            id="phoneNumber"
+            value={phoneNumber}
+            onChange={(e) => setPhoneNumber(e.target.value)}
+            placeholder="+91 9876543210"
+            className="mt-1.5"
+            required
+          />
+          {!phoneNumber.trim() && (
+            <p className="text-xs text-destructive mt-1">Phone is required</p>
+          )}
+        </div>
+
+        {/* Country FIRST, then City */}
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="phoneNumber">Phone Number *</Label>
-            <Input
-              id="phoneNumber"
-              value={phoneNumber}
-              onChange={(e) => setPhoneNumber(e.target.value)}
-              placeholder="+91 9876543210"
-              className="mt-1.5"
-              required
-            />
-            {!phoneNumber.trim() && (
-              <p className="text-xs text-destructive mt-1">Phone is required</p>
-            )}
-          </div>
-          <div>
-            <Label htmlFor="city">City *</Label>
-            {cityOther ? (
+            <Label htmlFor="country">Country *</Label>
+            {countryOther ? (
               <div className="flex gap-2 mt-1.5">
                 <Input
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
-                  placeholder="Enter your city"
+                  value={country}
+                  onChange={(e) => { setCountry(e.target.value); setCity(""); setCityOther(false); }}
+                  placeholder="Enter your country"
                   autoFocus
                 />
-                <Button type="button" variant="ghost" size="sm" onClick={() => { setCityOther(false); setCity(""); }}>
+                <Button type="button" variant="ghost" size="sm" onClick={() => { setCountryOther(false); setCountry(""); setCity(""); setCityOther(false); }}>
                   ✕
                 </Button>
               </div>
             ) : (
-              <Popover open={cityOpen} onOpenChange={setCityOpen}>
+              <Popover open={countryOpen} onOpenChange={setCountryOpen}>
                 <PopoverTrigger asChild>
                   <Button variant="outline" role="combobox" className="w-full mt-1.5 justify-between font-normal">
-                    {city || "Select your city"}
+                    {country || "Select your country"}
+                    <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                  <Command>
+                    <CommandInput placeholder="Search country..." />
+                    <CommandList>
+                      <CommandEmpty>No country found.</CommandEmpty>
+                      <CommandGroup>
+                        {allCountries.map((c) => (
+                          <CommandItem key={c} value={c} onSelect={() => { setCountry(c); setCity(""); setCityOther(false); setCountryOpen(false); }}>
+                            {c}
+                          </CommandItem>
+                        ))}
+                        <CommandItem value="Other" onSelect={() => { setCountryOther(true); setCountry(""); setCity(""); setCityOther(false); setCountryOpen(false); }}>
+                          Other (type manually)
+                        </CommandItem>
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+            )}
+            {!country && (
+              <p className="text-xs text-destructive mt-1">Country is required</p>
+            )}
+          </div>
+
+          <div>
+            <Label htmlFor="city">City *</Label>
+            {cityOther || countryOther ? (
+              <div className="flex gap-2 mt-1.5">
+                <Input
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  placeholder={isCityDisabled ? "Select a country first" : "Enter your city"}
+                  disabled={isCityDisabled}
+                  autoFocus={!isCityDisabled}
+                />
+                {!countryOther && (
+                  <Button type="button" variant="ghost" size="sm" onClick={() => { setCityOther(false); setCity(""); }}>
+                    ✕
+                  </Button>
+                )}
+              </div>
+            ) : (
+              <Popover open={cityOpen} onOpenChange={(open) => { if (!isCityDisabled) setCityOpen(open); }}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    disabled={isCityDisabled}
+                    className="w-full mt-1.5 justify-between font-normal"
+                  >
+                    {isCityDisabled ? "Select a country first" : city || "Select your city"}
                     <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
                 </PopoverTrigger>
@@ -199,7 +257,7 @@ export const OnboardingStep2Personal = ({
                   <Command>
                     <CommandInput placeholder="Search city..." />
                     <CommandList>
-                      <CommandEmpty>No city found.</CommandEmpty>
+                      <CommandEmpty>No city found. Try "Other".</CommandEmpty>
                       <CommandGroup>
                         {citiesForCountry.map((c) => (
                           <CommandItem key={c} value={c} onSelect={() => { setCity(c); setCityOpen(false); }}>
@@ -215,60 +273,13 @@ export const OnboardingStep2Personal = ({
                 </PopoverContent>
               </Popover>
             )}
-            {!city && !country && (
+            {isCityDisabled && (
               <p className="text-xs text-muted-foreground mt-1">Select a country first</p>
             )}
-            {!city && country && (
+            {!isCityDisabled && !city && (
               <p className="text-xs text-destructive mt-1">City is required</p>
             )}
           </div>
-        </div>
-
-        <div>
-          <Label htmlFor="country">Country *</Label>
-          {countryOther ? (
-            <div className="flex gap-2 mt-1.5">
-              <Input
-                value={country}
-                onChange={(e) => setCountry(e.target.value)}
-                placeholder="Enter your country"
-                autoFocus
-              />
-              <Button type="button" variant="ghost" size="sm" onClick={() => { setCountryOther(false); setCountry(""); setCity(""); }}>
-                ✕
-              </Button>
-            </div>
-          ) : (
-            <Popover open={countryOpen} onOpenChange={setCountryOpen}>
-              <PopoverTrigger asChild>
-                <Button variant="outline" role="combobox" className="w-full mt-1.5 justify-between font-normal">
-                  {country || "Select your country"}
-                  <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
-                <Command>
-                  <CommandInput placeholder="Search country..." />
-                  <CommandList>
-                    <CommandEmpty>No country found.</CommandEmpty>
-                    <CommandGroup>
-                      {allCountries.map((c) => (
-                        <CommandItem key={c} value={c} onSelect={() => { setCountry(c); setCity(""); setCountryOpen(false); }}>
-                          {c}
-                        </CommandItem>
-                      ))}
-                      <CommandItem value="Other" onSelect={() => { setCountryOther(true); setCountry(""); setCity(""); setCountryOpen(false); }}>
-                        Other (type manually)
-                      </CommandItem>
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
-          )}
-          {!country && (
-            <p className="text-xs text-destructive mt-1">Country is required</p>
-          )}
         </div>
 
         <div>
