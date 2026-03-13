@@ -1,5 +1,6 @@
+import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { ArrowRight, ArrowLeft, Linkedin, AlertCircle } from "lucide-react";
+import { ArrowRight, ArrowLeft, Linkedin, AlertCircle, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,18 +13,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { getAllCountries, getCitiesForCountry } from "@/data/countriesAndCities";
 
 const industries = [
-  "Technology",
-  "Healthcare",
-  "Finance",
-  "E-commerce",
-  "Education",
-  "Marketing",
-  "Real Estate",
-  "Consulting",
-  "Manufacturing",
-  "Other",
+  "Technology", "Healthcare", "Finance", "E-commerce", "Education",
+  "Marketing", "Real Estate", "Consulting", "Manufacturing", "Other",
 ];
 
 interface OnboardingStep2CompanyProps {
@@ -69,14 +65,23 @@ export const OnboardingStep2Company = ({
   onBack,
   onNext,
 }: OnboardingStep2CompanyProps) => {
-  // Validate LinkedIn URL format
+  const [cityOther, setCityOther] = useState(false);
+  const [countryOther, setCountryOther] = useState(false);
+  const [cityOpen, setCityOpen] = useState(false);
+  const [countryOpen, setCountryOpen] = useState(false);
+
+  const allCountries = useMemo(() => getAllCountries(), []);
+  const citiesForCountry = useMemo(() => {
+    if (!country || countryOther) return [];
+    return getCitiesForCountry(country);
+  }, [country, countryOther]);
+
   const isValidLinkedInUrl = (url: string) => {
     if (!url) return false;
     const pattern = /^https?:\/\/(www\.)?linkedin\.com\/(in|company)\/[\w-]+\/?$/i;
     return pattern.test(url.trim());
   };
 
-  // All fields are now required
   const canProceed = 
     companyName.trim() && 
     industry && 
@@ -86,6 +91,8 @@ export const OnboardingStep2Company = ({
     city.trim() &&
     country.trim() &&
     isValidLinkedInUrl(linkedinUrl);
+
+  const isCityDisabled = !country || (!countryOther && !country.trim());
 
   return (
     <motion.div
@@ -112,7 +119,7 @@ export const OnboardingStep2Company = ({
           )}
         </div>
 
-        {/* LinkedIn Profile URL - CRITICAL FIELD */}
+        {/* LinkedIn Profile URL */}
         <div>
           <Label htmlFor="linkedinUrl" className="flex items-center gap-2">
             <Linkedin className="w-4 h-4 text-[#0A66C2]" />
@@ -181,66 +188,142 @@ export const OnboardingStep2Company = ({
           )}
         </div>
 
+        <div>
+          <Label htmlFor="phoneNumber">Contact Phone *</Label>
+          <Input
+            id="phoneNumber"
+            value={phoneNumber}
+            onChange={(e) => setPhoneNumber(e.target.value)}
+            placeholder="+91 9876543210"
+            className="mt-1.5"
+            required
+          />
+          {!phoneNumber.trim() && (
+            <p className="text-xs text-destructive mt-1">Phone is required</p>
+          )}
+        </div>
+
+        {/* Country FIRST, then City */}
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="phoneNumber">Contact Phone *</Label>
-            <Input
-              id="phoneNumber"
-              value={phoneNumber}
-              onChange={(e) => setPhoneNumber(e.target.value)}
-              placeholder="+91 9876543210"
-              className="mt-1.5"
-              required
-            />
-            {!phoneNumber.trim() && (
-              <p className="text-xs text-destructive mt-1">Phone is required</p>
+            <Label htmlFor="country">Country *</Label>
+            {countryOther ? (
+              <div className="flex gap-2 mt-1.5">
+                <Input
+                  value={country}
+                  onChange={(e) => { setCountry(e.target.value); setCity(""); setCityOther(false); }}
+                  placeholder="Enter your country"
+                  autoFocus
+                />
+                <Button type="button" variant="ghost" size="sm" onClick={() => { setCountryOther(false); setCountry(""); setCity(""); setCityOther(false); }}>
+                  ✕
+                </Button>
+              </div>
+            ) : (
+              <Popover open={countryOpen} onOpenChange={setCountryOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" role="combobox" className="w-full mt-1.5 justify-between font-normal">
+                    {country || "Select your country"}
+                    <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                  <Command>
+                    <CommandInput placeholder="Search country..." />
+                    <CommandList>
+                      <CommandEmpty>No country found.</CommandEmpty>
+                      <CommandGroup>
+                        {allCountries.map((c) => (
+                          <CommandItem key={c} value={c} onSelect={() => { setCountry(c); setCity(""); setCityOther(false); setCountryOpen(false); }}>
+                            {c}
+                          </CommandItem>
+                        ))}
+                        <CommandItem value="Other" onSelect={() => { setCountryOther(true); setCountry(""); setCity(""); setCityOther(false); setCountryOpen(false); }}>
+                          Other (type manually)
+                        </CommandItem>
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+            )}
+            {!country && (
+              <p className="text-xs text-destructive mt-1">Country is required</p>
             )}
           </div>
+
           <div>
             <Label htmlFor="city">City *</Label>
-            <Input
-              id="city"
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-              placeholder="e.g., Mumbai"
-              className="mt-1.5"
-              required
-            />
-            {!city.trim() && (
+            {cityOther || countryOther ? (
+              <div className="flex gap-2 mt-1.5">
+                <Input
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  placeholder={isCityDisabled ? "Select a country first" : "Enter your city"}
+                  disabled={isCityDisabled}
+                  autoFocus={!isCityDisabled}
+                />
+                {!countryOther && (
+                  <Button type="button" variant="ghost" size="sm" onClick={() => { setCityOther(false); setCity(""); }}>
+                    ✕
+                  </Button>
+                )}
+              </div>
+            ) : (
+              <Popover open={cityOpen} onOpenChange={(open) => { if (!isCityDisabled) setCityOpen(open); }}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    disabled={isCityDisabled}
+                    className="w-full mt-1.5 justify-between font-normal"
+                  >
+                    {isCityDisabled ? "Select a country first" : city || "Select your city"}
+                    <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                  <Command>
+                    <CommandInput placeholder="Search city..." />
+                    <CommandList>
+                      <CommandEmpty>No city found. Try "Other".</CommandEmpty>
+                      <CommandGroup>
+                        {citiesForCountry.map((c) => (
+                          <CommandItem key={c} value={c} onSelect={() => { setCity(c); setCityOpen(false); }}>
+                            {c}
+                          </CommandItem>
+                        ))}
+                        <CommandItem value="Other" onSelect={() => { setCityOther(true); setCity(""); setCityOpen(false); }}>
+                          Other (type manually)
+                        </CommandItem>
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+            )}
+            {isCityDisabled && (
+              <p className="text-xs text-muted-foreground mt-1">Select a country first</p>
+            )}
+            {!isCityDisabled && !city && (
               <p className="text-xs text-destructive mt-1">City is required</p>
             )}
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="country">Country *</Label>
-            <Input
-              id="country"
-              value={country}
-              onChange={(e) => setCountry(e.target.value)}
-              placeholder="e.g., India"
-              className="mt-1.5"
-              required
-            />
-            {!country.trim() && (
-              <p className="text-xs text-destructive mt-1">Country is required</p>
-            )}
-          </div>
-          <div>
-            <Label htmlFor="audience">Target Audience *</Label>
-            <Input
-              id="audience"
-              value={targetAudience}
-              onChange={(e) => setTargetAudience(e.target.value)}
-              placeholder="e.g., CTOs at startups"
-              className="mt-1.5"
-              required
-            />
-            {!targetAudience.trim() && (
-              <p className="text-xs text-destructive mt-1">Target audience is required</p>
-            )}
-          </div>
+        <div>
+          <Label htmlFor="audience">Target Audience *</Label>
+          <Input
+            id="audience"
+            value={targetAudience}
+            onChange={(e) => setTargetAudience(e.target.value)}
+            placeholder="e.g., CTOs at startups"
+            className="mt-1.5"
+            required
+          />
+          {!targetAudience.trim() && (
+            <p className="text-xs text-destructive mt-1">Target audience is required</p>
+          )}
         </div>
       </div>
 
