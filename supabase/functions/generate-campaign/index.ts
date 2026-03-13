@@ -446,8 +446,10 @@ Generate exactly ${postDates.length} LinkedIn posts. Separate each with "---POST
       imageUrls = new Array(cleanPosts.length).fill(campaign.uploaded_image_url);
     } else if (campaign.image_option === "ai") {
       console.log(`🎨 Generating ${agentType}-style images for campaign posts...`);
-      for (let i = 0; i < cleanPosts.length; i += 3) {
-        const batch = cleanPosts.slice(i, i + 3);
+      // Only generate images for first 10 posts to avoid timeouts; rest get images on-demand
+      const maxImages = Math.min(cleanPosts.length, 10);
+      for (let i = 0; i < maxImages; i += 5) {
+        const batch = cleanPosts.slice(i, Math.min(i + 5, maxImages));
         const imagePromises = batch.map(async (content: string, batchIdx: number) => {
           try {
             const prompt = generateImagePrompt(content, profile, agentConfig.imageStyle);
@@ -494,11 +496,11 @@ Generate exactly ${postDates.length} LinkedIn posts. Separate each with "---POST
           imageUrls[i + batchIdx] = url;
         });
         
-        if (i + 3 < cleanPosts.length) {
-          await new Promise(resolve => setTimeout(resolve, 2000));
+        if (i + 5 < maxImages) {
+          await new Promise(resolve => setTimeout(resolve, 1000));
         }
       }
-      console.log(`✅ Generated ${imageUrls.filter(u => u).length}/${cleanPosts.length} images`);
+      console.log(`✅ Generated ${imageUrls.filter(u => u).length}/${cleanPosts.length} images (capped at ${maxImages})`);
     }
 
     // Create posts
