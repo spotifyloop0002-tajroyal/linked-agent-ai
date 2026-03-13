@@ -15,6 +15,13 @@ import {
 import { format } from "date-fns";
 import { AGENT_TYPE_MAP } from "@/lib/agentTypes";
 
+function formatTopics(topic: string): string {
+  if (!topic?.includes("|||")) return topic;
+  const topics = topic.split("|||").map(t => t.trim()).filter(Boolean);
+  if (topics.length <= 2) return topics.join(", ");
+  return `${topics[0]}, ${topics[1]} +${topics.length - 2} more`;
+}
+
 interface CampaignListProps {
   campaigns: Campaign[];
   isLoading: boolean;
@@ -76,10 +83,10 @@ export function CampaignList({ campaigns, isLoading, onPreview, onPause, onResum
                     </div>
                     <div>
                       <h3 className="font-semibold text-lg">
-                        {(campaign as any).campaign_name || campaign.topic}
+                        {(campaign as any).campaign_name || formatTopics(campaign.topic)}
                       </h3>
                       {(campaign as any).campaign_name && (
-                        <p className="text-xs text-muted-foreground">{campaign.topic}</p>
+                        <p className="text-xs text-muted-foreground">{formatTopics(campaign.topic)}</p>
                       )}
                     </div>
                     <Badge variant="outline" className={statusColors[campaign.status]}>
