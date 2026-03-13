@@ -843,7 +843,7 @@ export function CampaignSetupForm({ onSubmit, onCancel, isGenerating }: Campaign
                 <div className="space-y-4 p-4 rounded-xl bg-muted/50 border border-border">
                   <div className="space-y-2">
                     <Label htmlFor="postingTime" className="font-medium text-sm">
-                      {postsPerDay === 2 ? "1st Post Time (IST)" : "Preferred Posting Time (IST)"}
+                      {postsPerDay === 2 ? "1st Post Time (selected country)" : "Preferred Posting Time (selected country)"}
                     </Label>
                     <Input
                       id="postingTime"
