@@ -79,11 +79,15 @@ const SettingsPage = () => {
   const [phoneNumber, setPhoneNumber] = useState(profile?.phone_number || "");
   const [city, setCity] = useState(profile?.city || "");
   const [country, setCountry] = useState(profile?.country || "");
+  const [selectedTimezone, setSelectedTimezone] = useState(profile?.timezone || "");
   const [role, setRole] = useState(profile?.role || "");
   const [background, setBackground] = useState(profile?.background || "");
   const [preferredTone, setPreferredTone] = useState(profile?.preferred_tone || "");
   const [postFrequency, setPostFrequency] = useState(profile?.post_frequency || "");
   const [linkedinUrl, setLinkedinUrl] = useState(profile?.linkedin_profile_url || "");
+
+  // Timezone options based on country
+  const timezoneOptions = getTimezonesForCountry(country);
 
   // LinkedIn URL edit logic: can only be edited once after initial entry
   const editCount = profile?.linkedin_profile_edit_count || 0;
