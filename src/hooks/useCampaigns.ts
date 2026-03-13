@@ -64,6 +64,13 @@ export function useCampaigns() {
   const isGeneratingRef = useRef(false);
   const isCreatingRef = useRef(false);
 
+  const formatDateForDb = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
   const fetchCampaigns = useCallback(async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -153,8 +160,8 @@ export function useCampaigns() {
           topic: formData.topic,
           tone_type: formData.toneType,
           duration_type: "custom",
-          start_date: startDate.toISOString().split("T")[0],
-          end_date: endDate.toISOString().split("T")[0],
+          start_date: formatDateForDb(startDate),
+          end_date: formatDateForDb(endDate),
           post_count: postCount,
           research_mode: formData.researchMode,
           auto_best_time: formData.autoBestTime,

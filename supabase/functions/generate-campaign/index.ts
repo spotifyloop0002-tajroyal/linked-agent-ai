@@ -58,12 +58,107 @@ const AGENT_TYPE_PROMPTS: Record<string, { style: string; emoji: string; imageSt
   },
 };
 
-// Best posting times in IST (hours in 24h format)
-const BEST_TIMES_IST = [8, 9, 10, 12, 14, 17, 18];
+const DEFAULT_CAMPAIGN_TIMEZONE = "Asia/Kolkata";
+
+// Best posting hours in campaign timezone (24h format)
+const BEST_TIMES_LOCAL = [8, 9, 10, 12, 14, 17, 18];
+
+const COUNTRY_TIMEZONE_FALLBACKS: Record<string, string> = {
+  india: "Asia/Kolkata",
+  bharat: "Asia/Kolkata",
+  "united kingdom": "Europe/London",
+  uk: "Europe/London",
+  "united states": "America/New_York",
+  usa: "America/New_York",
+  "united arab emirates": "Asia/Dubai",
+  uae: "Asia/Dubai",
+};
+
+function normalizeCountryName(country?: string | null): string {
+  return (country || "").trim().toLowerCase();
+}
+
+async function resolveTimezoneFromCountry(country?: string | null): Promise<string> {
+  const normalizedCountry = normalizeCountryName(country);
+
+  if (!normalizedCountry) {
+    return DEFAULT_CAMPAIGN_TIMEZONE;
+  }
+
+  if (COUNTRY_TIMEZONE_FALLBACKS[normalizedCountry]) {
+    return COUNTRY_TIMEZONE_FALLBACKS[normalizedCountry];
+  }
+
+  try {
+    const response = await fetch(
+      `https://restcountries.com/v3.1/name/${encodeURIComponent(country || "")}?fields=name,timezones`
+    );
+
+    if (response.ok) {
+      const countries = await response.json() as Array<{ name?: { common?: string }; timezones?: string[] }>;
+      if (Array.isArray(countries) && countries.length > 0) {
+        const exactMatch = countries.find((entry) =>
+          normalizeCountryName(entry?.name?.common) === normalizedCountry
+        );
+        const timezone = exactMatch?.timezones?.[0] || countries[0]?.timezones?.[0];
+        if (timezone) {
+          return timezone;
+        }
+      }
+    }
+  } catch (error) {
+    console.warn("Failed to resolve country timezone, using default:", error);
+  }
+
+  return DEFAULT_CAMPAIGN_TIMEZONE;
+}
+
+function getTimeZoneOffsetMs(date: Date, timeZone: string): number {
+  const dtf = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  });
+
+  const parts = dtf.formatToParts(date);
+  const values = parts.reduce<Record<string, string>>((acc, part) => {
+    if (part.type !== "literal") acc[part.type] = part.value;
+    return acc;
+  }, {});
+
+  const asUTC = Date.UTC(
+    Number(values.year),
+    Number(values.month) - 1,
+    Number(values.day),
+    Number(values.hour) % 24,
+    Number(values.minute),
+    Number(values.second)
+  );
+
+  return asUTC - date.getTime();
+}
+
+function convertCountryLocalToUTC(dateKey: string, hour: number, minute: number, timeZone: string): Date {
+  const [year, month, day] = dateKey.split("-").map(Number);
+  const targetWallClockMs = Date.UTC(year, month - 1, day, hour, minute, 0, 0);
+
+  let utcMs = targetWallClockMs;
+  for (let i = 0; i < 2; i++) {
+    const offset = getTimeZoneOffsetMs(new Date(utcMs), timeZone);
+    utcMs = targetWallClockMs - offset;
+  }
+
+  return new Date(utcMs);
+}
 
 function pickBestTime(dayIndex: number, agentType?: string): { hour: number; minute: number } {
   const agentConfig = agentType ? AGENT_TYPE_PROMPTS[agentType] : null;
-  const hour = agentConfig?.suggestedHour || BEST_TIMES_IST[dayIndex % BEST_TIMES_IST.length];
+  const hour = agentConfig?.suggestedHour || BEST_TIMES_LOCAL[dayIndex % BEST_TIMES_LOCAL.length];
   const minute = Math.random() > 0.5 ? 0 : 30;
   return { hour, minute };
 }
@@ -176,11 +271,14 @@ serve(async (req) => {
     const PLAN_LIMITS: Record<string, number> = { free: 5, pro: 60, business: 100, custom: 9999 };
     const { data: userProfile } = await supabase
       .from("user_profiles")
-      .select("subscription_plan")
+      .select("subscription_plan, country")
       .eq("user_id", user.id)
       .single();
     const userPlan = userProfile?.subscription_plan || "free";
     const planLimit = PLAN_LIMITS[userPlan] || 5;
+    const campaignTimezone = await resolveTimezoneFromCountry(userProfile?.country);
+
+    console.log(`[TZ] Resolved campaign timezone: ${campaignTimezone} (country: ${userProfile?.country || "not set"})`);
 
     const monthStart = new Date();
     monthStart.setDate(1);
@@ -510,14 +608,12 @@ Generate exactly ${postDates.length} LinkedIn posts. Separate each with "---POST
         ({ hour, minute } = parsePostingTime(campaign.posting_time || "09:00"));
       }
 
-      const scheduledTime = new Date(postDate);
-      scheduledTime.setUTCHours(0, 0, 0, 0);
-      const istOffsetMs = 5.5 * 60 * 60 * 1000;
-      const timeOfDayMs = (hour * 60 + minute) * 60 * 1000;
-      const finalMs = scheduledTime.getTime() + timeOfDayMs - istOffsetMs;
-      const finalScheduledTime = new Date(finalMs);
+      const dateKey = postDate.toISOString().slice(0, 10);
+      const finalScheduledTime = convertCountryLocalToUTC(dateKey, hour, minute, campaignTimezone);
 
-      console.log(`[TZ] Post ${i}: ${hour}:${String(minute).padStart(2, '0')} IST → ${finalScheduledTime.toISOString()} UTC`);
+      console.log(
+        `[TZ] Post ${i + 1}: ${hour}:${String(minute).padStart(2, "0")} ${campaignTimezone} on ${dateKey} → ${finalScheduledTime.toISOString()} UTC`
+      );
 
       return {
         user_id: user.id,

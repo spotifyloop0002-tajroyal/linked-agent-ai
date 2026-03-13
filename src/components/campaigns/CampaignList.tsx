@@ -15,6 +15,11 @@ import {
 import { format } from "date-fns";
 import { AGENT_TYPE_MAP } from "@/lib/agentTypes";
 
+function parseDateOnly(dateString: string): Date {
+  const [year, month, day] = dateString.split("-").map(Number);
+  return new Date(year, (month || 1) - 1, day || 1);
+}
+
 function formatTopics(topic: string): string {
   if (!topic?.includes("|||")) return topic;
   const topics = topic.split("|||").map(t => t.trim()).filter(Boolean);
@@ -96,7 +101,7 @@ export function CampaignList({ campaigns, isLoading, onPreview, onPause, onResum
                   <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                     <span className="flex items-center gap-1">
                       <Calendar className="w-4 h-4" />
-                      {format(new Date(campaign.start_date), "MMM d")} – {format(new Date(campaign.end_date), "MMM d, yyyy")}
+                      {format(parseDateOnly(campaign.start_date), "MMM d")} – {format(parseDateOnly(campaign.end_date), "MMM d, yyyy")}
                     </span>
                     <span>{campaign.post_count} posts</span>
                     {agentConfig && (
