@@ -382,8 +382,8 @@ const CalendarPage = () => {
                   <div className="flex-1 min-w-0">
                     <p className="text-sm truncate">{post.content}</p>
                     <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
-                      <span>{post.scheduled_time ? format(new Date(post.scheduled_time), "MMM d, yyyy") : "No date"}</span>
-                      <span>{post.scheduled_time ? format(new Date(post.scheduled_time), "h:mm a") : ""}</span>
+                      <span>{post.scheduled_time ? formatDateLocal(post.scheduled_time).split(',')[0] : "No date"}</span>
+                      <span>{post.scheduled_time ? formatTimeLocal(post.scheduled_time) : ""}</span>
                       <PostSourceBadge agentName={post.agent_name} campaignId={(post as any).campaign_id} />
                     </div>
                   </div>
