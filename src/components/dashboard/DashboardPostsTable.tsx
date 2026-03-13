@@ -182,8 +182,8 @@ const DashboardPostsTable = ({ scheduledPosts, refetchData, onViewPost }: Props)
                   <div className="flex items-center gap-2 text-sm">
                     <Clock className="w-4 h-4 text-muted-foreground" />
                     <span>
-                      {post.posted_at ? format(new Date(post.posted_at), "MMM d, yyyy 'at' h:mm a")
-                        : post.scheduled_time ? format(new Date(post.scheduled_time), "MMM d, yyyy 'at' h:mm a")
+                      {post.posted_at ? formatDateLocal(post.posted_at)
+                        : post.scheduled_time ? formatDateLocal(post.scheduled_time)
                         : 'Not scheduled'}
                     </span>
                   </div>
