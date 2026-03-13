@@ -101,7 +101,7 @@ export function CampaignList({ campaigns, isLoading, onPreview, onPause, onResum
                   <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                     <span className="flex items-center gap-1">
                       <Calendar className="w-4 h-4" />
-                      {format(new Date(campaign.start_date), "MMM d")} – {format(new Date(campaign.end_date), "MMM d, yyyy")}
+                      {format(parseDateOnly(campaign.start_date), "MMM d")} – {format(parseDateOnly(campaign.end_date), "MMM d, yyyy")}
                     </span>
                     <span>{campaign.post_count} posts</span>
                     {agentConfig && (
