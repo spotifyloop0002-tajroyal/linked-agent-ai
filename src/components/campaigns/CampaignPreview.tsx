@@ -266,7 +266,7 @@ export function CampaignPreview({ campaignId, onClose, onApproveAll, onRegenerat
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <Calendar className="w-3 h-3" />
                     {post.scheduled_time
-                      ? format(new Date(post.scheduled_time), "MMM d, h:mm a")
+                      ? formatDateLocal(post.scheduled_time)
                       : "Not scheduled"}
                   </div>
                 </div>
