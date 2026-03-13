@@ -331,7 +331,7 @@ const CalendarPage = () => {
               <div className="flex items-center gap-2 mb-3">
                 <span className={`w-2.5 h-2.5 rounded-full ${getAgentColor(previewPost.agent_name)}`} />
                 <span className="text-sm text-muted-foreground">
-                  {previewPost.scheduled_time ? format(new Date(previewPost.scheduled_time), "MMM d, yyyy · h:mm a") : "No schedule"}
+                  {previewPost.scheduled_time ? formatDateLocal(previewPost.scheduled_time) : "No schedule"}
                 </span>
                 <PostSourceBadge agentName={previewPost.agent_name} campaignId={(previewPost as any).campaign_id} />
               </div>
