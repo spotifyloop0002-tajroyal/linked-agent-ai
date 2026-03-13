@@ -107,6 +107,7 @@ const SettingsPage = () => {
       setPhoneNumber(profile.phone_number || "");
       setCity(profile.city || "");
       setCountry(profile.country || "");
+      setSelectedTimezone((profile as any)?.timezone || "");
       setRole(profile.role || "");
       setBackground(profile.background || "");
       setPreferredTone(profile.preferred_tone || "");
