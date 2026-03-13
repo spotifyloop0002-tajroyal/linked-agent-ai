@@ -76,10 +76,10 @@ export function CampaignList({ campaigns, isLoading, onPreview, onPause, onResum
                     </div>
                     <div>
                       <h3 className="font-semibold text-lg">
-                        {(campaign as any).campaign_name || campaign.topic}
+                        {(campaign as any).campaign_name || formatTopics(campaign.topic)}
                       </h3>
                       {(campaign as any).campaign_name && (
-                        <p className="text-xs text-muted-foreground">{campaign.topic}</p>
+                        <p className="text-xs text-muted-foreground">{formatTopics(campaign.topic)}</p>
                       )}
                     </div>
                     <Badge variant="outline" className={statusColors[campaign.status]}>
