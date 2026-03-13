@@ -15,6 +15,11 @@ import {
 import { format } from "date-fns";
 import { AGENT_TYPE_MAP } from "@/lib/agentTypes";
 
+function parseDateOnly(dateString: string): Date {
+  const [year, month, day] = dateString.split("-").map(Number);
+  return new Date(year, (month || 1) - 1, day || 1);
+}
+
 function formatTopics(topic: string): string {
   if (!topic?.includes("|||")) return topic;
   const topics = topic.split("|||").map(t => t.trim()).filter(Boolean);
