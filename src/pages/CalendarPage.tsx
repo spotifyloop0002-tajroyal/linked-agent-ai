@@ -282,7 +282,7 @@ const CalendarPage = () => {
                         {(statusConfig[post.status] || statusConfig.draft).label}
                       </span>
                       <span className="text-xs text-muted-foreground">
-                        {post.scheduled_time ? format(new Date(post.scheduled_time), "h:mm a") : "No time"}
+                        {post.scheduled_time ? formatTimeLocal(post.scheduled_time) : "No time"}
                       </span>
                       <PostSourceBadge agentName={post.agent_name} campaignId={(post as any).campaign_id} />
                     </div>
