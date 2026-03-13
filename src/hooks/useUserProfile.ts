@@ -81,6 +81,8 @@ export interface ProfileData {
   phone_number?: string;
   city?: string;
   country?: string;
+  timezone?: string;
+  browser_detected_timezone?: string;
 }
 
 export const useUserProfile = () => {
