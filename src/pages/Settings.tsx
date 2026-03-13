@@ -372,11 +372,72 @@ const SettingsPage = () => {
                   <Input
                     id="country"
                     value={country}
-                    onChange={(e) => setCountry(e.target.value)}
+                    onChange={(e) => {
+                      setCountry(e.target.value);
+                      // Reset timezone when country changes
+                      const tzs = getTimezonesForCountry(e.target.value);
+                      if (tzs.length === 1) {
+                        setSelectedTimezone(tzs[0]);
+                      } else if (tzs.length > 1) {
+                        // Keep if still valid, else reset
+                        if (!tzs.includes(selectedTimezone)) {
+                          setSelectedTimezone(tzs[0]);
+                        }
+                      }
+                    }}
                     placeholder="India"
                     className="mt-1.5"
                   />
                 </div>
+              </div>
+
+              {/* Timezone Section */}
+              <div className="rounded-lg border border-border p-4 bg-muted/30">
+                <div className="flex items-center gap-2 mb-3">
+                  <Globe className="w-4 h-4 text-primary" />
+                  <h4 className="font-medium text-sm">Timezone</h4>
+                </div>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <Label>Your Timezone</Label>
+                    {timezoneOptions.length > 1 ? (
+                      <Select value={selectedTimezone} onValueChange={(v) => {
+                        setSelectedTimezone(v);
+                        setUserTimezone(v);
+                      }}>
+                        <SelectTrigger className="mt-1.5">
+                          <SelectValue placeholder="Select timezone" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {timezoneOptions.map((tz) => (
+                            <SelectItem key={tz} value={tz}>
+                              {getTimezoneDisplayLabel(tz)} — {tz}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <Input
+                        value={selectedTimezone ? `${getTimezoneDisplayLabel(selectedTimezone)} (${selectedTimezone})` : "Auto-detected from country"}
+                        disabled
+                        className="mt-1.5 bg-muted"
+                      />
+                    )}
+                  </div>
+                  <div>
+                    <Label>Current Local Time</Label>
+                    <div className="mt-1.5 flex items-center gap-2 px-3 py-2 rounded-md border border-border bg-background">
+                      <Clock className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-sm font-medium">
+                        {selectedTimezone ? getCurrentTimeInTimezone(selectedTimezone) : "—"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
+                  <Globe className="w-3 h-3" />
+                  All scheduled times are shown in your local timezone: {selectedTimezone || "auto-detected"}
+                </p>
               </div>
 
               {/* Professional Info */}
