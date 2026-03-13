@@ -271,11 +271,14 @@ serve(async (req) => {
     const PLAN_LIMITS: Record<string, number> = { free: 5, pro: 60, business: 100, custom: 9999 };
     const { data: userProfile } = await supabase
       .from("user_profiles")
-      .select("subscription_plan")
+      .select("subscription_plan, country")
       .eq("user_id", user.id)
       .single();
     const userPlan = userProfile?.subscription_plan || "free";
     const planLimit = PLAN_LIMITS[userPlan] || 5;
+    const campaignTimezone = await resolveTimezoneFromCountry(userProfile?.country);
+
+    console.log(`[TZ] Resolved campaign timezone: ${campaignTimezone} (country: ${userProfile?.country || "not set"})`);
 
     const monthStart = new Date();
     monthStart.setDate(1);
