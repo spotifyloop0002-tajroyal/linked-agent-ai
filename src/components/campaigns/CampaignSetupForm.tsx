@@ -635,7 +635,7 @@ export function CampaignSetupForm({ onSubmit, onCancel, isGenerating }: Campaign
               </Button>
               <Button
                 type="button"
-                disabled={!topic.trim() || postingDays.length === 0}
+                disabled={((multiTopicMode ? topics.length === 0 : !topic.trim()) || postingDays.length === 0)}
                 onClick={() => setStep(3)}
                 className="gap-2 gradient-bg text-primary-foreground"
               >
