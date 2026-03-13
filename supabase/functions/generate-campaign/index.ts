@@ -445,62 +445,58 @@ Generate exactly ${postDates.length} LinkedIn posts. Separate each with "---POST
       console.log("📎 Using uploaded image for all posts:", campaign.uploaded_image_url);
       imageUrls = new Array(cleanPosts.length).fill(campaign.uploaded_image_url);
     } else if (campaign.image_option === "ai") {
-      console.log(`🎨 Generating ${agentType}-style images for campaign posts...`);
-      // Only generate images for first 10 posts to avoid timeouts; rest get images on-demand
-      const maxImages = Math.min(cleanPosts.length, 10);
-      for (let i = 0; i < maxImages; i += 5) {
-        const batch = cleanPosts.slice(i, Math.min(i + 5, maxImages));
-        const imagePromises = batch.map(async (content: string, batchIdx: number) => {
-          try {
-            const prompt = generateImagePrompt(content, profile, agentConfig.imageStyle);
-            const imgResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-              method: "POST",
-              headers: {
-                Authorization: `Bearer ${LOVABLE_API_KEY}`,
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                model: "google/gemini-2.5-flash-image",
-                messages: [{ role: "user", content: prompt }],
-                modalities: ["image", "text"],
-              }),
-            });
-            
-            if (imgResponse.ok) {
-              const imgData = await imgResponse.json();
-              const base64Url = imgData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
-              if (base64Url) {
-                const fileName = `campaign-${campaignId}-post-${i + batchIdx}-${Date.now()}.png`;
-                const base64Data = base64Url.replace(/^data:image\/\w+;base64,/, "");
-                const binaryData = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
-                
-                const serviceClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
-                const { error: uploadError } = await serviceClient.storage
-                  .from("post-images")
-                  .upload(fileName, binaryData, { contentType: "image/png", upsert: true });
-                
-                if (!uploadError) {
-                  const { data: publicUrl } = serviceClient.storage.from("post-images").getPublicUrl(fileName);
-                  return publicUrl.publicUrl;
-                }
+      console.log(`🎨 Generating ${agentType}-style images one by one...`);
+      const serviceClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+      // Generate images sequentially, one at a time, to avoid timeouts and rate limits
+      const maxImages = Math.min(cleanPosts.length, 8);
+      for (let i = 0; i < maxImages; i++) {
+        try {
+          console.log(`🖼️ Generating image ${i + 1}/${maxImages}...`);
+          const prompt = generateImagePrompt(cleanPosts[i], profile, agentConfig.imageStyle);
+          const imgResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${LOVABLE_API_KEY}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              model: "google/gemini-2.5-flash-image",
+              messages: [{ role: "user", content: prompt }],
+              modalities: ["image", "text"],
+            }),
+          });
+          
+          if (imgResponse.ok) {
+            const imgData = await imgResponse.json();
+            const base64Url = imgData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+            if (base64Url) {
+              const fileName = `campaign-${campaignId}-post-${i}-${Date.now()}.png`;
+              const base64Data = base64Url.replace(/^data:image\/\w+;base64,/, "");
+              const binaryData = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
+              
+              const { error: uploadError } = await serviceClient.storage
+                .from("post-images")
+                .upload(fileName, binaryData, { contentType: "image/png", upsert: true });
+              
+              if (!uploadError) {
+                const { data: publicUrl } = serviceClient.storage.from("post-images").getPublicUrl(fileName);
+                imageUrls[i] = publicUrl.publicUrl;
+                console.log(`✅ Image ${i + 1} done`);
               }
             }
-          } catch (imgErr) {
-            console.error(`Image generation failed for post ${i + batchIdx}:`, imgErr);
+          } else {
+            console.warn(`⚠️ Image ${i + 1} failed with status ${imgResponse.status}`);
           }
-          return null;
-        });
-        
-        const results = await Promise.all(imagePromises);
-        results.forEach((url, batchIdx) => {
-          imageUrls[i + batchIdx] = url;
-        });
-        
-        if (i + 5 < maxImages) {
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          
+          // Small delay between sequential requests to be gentle on the API
+          if (i < maxImages - 1) {
+            await new Promise(resolve => setTimeout(resolve, 500));
+          }
+        } catch (imgErr) {
+          console.error(`Image ${i + 1} failed:`, imgErr);
         }
       }
-      console.log(`✅ Generated ${imageUrls.filter(u => u).length}/${cleanPosts.length} images (capped at ${maxImages})`);
+      console.log(`✅ Generated ${imageUrls.filter(u => u).length}/${cleanPosts.length} images (sequential, capped at ${maxImages})`);
     }
 
     // Create posts
