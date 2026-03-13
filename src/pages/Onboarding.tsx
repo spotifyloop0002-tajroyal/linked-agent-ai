@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { OnboardingStep1 } from "@/components/onboarding/OnboardingStep1";
 import { OnboardingStep2Company } from "@/components/onboarding/OnboardingStep2Company";
 import { OnboardingStep2Personal } from "@/components/onboarding/OnboardingStep2Personal";
+import { resolveTimezone } from "@/lib/countryTimezones";
 
 const Onboarding = () => {
   const [checkingAuth, setCheckingAuth] = useState(true);
