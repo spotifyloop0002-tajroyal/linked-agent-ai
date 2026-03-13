@@ -2,7 +2,7 @@ import { Eye, ThumbsUp, MessageSquare, Share2, ExternalLink } from "lucide-react
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { format } from "date-fns";
+import { formatDateLocal } from "@/lib/timezoneUtils";
 import type { DashboardScheduledPost } from "@/hooks/useDashboardData";
 
 interface Props {
