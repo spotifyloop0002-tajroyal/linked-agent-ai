@@ -188,7 +188,7 @@ export function CampaignPreview({ campaignId, onClose, onApproveAll, onRegenerat
               <p className="text-xs text-muted-foreground">Duration</p>
               <p className="text-sm font-medium">{durationLabel(campaign.duration_type)}</p>
               <p className="text-xs text-muted-foreground">
-                {format(new Date(campaign.start_date), "MMM d")} – {format(new Date(campaign.end_date), "MMM d")}
+                {new Date(campaign.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} – {new Date(campaign.end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
               </p>
             </div>
           </div>
