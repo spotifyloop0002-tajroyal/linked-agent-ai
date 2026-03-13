@@ -1,12 +1,21 @@
 // ============================================================================
-// LOCAL TIMEZONE UTILITIES (Auto-detects user's browser timezone)
+// TIMEZONE UTILITIES — Uses user's saved timezone (falls back to browser)
 // ============================================================================
 
+let _savedTimezone: string | null = null;
+
 /**
- * Get the user's local timezone from the browser
+ * Set the user's saved timezone (called after login/profile load)
+ */
+export function setUserTimezone(tz: string | null) {
+  _savedTimezone = tz;
+}
+
+/**
+ * Get the user's timezone — saved timezone first, then browser fallback
  */
 export function getUserTimezone(): string {
-  return Intl.DateTimeFormat().resolvedOptions().timeZone;
+  return _savedTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
 }
 
 /**
@@ -22,14 +31,14 @@ export function getTimezoneLabel(): string {
 }
 
 /**
- * Get current time in user's local timezone
+ * Get current time in user's timezone
  */
 export function getCurrentTimeLocal(): Date {
   return new Date();
 }
 
 /**
- * Format a date for display in user's local timezone
+ * Format a date for display in user's timezone
  */
 export function formatDateLocal(date: Date | string): string {
   const d = typeof date === 'string' ? new Date(date) : date;
@@ -41,7 +50,7 @@ export function formatDateLocal(date: Date | string): string {
 }
 
 /**
- * Format just the time in user's local timezone
+ * Format just the time in user's timezone
  */
 export function formatTimeLocal(date: Date | string): string {
   const d = typeof date === 'string' ? new Date(date) : date;
@@ -54,7 +63,7 @@ export function formatTimeLocal(date: Date | string): string {
 }
 
 /**
- * Format just the date in user's local timezone
+ * Format just the date in user's timezone
  */
 export function formatDateOnlyLocal(date: Date | string): string {
   const d = typeof date === 'string' ? new Date(date) : date;
@@ -117,6 +126,17 @@ export function getOptimalPostingTimes(): { time: string; label: string }[] {
     { time: '17:00', label: `5:00 PM ${tzLabel} - End of workday` },
     { time: '19:00', label: `7:00 PM ${tzLabel} - Evening engagement` },
   ];
+}
+
+/**
+ * Format a UTC date in the user's timezone for calendar/table display
+ */
+export function formatInUserTimezone(date: Date | string, opts?: Intl.DateTimeFormatOptions): string {
+  const d = typeof date === 'string' ? new Date(date) : date;
+  return d.toLocaleString('en-US', {
+    timeZone: getUserTimezone(),
+    ...opts,
+  });
 }
 
 // ============================================================================
