@@ -18,7 +18,7 @@ import {
   Type,
   RefreshCw,
 } from "lucide-react";
-import { format } from "date-fns";
+import { formatDateLocal, formatTimeLocal } from "@/lib/timezoneUtils";
 
 interface CampaignPost {
   id: string;

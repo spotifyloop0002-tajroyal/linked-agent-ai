@@ -38,8 +38,8 @@ const PostPreviewModal = ({ post, open, onOpenChange, profile }: Props) => {
               <p className="font-semibold">{profile?.name || 'User'}</p>
               <p className="text-sm text-muted-foreground">{profile?.role || profile?.industry || 'LinkedIn User'}</p>
               <p className="text-xs text-muted-foreground">
-                {post.posted_at ? format(new Date(post.posted_at), "MMM d, yyyy 'at' h:mm a")
-                  : post.scheduled_time ? format(new Date(post.scheduled_time), "MMM d, yyyy 'at' h:mm a")
+                {post.posted_at ? formatDateLocal(post.posted_at)
+                  : post.scheduled_time ? formatDateLocal(post.scheduled_time)
                   : 'Not scheduled'}
               </p>
             </div>
