@@ -47,11 +47,15 @@ import {
   CheckCircle2,
   Wifi,
   Trash2,
+  Globe,
+  Clock,
 } from "lucide-react";
 import { format } from "date-fns";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useDashboardLinkedIn } from "@/contexts/DashboardContext";
 import { useNavigate } from "react-router-dom";
+import { getTimezonesForCountry, getTimezoneDisplayLabel, getCurrentTimeInTimezone, isMultiTimezoneCountry } from "@/lib/countryTimezones";
+import { setUserTimezone } from "@/lib/timezoneUtils";
 
 const SettingsPage = () => {
   usePageTitle("Settings");
