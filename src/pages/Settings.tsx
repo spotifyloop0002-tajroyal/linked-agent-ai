@@ -184,6 +184,7 @@ const SettingsPage = () => {
         phone_number: phoneNumber,
         city,
         country,
+        timezone: selectedTimezone || undefined,
         role,
         background,
         preferred_tone: preferredTone,
