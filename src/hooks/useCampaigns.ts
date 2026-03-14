@@ -167,6 +167,7 @@ export function useCampaigns() {
           auto_best_time: formData.autoBestTime,
           auto_approve: formData.autoApprove,
           posting_time: formData.postingTime || "09:00",
+          second_posting_time: formData.secondPostTime || null,
           posts_per_day: formData.postsPerDay || 1,
           content_length: formData.contentLength,
           emoji_level: formData.emojiLevel,

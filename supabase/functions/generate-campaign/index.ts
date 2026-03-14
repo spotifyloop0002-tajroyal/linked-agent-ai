@@ -599,18 +599,45 @@ Generate exactly ${postDates.length} LinkedIn posts. Separate each with "---POST
       console.log(`✅ Generated ${imageUrls.filter(u => u).length}/${cleanPosts.length} images (sequential, capped at ${maxImages})`);
     }
 
-    // Create posts
+    // Create posts — track which post index per day for 2-posts/day support
+    const dayPostIndex: Record<string, number> = {};
     const postsToInsert = cleanPosts.slice(0, postDates.length).map((content: string, i: number) => {
       const postDate = postDates[i];
+      const dateKey = postDate.toISOString().slice(0, 10);
+
+      // Track which post number this is on the same day (0-based)
+      const postIndexOnDay = dayPostIndex[dateKey] || 0;
+      dayPostIndex[dateKey] = postIndexOnDay + 1;
       
       let hour: number, minute: number;
       if (campaign.auto_best_time) {
-        ({ hour, minute } = pickBestTime(i, agentType));
+        // For 2nd post of the day, offset by +4 hours to avoid same time
+        const base = pickBestTime(i, agentType);
+        if (postIndexOnDay === 0) {
+          ({ hour, minute } = base);
+        } else {
+          // Second post: pick a different time (afternoon/evening)
+          const secondHours = [14, 15, 17, 18, 19];
+          hour = secondHours[i % secondHours.length];
+          // Ensure it's different from the first post's hour
+          if (hour === base.hour) hour = (hour + 2) % 24 || 14;
+          minute = base.minute === 0 ? 30 : 0;
+        }
       } else {
-        ({ hour, minute } = parsePostingTime(campaign.posting_time || "09:00"));
+        if (postIndexOnDay === 0) {
+          ({ hour, minute } = parsePostingTime(campaign.posting_time || "09:00"));
+        } else {
+          // Use second_posting_time for the 2nd post, fallback to +4 hours from first
+          const firstTime = parsePostingTime(campaign.posting_time || "09:00");
+          if (campaign.second_posting_time) {
+            ({ hour, minute } = parsePostingTime(campaign.second_posting_time));
+          } else {
+            hour = (firstTime.hour + 4) % 24 || 17;
+            minute = firstTime.minute;
+          }
+        }
       }
 
-      const dateKey = postDate.toISOString().slice(0, 10);
       const finalScheduledTime = convertCountryLocalToUTC(dateKey, hour, minute, campaignTimezone);
 
       console.log(

@@ -243,6 +243,7 @@ export type Database = {
           posting_time: string | null
           posts_per_day: number
           research_mode: boolean | null
+          second_posting_time: string | null
           start_date: string
           status: string
           tone_type: string | null
@@ -271,6 +272,7 @@ export type Database = {
           posting_time?: string | null
           posts_per_day?: number
           research_mode?: boolean | null
+          second_posting_time?: string | null
           start_date: string
           status?: string
           tone_type?: string | null
@@ -299,6 +301,7 @@ export type Database = {
           posting_time?: string | null
           posts_per_day?: number
           research_mode?: boolean | null
+          second_posting_time?: string | null
           start_date?: string
           status?: string
           tone_type?: string | null
