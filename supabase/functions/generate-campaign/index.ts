@@ -638,7 +638,30 @@ Generate exactly ${postDates.length} LinkedIn posts. Separate each with "---POST
         }
       }
 
-      const finalScheduledTime = convertCountryLocalToUTC(dateKey, hour, minute, campaignTimezone);
+      let finalScheduledTime = convertCountryLocalToUTC(dateKey, hour, minute, campaignTimezone);
+
+      // If scheduled time is in the past (e.g., today at 10 AM but it's already 2 PM), push to next valid slot
+      const now = new Date();
+      if (finalScheduledTime < now) {
+        // Try pushing 2 hours ahead repeatedly until we're in the future (max 5 attempts)
+        let attempts = 0;
+        while (finalScheduledTime < now && attempts < 5) {
+          hour = (hour + 2) % 24;
+          finalScheduledTime = convertCountryLocalToUTC(dateKey, hour, minute, campaignTimezone);
+          attempts++;
+        }
+        // If still in the past (e.g., all hours today exhausted), skip to tomorrow same time
+        if (finalScheduledTime < now) {
+          const tomorrow = new Date(postDate);
+          tomorrow.setDate(tomorrow.getDate() + 1);
+          const tomorrowKey = tomorrow.toISOString().slice(0, 10);
+          const originalTime = campaign.auto_best_time 
+            ? pickBestTime(i, agentType) 
+            : parsePostingTime(campaign.posting_time || "09:00");
+          finalScheduledTime = convertCountryLocalToUTC(tomorrowKey, originalTime.hour, originalTime.minute, campaignTimezone);
+        }
+        console.log(`[TZ] Post ${i + 1} was in the past, rescheduled to: ${finalScheduledTime.toISOString()} UTC`);
+      }
 
       console.log(
         `[TZ] Post ${i + 1}: ${hour}:${String(minute).padStart(2, "0")} ${campaignTimezone} on ${dateKey} → ${finalScheduledTime.toISOString()} UTC`
