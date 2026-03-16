@@ -138,7 +138,7 @@ const DashboardGuard = () => {
 
   // Memoize context value — use individual fields to prevent cascading re-renders
   const contextValue = useMemo(() => ({
-    profile: profileHook.profile,
+    profile: profileHook.profile ?? resolvedProfile,
     isLoading: profileHook.isLoading,
     error: profileHook.error,
     fetchProfile: profileHook.fetchProfile,
@@ -159,6 +159,7 @@ const DashboardGuard = () => {
     },
   }), [
     profileHook.profile,
+    resolvedProfile,
     profileHook.isLoading,
     profileHook.error,
     profileHook.fetchProfile,

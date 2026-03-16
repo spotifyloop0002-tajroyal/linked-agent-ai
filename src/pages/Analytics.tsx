@@ -314,7 +314,7 @@ const AnalyticsPage = () => {
     <DashboardLayout>
       <div className="space-y-6">
         {/* Missing Profile Banner */}
-        {!profileLoading && !hasProfileUrl && isConnected && <MissingProfileBanner />}
+        {shouldShowMissingProfileBanner && <MissingProfileBanner />}
 
         {/* Extension Install Banner */}
         {!isInstalled && (
