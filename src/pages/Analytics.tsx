@@ -373,7 +373,7 @@ const AnalyticsPage = () => {
         </div>
 
         {/* Extension Not Connected Warning */}
-        {!isConnected && !state.isLoading && (
+        {!isConnected && !extensionLoading && (
           <Alert className="border-destructive/30 bg-destructive/5">
             <WifiOff className="w-4 h-4 text-destructive" />
             <AlertDescription className="flex items-center justify-between flex-wrap gap-3">
