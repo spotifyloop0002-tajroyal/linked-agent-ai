@@ -106,7 +106,17 @@ const AnalyticsPage = () => {
     total: number;
   } | null>(null);
 
-  const hasProfileUrl = Boolean(userProfile?.linkedin_profile_url);
+  const profileUrl = userProfile?.linkedin_profile_data?.profileUrl || userProfile?.linkedin_profile_url || "";
+  const isPlaceholderProfileUrl = /linkedin\.com\/in\/username\/?$/i.test(profileUrl.trim());
+  const hasProfileIdentity = Boolean(
+    userProfile?.linkedin_verified ||
+    userProfile?.linkedin_public_id ||
+    userProfile?.linkedin_username ||
+    userProfile?.linkedin_profile_data?.profileUrl ||
+    userProfile?.linkedin_profile_data?.fullName ||
+    (profileUrl.trim() && !isPlaceholderProfileUrl)
+  );
+  const shouldShowMissingProfileBanner = !profileLoading && isConnected && !hasProfileIdentity;
 
   // Fetch posts from DB
   const fetchPosts = async () => {
