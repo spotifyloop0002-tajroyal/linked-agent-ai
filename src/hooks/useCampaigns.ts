@@ -241,7 +241,7 @@ export function useCampaigns() {
         return false;
       }
 
-      toast.success(`Generated ${data.postsGenerated} posts!`);
+      toast.success(`Generated ${data.postsGenerated} posts! Please wait 1-2 minutes for posts to appear, or refresh the page.`, { duration: 8000 });
       await fetchCampaigns();
       return true;
     } catch (error) {
