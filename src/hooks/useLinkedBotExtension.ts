@@ -188,15 +188,19 @@ export function useLinkedBotExtension() {
       window.postMessage({ type: 'CHECK_EXTENSION' }, '*');
     }, 500);
     
-    // Set loading to false after timeout
+    // Set loading to false after timeout — also clear stale localStorage
+    // if extension never responded
     setTimeout(() => {
       setState(prev => {
         if (prev.isLoading) {
-          return { ...prev, isLoading: false };
+          // Extension didn't respond — clear stale localStorage state
+          localStorage.removeItem('extension_connected');
+          localStorage.removeItem('extension_id');
+          return { ...prev, isLoading: false, isConnected: false, isInstalled: false, extensionId: null };
         }
         return prev;
       });
-    }, 1500);
+    }, 2000);
 
     // Listen for extension ready event
     const handleExtensionReady = () => {

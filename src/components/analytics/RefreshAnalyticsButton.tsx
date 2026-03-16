@@ -61,6 +61,16 @@ export function RefreshAnalyticsButton({
 
       console.log(`📊 Requesting analytics for ${postUrls.length} posts...`);
 
+      // Check if extension is actually available
+      const extensionConnected = localStorage.getItem('extension_connected') === 'true';
+      if (!extensionConnected) {
+        toast.error('LinkedBot Extension not connected', {
+          description: 'Please install and connect the LinkedBot Chrome Extension to refresh analytics.',
+        });
+        setIsRefreshing(false);
+        return;
+      }
+
       // Send to extension
       window.postMessage({
         type: 'SCRAPE_BULK_ANALYTICS',
