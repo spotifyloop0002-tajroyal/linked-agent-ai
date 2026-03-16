@@ -137,6 +137,12 @@ const DashboardGuard = () => {
     return () => subscription.unsubscribe();
   }, [navigate, currentUserId, profileHook.fetchProfile]);
 
+  useEffect(() => {
+    return () => {
+      stopAnalyticsCron();
+    };
+  }, []);
+
   // Memoize context value — use individual fields to prevent cascading re-renders
   const contextValue = useMemo(() => ({
     profile: profileHook.profile ?? resolvedProfile,
