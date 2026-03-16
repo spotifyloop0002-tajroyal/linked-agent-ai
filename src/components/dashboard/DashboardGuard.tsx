@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from "react";
-import { useNavigate, useLocation, Outlet } from "react-router-dom";
+import { useNavigate, Outlet } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useUserProfile } from "@/hooks/useUserProfile";
+import { useUserProfile, type UserProfile } from "@/hooks/useUserProfile";
 import { useLinkedInAPI } from "@/hooks/useLinkedInAPI";
 import { DashboardContext } from "@/contexts/DashboardContext";
 import { startAnalyticsCron, stopAnalyticsCron } from "@/lib/analytics-cron";
@@ -18,29 +18,20 @@ const DashboardGuard = () => {
   const [authChecked, setAuthChecked] = useState(false);
   const [authorized, setAuthorized] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const [stuckTimer, setStuckTimer] = useState(false);
+  const [resolvedProfile, setResolvedProfile] = useState<UserProfile | null>(null);
   const navigate = useNavigate();
-  const location = useLocation();
   const profileHook = useUserProfile();
   const linkedInHook = useLinkedInAPI();
   const checkedRef = useRef(false);
   
   // Sync timezone from saved profile on dashboard load
-  useTimezoneSync(profileHook.profile);
-  
+  useTimezoneSync(profileHook.profile ?? resolvedProfile);
 
-  // Safety timeout: if auth check takes more than 8 seconds, redirect to login
   useEffect(() => {
-    if (authChecked) return;
-    const timer = setTimeout(() => {
-      if (!authChecked) {
-        console.warn("⚠️ Dashboard auth check stuck for 8s, redirecting to login");
-        setStuckTimer(true);
-        navigate("/login", { replace: true });
-      }
-    }, 8000);
-    return () => clearTimeout(timer);
-  }, [authChecked, navigate]);
+    if (profileHook.profile) {
+      setResolvedProfile(profileHook.profile);
+    }
+  }, [profileHook.profile]);
 
   // Wait for profileHook to finish loading, then decide routing
   useEffect(() => {
@@ -69,17 +60,20 @@ const DashboardGuard = () => {
         let profile = profileHook.profile;
 
         if (!profile) {
-          console.log("⏳ Profile null after hook load, fetching directly...");
+          console.log("⏳ Profile missing in hook, fetching directly...");
           const { data } = await supabase
             .from("user_profiles_safe")
             .select("*")
             .eq("user_id", session.user.id)
             .maybeSingle();
-          profile = data as any;
+          profile = (data as UserProfile | null) ?? null;
         }
 
-        const isOnboarded = profile?.onboarding_completed ||
-          (profile && (profile.name || profile.user_type));
+        setResolvedProfile(profile ?? null);
+
+        const isOnboarded = Boolean(
+          profile?.onboarding_completed || (profile && (profile.name || profile.user_type))
+        );
 
         if (!profile || !isOnboarded) {
           checkedRef.current = true;
@@ -117,9 +111,11 @@ const DashboardGuard = () => {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_OUT") {
+        stopAnalyticsCron();
         setAuthorized(false);
         setAuthChecked(false);
         setCurrentUserId(null);
+        setResolvedProfile(null);
         checkedRef.current = false;
         navigate("/login", { replace: true });
         return;
@@ -130,6 +126,7 @@ const DashboardGuard = () => {
           console.log("🔄 User switch detected, resetting dashboard state");
           setAuthorized(false);
           setAuthChecked(false);
+          setResolvedProfile(null);
           checkedRef.current = false;
           setCurrentUserId(session.user.id);
           profileHook.fetchProfile();
@@ -140,9 +137,15 @@ const DashboardGuard = () => {
     return () => subscription.unsubscribe();
   }, [navigate, currentUserId, profileHook.fetchProfile]);
 
+  useEffect(() => {
+    return () => {
+      stopAnalyticsCron();
+    };
+  }, []);
+
   // Memoize context value — use individual fields to prevent cascading re-renders
   const contextValue = useMemo(() => ({
-    profile: profileHook.profile,
+    profile: profileHook.profile ?? resolvedProfile,
     isLoading: profileHook.isLoading,
     error: profileHook.error,
     fetchProfile: profileHook.fetchProfile,
@@ -163,6 +166,7 @@ const DashboardGuard = () => {
     },
   }), [
     profileHook.profile,
+    resolvedProfile,
     profileHook.isLoading,
     profileHook.error,
     profileHook.fetchProfile,
