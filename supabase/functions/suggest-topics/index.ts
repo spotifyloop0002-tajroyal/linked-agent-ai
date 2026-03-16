@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -27,6 +28,45 @@ serve(async (req) => {
       );
     }
 
+    // Fetch user profile for personalized suggestions
+    let profileContext = "";
+    try {
+      const authHeader = req.headers.get("Authorization");
+      if (authHeader) {
+        const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+        const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+        const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+          global: { headers: { Authorization: authHeader } },
+        });
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: profile } = await supabase
+            .from("user_profiles")
+            .select("name, industry, company_name, company_description, background, target_audience, default_topics, role, posting_goals")
+            .eq("user_id", user.id)
+            .single();
+
+          if (profile) {
+            const parts: string[] = [];
+            if (profile.name) parts.push(`Name: ${profile.name}`);
+            if (profile.industry) parts.push(`Industry: ${profile.industry}`);
+            if (profile.company_name) parts.push(`Company: ${profile.company_name}`);
+            if (profile.company_description) parts.push(`Company Description: ${profile.company_description}`);
+            if (profile.background) parts.push(`Professional Background: ${profile.background}`);
+            if (profile.target_audience) parts.push(`Target Audience: ${profile.target_audience}`);
+            if (profile.role) parts.push(`Role: ${profile.role}`);
+            if (profile.default_topics?.length) parts.push(`Preferred Topics: ${profile.default_topics.join(", ")}`);
+            if (profile.posting_goals?.length) parts.push(`Posting Goals: ${profile.posting_goals.join(", ")}`);
+            if (parts.length > 0) {
+              profileContext = `\n\nUser Profile:\n${parts.join("\n")}`;
+            }
+          }
+        }
+      }
+    } catch (e) {
+      console.warn("Could not fetch user profile for suggestions:", e);
+    }
+
     const agentDescriptions: Record<string, string> = {
       comedy: "Comedy/Humorous — funny, relatable LinkedIn posts with wit and punchlines",
       professional: "Professional — formal industry insights and expert analysis",
@@ -40,6 +80,8 @@ serve(async (req) => {
 
     const agentDesc = agentDescriptions[agentType] || agentType;
 
+    const systemPrompt = `You are a LinkedIn content strategist. Suggest 6 specific, trending, and timely campaign topics for LinkedIn posts. Focus on what's currently hot and relevant in March 2026. Each topic should be concise (3-8 words) and actionable for a LinkedIn content campaign.${profileContext ? `\n\nIMPORTANT: Personalize topics based on the user's profile below. Make topics relevant to their industry, role, company, and target audience. The topics should feel tailored specifically for this person, not generic.${profileContext}` : ""}`;
+
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -49,10 +91,7 @@ serve(async (req) => {
       body: JSON.stringify({
         model: "google/gemini-3-flash-preview",
         messages: [
-          {
-            role: "system",
-            content: `You are a LinkedIn content strategist. When given an agent type, suggest 6 specific, trending, and timely campaign topics for LinkedIn posts. Focus on what's currently hot and relevant in March 2026. Each topic should be concise (3-8 words) and actionable for a LinkedIn content campaign.`,
-          },
+          { role: "system", content: systemPrompt },
           {
             role: "user",
             content: `Suggest 6 trending LinkedIn campaign topics for this agent style: ${agentDesc}. Return ONLY a JSON array of strings, nothing else. Example: ["Topic 1","Topic 2","Topic 3","Topic 4","Topic 5","Topic 6"]`,
@@ -83,10 +122,8 @@ serve(async (req) => {
     const data = await response.json();
     const content = data.choices?.[0]?.message?.content || "[]";
 
-    // Parse the JSON array from the response
     let topics: string[] = [];
     try {
-      // Extract JSON array from possibly markdown-wrapped response
       const match = content.match(/\[[\s\S]*\]/);
       if (match) {
         topics = JSON.parse(match[0]);
