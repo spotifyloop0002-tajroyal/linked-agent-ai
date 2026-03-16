@@ -111,6 +111,7 @@ const DashboardGuard = () => {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_OUT") {
+        stopAnalyticsCron();
         setAuthorized(false);
         setAuthChecked(false);
         setCurrentUserId(null);
