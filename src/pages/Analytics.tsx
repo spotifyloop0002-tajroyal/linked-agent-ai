@@ -349,7 +349,7 @@ const AnalyticsPage = () => {
             <p className="text-muted-foreground mt-1">Track your LinkedIn content performance</p>
           </div>
           <div className="flex items-center gap-3 flex-wrap">
-            <Badge variant={isConnected ? "default" : "secondary"} className="gap-1">
+            <Badge variant={isConnected ? "default" : "destructive"} className="gap-1">
               {isConnected ? <Wifi className="w-3 h-3" /> : <WifiOff className="w-3 h-3" />}
               {isConnected ? "Connected" : "Disconnected"}
             </Badge>
@@ -371,6 +371,27 @@ const AnalyticsPage = () => {
             </Select>
           </div>
         </div>
+
+        {/* Extension Not Connected Warning */}
+        {!isConnected && !state.isLoading && (
+          <Alert className="border-destructive/30 bg-destructive/5">
+            <WifiOff className="w-4 h-4 text-destructive" />
+            <AlertDescription className="flex items-center justify-between flex-wrap gap-3">
+              <div>
+                <strong className="text-destructive">Extension not connected.</strong>{" "}
+                <span className="text-muted-foreground">
+                  Install & connect the LinkedBot Chrome Extension to sync your LinkedIn analytics. Without it, Refresh Analytics and Sync Profile won't work.
+                </span>
+              </div>
+              <Button size="sm" variant="destructive" asChild className="gap-1.5">
+                <a href="https://chromewebstore.google.com/detail/linkedbot-linkedin-automa/mmdcbopjeijbhecfnnpjehledechmbbo" target="_blank" rel="noopener noreferrer">
+                  <Download className="w-3.5 h-3.5" />
+                  Install Extension
+                </a>
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
 
         {/* Loading */}
         {isLoading ? (
