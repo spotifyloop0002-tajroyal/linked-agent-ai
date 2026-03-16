@@ -325,32 +325,34 @@ export function CampaignPreview({ campaignId, onClose, onApproveAll, onRegenerat
                   <div>
                     <p className="text-sm whitespace-pre-wrap leading-relaxed">{post.content}</p>
                     <div className="flex items-center justify-between mt-3">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-xs"
-                        onClick={() => {
-                          setEditingId(post.id);
-                          setEditContent(post.content);
-                        }}
-                      >
-                        <Edit className="w-3 h-3 mr-1" />
-                        Edit
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-xs"
-                        disabled={regeneratingId === post.id}
-                        onClick={() => handleRegenerate(post.id)}
-                      >
-                        {regeneratingId === post.id ? (
-                          <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                        ) : (
-                          <RefreshCw className="w-3 h-3 mr-1" />
-                        )}
-                        {regeneratingId === post.id ? "Regenerating..." : "Regenerate"}
-                      </Button>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-xs"
+                          onClick={() => {
+                            setEditingId(post.id);
+                            setEditContent(post.content);
+                          }}
+                        >
+                          <Edit className="w-3 h-3 mr-1" />
+                          Edit
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-xs"
+                          disabled={regeneratingId === post.id}
+                          onClick={() => handleRegenerate(post.id)}
+                        >
+                          {regeneratingId === post.id ? (
+                            <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                          ) : (
+                            <RefreshCw className="w-3 h-3 mr-1" />
+                          )}
+                          {regeneratingId === post.id ? "Regenerating..." : "Regenerate"}
+                        </Button>
+                      </div>
                       <div className="text-xs text-muted-foreground space-x-3">
                         <span>{wordCount} words</span>
                         <span>{charCount} chars</span>
