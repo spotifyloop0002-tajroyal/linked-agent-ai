@@ -69,6 +69,7 @@ export function CampaignPreview({ campaignId, onClose, onApproveAll, onRegenerat
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState("");
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
+  const [regeneratingId, setRegeneratingId] = useState<string | null>(null);
 
   const fetchData = async () => {
     const [postsRes, campaignRes] = await Promise.all([
