@@ -883,7 +883,11 @@ export function CampaignSetupForm({ onSubmit, onCancel, isGenerating }: Campaign
                 <ArrowLeft className="w-4 h-4" />
                 Back
               </Button>
-              <Button type="submit" disabled={isGenerating || !topic.trim()} className="flex-1 gradient-bg text-primary-foreground">
+              <Button
+                type="submit"
+                disabled={isGenerating || (multiTopicMode ? topics.length === 0 : !topic.trim())}
+                className="flex-1 gradient-bg text-primary-foreground"
+              >
                 {isGenerating ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
