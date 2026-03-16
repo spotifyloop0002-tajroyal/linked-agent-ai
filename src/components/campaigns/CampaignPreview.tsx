@@ -135,6 +135,25 @@ export function CampaignPreview({ campaignId, onClose, onApproveAll, onRegenerat
     }
   };
 
+  const handleRegenerate = async (postId: string) => {
+    setRegeneratingId(postId);
+    try {
+      const { data, error } = await supabase.functions.invoke("regenerate-post", {
+        body: { postId },
+      });
+      if (error) throw error;
+      if (data?.content) {
+        setPosts((prev) =>
+          prev.map((p) => (p.id === postId ? { ...p, content: data.content } : p))
+        );
+      }
+    } catch (err) {
+      console.error("Regenerate failed:", err);
+    } finally {
+      setRegeneratingId(null);
+    }
+  };
+
   const statusColor = (status: string) => {
     switch (status) {
       case "draft": return "bg-warning/10 text-warning";
