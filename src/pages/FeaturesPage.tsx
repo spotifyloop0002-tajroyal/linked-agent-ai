@@ -4,7 +4,7 @@ import {
   Calendar, 
   BarChart3, 
   Image, 
-  Chrome, 
+  Linkedin, 
   Sparkles,
   Clock,
   Target,
