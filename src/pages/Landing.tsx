@@ -17,12 +17,11 @@ const Landing = () => {
   // Single auth check — redirect logged-in users to dashboard
   useEffect(() => {
     const checkSession = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        await supabase.auth.signOut();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
       }
-      setIsLoggedIn(!!user);
-      if (user) {
+      setIsLoggedIn(!!session);
+      if (session) {
         navigate("/dashboard", { replace: true });
       }
     };

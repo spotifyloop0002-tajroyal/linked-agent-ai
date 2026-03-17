@@ -95,6 +95,14 @@ const DashboardGuard = () => {
         setAuthorized(true);
         setAuthChecked(true);
 
+        // Dynamically load extension bridge script on dashboard
+        if (!document.querySelector('script[src="/extension-bridge.js"]')) {
+          const s = document.createElement('script');
+          s.src = '/extension-bridge.js';
+          s.defer = true;
+          document.body.appendChild(s);
+        }
+
         // Start analytics cron only when dashboard is active
         startAnalyticsCron();
       } catch (err) {

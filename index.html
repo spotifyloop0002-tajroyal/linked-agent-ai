@@ -32,8 +32,8 @@
     <!-- Google Fonts - optimized: only needed weights, swap display -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'" />
-    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" /></noscript>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" media="print" onload="this.media='all'" />
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" /></noscript>
 
     <!-- Preload hero image (LCP element) -->
     <link rel="preload" href="/images/dashboard-preview.webp" as="image" type="image/webp" />
@@ -62,7 +62,7 @@
 
   <body>
     <div id="root"></div>
-    <script defer src="/extension-bridge.js"></script>
+    <!-- extension-bridge.js loaded dynamically on dashboard only -->
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
