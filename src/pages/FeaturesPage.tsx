@@ -44,9 +44,9 @@ const features = [
     color: "from-warning to-warning/60",
   },
   {
-    icon: Chrome,
-    title: "Chrome Extension",
-    description: "Our extension mimics human behavior to post naturally, keeping your account safe and authentic.",
+    icon: Linkedin,
+    title: "LinkedIn API Integration",
+    description: "Connect your LinkedIn account and post directly via the official LinkedIn API — secure, reliable, and seamless.",
     color: "from-primary to-secondary",
   },
   {

@@ -86,7 +86,7 @@ const Hero = ({ isLoggedIn }: HeroProps) => {
               { icon: Bot, label: "AI Content Generation" },
               { icon: Calendar, label: "Smart Scheduling" },
               { icon: BarChart3, label: "Analytics Dashboard" },
-              { icon: Linkedin, label: "LinkedIn API Posting" },
+              { icon: Linkedin, label: "LinkedIn API Integration" },
             ].map((feature, index) => (
               <div
                 key={index}
