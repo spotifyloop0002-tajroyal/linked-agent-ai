@@ -68,6 +68,11 @@ const FeaturesPage = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="Features – AI Content Generation, Scheduling & Analytics"
+        description="Explore LinkedBot features: AI content generation, smart scheduling, analytics dashboard, AI image creation, Chrome extension, and multi-agent support."
+        canonical="https://linkedbot.online/features"
+      />
       <Navbar />
       
       <main className="pt-24">

@@ -11,37 +11,47 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://linkedbot.online/how-it-works</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://linkedbot.online/pricing</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://linkedbot.online/login</loc>
+    <loc>https://linkedbot.online/how-it-works</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://linkedbot.online/signup</loc>
+    <loc>https://linkedbot.online/about</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://linkedbot.online/affiliate</loc>
+    <loc>https://linkedbot.online/contact</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://linkedbot.online/blog</loc>
     <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://linkedbot.online/documentation</loc>
+    <loc>https://linkedbot.online/login</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://linkedbot.online/signup</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://linkedbot.online/affiliate-program</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://linkedbot.online/docs</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -66,7 +76,7 @@
     <priority>0.3</priority>
   </url>
   <url>
-    <loc>https://linkedbot.online/terms-of-service</loc>
+    <loc>https://linkedbot.online/terms</loc>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>

@@ -58,6 +58,16 @@ const Footer = forwardRef<HTMLElement>((_, ref) => {
                 </button>
               </li>
               <li>
+                <button onClick={() => handleNavClick("/about")} className="hover:text-sidebar-foreground transition-colors">
+                  About
+                </button>
+              </li>
+              <li>
+                <button onClick={() => handleNavClick("/contact")} className="hover:text-sidebar-foreground transition-colors">
+                  Contact
+                </button>
+              </li>
+              <li>
                 <button onClick={() => handleNavClick("/api")} className="hover:text-sidebar-foreground transition-colors">
                   API
                 </button>
