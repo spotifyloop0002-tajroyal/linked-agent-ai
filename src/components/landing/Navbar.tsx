@@ -36,6 +36,8 @@ const Navbar = ({ isLoggedIn: isLoggedInProp }: NavbarProps) => {
     { label: "Features", href: "/features" },
     { label: "Pricing", href: "/pricing" },
     { label: "How It Works", href: "/how-it-works" },
+    { label: "About", href: "/about" },
+    { label: "Contact", href: "/contact" },
   ];
 
   const isActive = (path: string) => location.pathname === path;

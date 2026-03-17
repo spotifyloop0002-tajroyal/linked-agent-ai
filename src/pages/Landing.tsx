@@ -2,6 +2,7 @@ import { useState, useEffect, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/landing/Navbar";
 import Hero from "@/components/landing/Hero";
+import SEOHead from "@/components/SEOHead";
 import { supabase } from "@/integrations/supabase/client";
 
 // Lazy load below-the-fold sections
@@ -39,6 +40,11 @@ const Landing = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="LinkedBot – AI LinkedIn Automation & Content Scheduling"
+        description="Automate your LinkedIn content creation, scheduling, and publishing with AI. Save 10+ hours/week and get 3× more engagement. Try LinkedBot free."
+        canonical="https://linkedbot.online/"
+      />
       <Navbar isLoggedIn={isLoggedIn} />
       <main>
         <Hero isLoggedIn={isLoggedIn} />
