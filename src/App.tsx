@@ -46,6 +46,8 @@ const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
 const FeaturesPage = lazy(() => import("./pages/FeaturesPage"));
 const HowItWorks = lazy(() => import("./pages/HowItWorks"));
 const PricingPage = lazy(() => import("./pages/PricingPage"));
+const AboutPage = lazy(() => import("./pages/AboutPage"));
+const ContactPage = lazy(() => import("./pages/ContactPage"));
 const PrivacyPolicy = lazy(() => import("./pages/legal/PrivacyPolicy"));
 const TermsOfService = lazy(() => import("./pages/legal/TermsOfService"));
 const CookiePolicy = lazy(() => import("./pages/legal/CookiePolicy"));
