@@ -82,9 +82,9 @@ const FeaturesPage = () => {
           
           <div className="container relative z-10 px-4">
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
+              transition={{ duration: 0.3 }}
               className="text-center max-w-3xl mx-auto mb-12"
             >
               <span className="text-primary font-semibold text-sm uppercase tracking-wider">
@@ -103,9 +103,9 @@ const FeaturesPage = () => {
 
             {/* Dashboard Preview */}
             <motion.div
-              initial={{ opacity: 0, y: 40 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.2 }}
+              transition={{ duration: 0.4, delay: 0.1 }}
               className="relative max-w-5xl mx-auto"
             >
               <div className="relative rounded-2xl overflow-hidden border border-border shadow-2xl bg-card">
@@ -141,10 +141,10 @@ const FeaturesPage = () => {
         <section className="py-12">
           <div className="container px-4">
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 10 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5 }}
+              viewport={{ once: true, amount: 0.3 }}
+              transition={{ duration: 0.3 }}
               className="flex flex-wrap justify-center gap-8"
             >
               {stats.map((stat, index) => (
@@ -172,10 +172,10 @@ const FeaturesPage = () => {
               {features.map((feature, index) => (
                 <motion.div
                   key={index}
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 10 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  viewport={{ once: true, amount: 0.2 }}
+                  transition={{ duration: 0.25, delay: index * 0.05 }}
                   className="group relative"
                 >
                   <div className="h-full p-6 rounded-2xl bg-card border border-border shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
@@ -197,9 +197,9 @@ const FeaturesPage = () => {
         <section className="py-20">
           <div className="container px-4">
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 10 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
+              viewport={{ once: true, amount: 0.3 }}
               className="text-center max-w-2xl mx-auto"
             >
               <h2 className="text-3xl md:text-4xl font-bold mb-6">
