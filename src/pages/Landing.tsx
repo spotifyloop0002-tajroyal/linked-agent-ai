@@ -4,23 +4,59 @@ import Navbar from "@/components/landing/Navbar";
 import Hero from "@/components/landing/Hero";
 import SEOHead from "@/components/SEOHead";
 import { supabase } from "@/integrations/supabase/client";
+import { faqJsonLd } from "@/components/landing/FAQSection";
 
 // Lazy load below-the-fold sections
 const Features = lazy(() => import("@/components/landing/Features"));
 const Pricing = lazy(() => import("@/components/landing/Pricing"));
+const FAQSection = lazy(() => import("@/components/landing/FAQSection"));
 const AffiliateSection = lazy(() => import("@/components/landing/AffiliateSection"));
 const Footer = lazy(() => import("@/components/landing/Footer"));
+
+const organizationJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "LinkedBot",
+  url: "https://linkedbot.online",
+  logo: "https://linkedbot.online/linkedbot-icon.png",
+  sameAs: [],
+  contactPoint: {
+    "@type": "ContactPoint",
+    email: "team@linkedbot.online",
+    contactType: "customer support",
+  },
+};
+
+const softwareJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "LinkedBot",
+  applicationCategory: "BusinessApplication",
+  operatingSystem: "Web",
+  url: "https://linkedbot.online",
+  description:
+    "AI-powered LinkedIn automation tool for content creation, scheduling, and publishing. Save 10+ hours/week and get 3× more engagement.",
+  offers: {
+    "@type": "Offer",
+    price: "0",
+    priceCurrency: "USD",
+    description: "Free trial available",
+  },
+  aggregateRating: {
+    "@type": "AggregateRating",
+    ratingValue: "4.8",
+    ratingCount: "150",
+    bestRating: "5",
+  },
+};
 
 const Landing = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const navigate = useNavigate();
 
-  // Single auth check — redirect logged-in users to dashboard
   useEffect(() => {
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-      }
       setIsLoggedIn(!!session);
       if (session) {
         navigate("/dashboard", { replace: true });
@@ -44,6 +80,8 @@ const Landing = () => {
         title="LinkedBot – AI LinkedIn Automation & Content Scheduling"
         description="Automate your LinkedIn content creation, scheduling, and publishing with AI. Save 10+ hours/week and get 3× more engagement. Try LinkedBot free."
         canonical="https://linkedbot.online/"
+        keywords="LinkedIn automation, AI LinkedIn tool, LinkedIn post scheduler, LinkedIn content creator, automate LinkedIn posts, LinkedIn marketing tool, LinkedIn AI assistant, schedule LinkedIn posts, LinkedIn growth tool, personal branding LinkedIn"
+        jsonLd={[organizationJsonLd, softwareJsonLd, faqJsonLd]}
       />
       <Navbar isLoggedIn={isLoggedIn} />
       <main>
@@ -51,6 +89,7 @@ const Landing = () => {
         <Suspense fallback={<div className="h-96" />}>
           <Features />
           <Pricing />
+          <FAQSection />
           <AffiliateSection />
         </Suspense>
       </main>

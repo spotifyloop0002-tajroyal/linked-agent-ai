@@ -72,6 +72,7 @@ const FeaturesPage = () => {
         title="Features – AI Content Generation, Scheduling & Analytics"
         description="Explore LinkedBot features: AI content generation, smart scheduling, analytics dashboard, AI image creation, LinkedIn API integration, and multi-agent support."
         canonical="https://linkedbot.online/features"
+        keywords="LinkedIn AI content generation, LinkedIn post scheduler, LinkedIn analytics dashboard, AI image generation LinkedIn, LinkedIn automation features, LinkedIn API tool"
       />
       <Navbar />
       
