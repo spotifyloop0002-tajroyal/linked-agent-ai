@@ -1,54 +1,38 @@
 
 
-# Bundle Optimization Plan
+## Performance Optimization Plan
 
-## Problem
-The landing page loads ~861KB of JavaScript with a 3.9s First Contentful Paint. Several large libraries load eagerly even when not needed on the initial page.
+### Problem
+The landing page loads slowly due to:
+1. **Blocking auth call**: `supabase.auth.getUser()` makes a network request before rendering — use `getSession()` (cached, instant) instead
+2. **503-byte extension-bridge.js** loads on every page via `<script defer>` — unnecessary on landing/public pages
+3. **Duplicate auth checks**: Both `Landing.tsx` and `Navbar.tsx` independently call `getUser()` — that's 2 network roundtrips
+4. **Google Fonts render-blocking workaround** uses `media="print"` trick but still fetches 4 font weights
 
-## Changes
+### Changes
 
-### 1. Lazy-load Login and Signup pages
-Move `Login` and `Signup` from eager imports to `React.lazy()` in `App.tsx`. These pages are not needed on the landing page but currently load upfront.
+**1. Landing.tsx — Use cached session instead of network call**
+Replace `supabase.auth.getUser()` with `supabase.auth.getSession()` for instant auth check. The `getUser()` call hits the Supabase server every time, adding 200-500ms delay.
 
-**File:** `src/App.tsx`
-- Change lines 12-13 from direct imports to lazy imports
+**2. Navbar.tsx — Same fix, use getSession()**
+Same change — replace `getUser()` with `getSession()` to avoid a second network roundtrip.
 
-### 2. Optimize lucide-react imports
-The entire lucide-react library (156KB) is bundled. While tree-shaking should handle this in production, we can help by ensuring only specific icons are imported (e.g., `import { Loader2 } from "lucide-react"` is fine, but landing page components may import many unused icons).
+**3. DashboardGuard.tsx — Already uses getSession + getUser correctly**
+No change needed here (it uses getSession first, then getUser for verification).
 
-**Files to audit:** `src/components/landing/Hero.tsx`, `Features.tsx`, `Pricing.tsx`, `Navbar.tsx`
+**4. index.html — Lazy-load extension-bridge.js only on dashboard**
+Move `extension-bridge.js` from `index.html` to be dynamically loaded inside `DashboardGuard.tsx` only when the user is authenticated and on the dashboard. This saves ~500 lines of JS from parsing on landing page.
 
-### 3. Switch Google Fonts to preload strategy
-Move the Google Fonts import from a blocking `@import` in CSS to a `<link rel="preload">` in `index.html` with `font-display: swap`.
+**5. index.html — Reduce font weights**
+Only load weights 400, 600, 700 (drop 500 if not heavily used) to reduce font download size.
 
-**File:** `src/index.css` - Remove the `@import url(...)` line
-**File:** `index.html` - Add preload link tag for Inter font
+**6. vite.config.ts — Add React deduplication**
+Add `resolve.dedupe` for `react`, `react-dom`, `react/jsx-runtime` to prevent duplicate React instances.
 
-### 4. Add framer-motion to lazy chunk splitting
-Add framer-motion as a separate chunk so it only loads when a page using animations is rendered.
-
-**File:** `vite.config.ts` - Already has `vendor-motion` chunk (good), but ensure landing components don't eagerly import it if not needed above the fold.
-
-### 5. Preload critical landing page chunks
-Add `<link rel="modulepreload">` hints for the main landing page bundle in `index.html` to prioritize critical JS.
-
----
-
-## Technical Details
-
-### File Changes Summary
-
-| File | Change |
-|------|--------|
-| `src/App.tsx` | Convert Login/Signup to `React.lazy()` |
-| `src/index.css` | Remove `@import url('https://fonts.googleapis.com/...')` |
-| `index.html` | Add `<link rel="preconnect">` + `<link rel="stylesheet">` for Google Fonts with `display=swap` |
-
-### Expected Impact
-- **~35KB less** on initial load (Login + Signup no longer eager)
-- **Faster FCP** by unblocking font loading from CSS
-- Production build already benefits from chunk splitting, but these changes improve the critical rendering path
-
-### No Breaking Changes
-All pages will still work identically -- Login and Signup will just load on-demand when the user navigates to them.
+### Files to modify
+- `src/pages/Landing.tsx` — getSession instead of getUser
+- `src/components/landing/Navbar.tsx` — getSession instead of getUser  
+- `index.html` — remove extension-bridge.js script, trim font weights
+- `src/components/dashboard/DashboardGuard.tsx` — dynamically load extension-bridge.js
+- `vite.config.ts` — add resolve.dedupe
 
