@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { 
   UserPlus, 
-  Link2, 
+  Linkedin, 
   MessageSquare, 
   Send,
   BarChart3,
