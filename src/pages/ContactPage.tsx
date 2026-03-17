@@ -69,7 +69,7 @@ const ContactPage = () => {
                   {
                     icon: Mail,
                     title: "Email Us",
-                    text: "support@linkedbot.online",
+                    text: "team@linkedbot.online",
                     sub: "We respond within 24 hours",
                   },
                   {

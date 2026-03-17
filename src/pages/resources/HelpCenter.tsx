@@ -42,7 +42,7 @@ const faqs = [
   },
 ];
 
-const SUPPORT_EMAIL = "contactlinkedbot@gmail.com";
+const SUPPORT_EMAIL = "team@linkedbot.online";
 
 const HelpCenter = () => {
   const [searchQuery, setSearchQuery] = useState("");
