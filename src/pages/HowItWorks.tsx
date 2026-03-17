@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { 
   UserPlus, 
-  Link2, 
+  Linkedin, 
   MessageSquare, 
   Send,
   BarChart3,
@@ -27,13 +27,13 @@ const steps = [
   },
   {
     number: "02",
-    icon: Link2,
-    title: "Install Chrome Extension",
-    description: "Our lightweight extension works in the background to post content naturally, just like you would manually.",
+    icon: Linkedin,
+    title: "Connect Your LinkedIn",
+    description: "Link your LinkedIn account securely via the official LinkedIn API. We post directly on your behalf — no extensions needed.",
     details: [
-      "One-click installation",
-      "Secure & privacy-focused",
-      "Mimics human behavior"
+      "One-click LinkedIn connection",
+      "Official API integration",
+      "Secure & privacy-focused"
     ]
   },
   {

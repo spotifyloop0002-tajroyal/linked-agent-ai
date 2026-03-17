@@ -37,8 +37,8 @@ const features = [
   },
   {
     icon: Linkedin,
-    title: "Official LinkedIn API",
-    description: "Post directly via LinkedIn's official API — secure, reliable, and no browser extensions needed.",
+    title: "LinkedIn API Integration",
+    description: "Connect your LinkedIn account and post directly via the official LinkedIn API — secure, reliable, and seamless.",
     color: "from-primary to-secondary",
   },
   {

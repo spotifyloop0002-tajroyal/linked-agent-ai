@@ -4,7 +4,7 @@ import {
   Calendar, 
   BarChart3, 
   Image, 
-  Chrome, 
+  Linkedin, 
   Sparkles,
   Clock,
   Target,
@@ -44,9 +44,9 @@ const features = [
     color: "from-warning to-warning/60",
   },
   {
-    icon: Chrome,
-    title: "Chrome Extension",
-    description: "Our extension mimics human behavior to post naturally, keeping your account safe and authentic.",
+    icon: Linkedin,
+    title: "LinkedIn API Integration",
+    description: "Connect your LinkedIn account and post directly via the official LinkedIn API — secure, reliable, and seamless.",
     color: "from-primary to-secondary",
   },
   {
@@ -70,7 +70,7 @@ const FeaturesPage = () => {
     <div className="min-h-screen bg-background">
       <SEOHead
         title="Features – AI Content Generation, Scheduling & Analytics"
-        description="Explore LinkedBot features: AI content generation, smart scheduling, analytics dashboard, AI image creation, Chrome extension, and multi-agent support."
+        description="Explore LinkedBot features: AI content generation, smart scheduling, analytics dashboard, AI image creation, LinkedIn API integration, and multi-agent support."
         canonical="https://linkedbot.online/features"
       />
       <Navbar />
