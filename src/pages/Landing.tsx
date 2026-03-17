@@ -20,8 +20,8 @@ const Landing = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
       }
-      setIsLoggedIn(!!user);
-      if (user) {
+      setIsLoggedIn(!!session);
+      if (session) {
         navigate("/dashboard", { replace: true });
       }
     };

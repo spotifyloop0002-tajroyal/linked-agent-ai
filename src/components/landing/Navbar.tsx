@@ -19,12 +19,8 @@ const Navbar = ({ isLoggedIn: isLoggedInProp }: NavbarProps) => {
   useEffect(() => {
     if (isLoggedInProp !== undefined) return;
     const checkSession = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        // Clear stale session for deleted users
-        await supabase.auth.signOut();
-      }
-      setLocalLoggedIn(!!user);
+      const { data: { session } } = await supabase.auth.getSession();
+      setLocalLoggedIn(!!session);
       setAuthChecked(true);
     };
     checkSession();
