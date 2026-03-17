@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/landing/Navbar";
 import Footer from "@/components/landing/Footer";
+import SEOHead from "@/components/SEOHead";
 
 const steps = [
   {
@@ -76,6 +77,12 @@ const HowItWorks = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="How LinkedBot Works – Automate LinkedIn in 5 Steps"
+        description="Learn how LinkedBot automates your LinkedIn content in 5 simple steps: sign up, connect LinkedIn, chat with AI, schedule posts, and track analytics."
+        canonical="https://linkedbot.online/how-it-works"
+        keywords="how to automate LinkedIn, LinkedIn automation steps, LinkedIn AI tool setup, automate LinkedIn posts, LinkedIn content automation"
+      />
       <Navbar />
       
       <main className="pt-24">

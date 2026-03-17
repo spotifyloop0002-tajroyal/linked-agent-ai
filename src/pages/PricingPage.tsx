@@ -10,6 +10,7 @@ const PricingPage = () => {
         title="Pricing – Affordable LinkedIn Automation Plans"
         description="Choose the right LinkedBot plan for your LinkedIn growth. Free trial available. Automate posts, schedule content, and track analytics starting at affordable prices."
         canonical="https://linkedbot.online/pricing"
+        keywords="LinkedBot pricing, LinkedIn automation pricing, LinkedIn tool cost, affordable LinkedIn scheduler, LinkedIn AI tool plans, LinkedIn marketing tool price"
       />
       <Navbar />
       <main className="pt-24">

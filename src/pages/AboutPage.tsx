@@ -15,6 +15,7 @@ const AboutPage = () => {
         title="About LinkedBot – AI LinkedIn Automation Platform"
         description="Learn about LinkedBot, the AI-powered LinkedIn automation tool that helps professionals create, schedule, and publish engaging content effortlessly."
         canonical="https://linkedbot.online/about"
+        keywords="about LinkedBot, LinkedIn automation platform, AI LinkedIn tool, LinkedIn content automation company, LinkedIn growth platform"
       />
       <Navbar />
 
