@@ -103,9 +103,9 @@ const FeaturesPage = () => {
 
             {/* Dashboard Preview */}
             <motion.div
-              initial={{ opacity: 0, y: 40 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.2 }}
+              transition={{ duration: 0.4, delay: 0.1 }}
               className="relative max-w-5xl mx-auto"
             >
               <div className="relative rounded-2xl overflow-hidden border border-border shadow-2xl bg-card">
