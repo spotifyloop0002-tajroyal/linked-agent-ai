@@ -265,6 +265,20 @@ serve(async (req) => {
       });
     }
 
+    // Delete existing posts for this campaign before regenerating
+    const { error: deleteError } = await supabase
+      .from("posts")
+      .delete()
+      .eq("campaign_id", campaignId)
+      .eq("user_id", user.id)
+      .in("status", ["draft", "pending"]);
+    
+    if (deleteError) {
+      console.warn("[GENERATE] Failed to clean old posts:", deleteError);
+    } else {
+      console.log("[GENERATE] Cleaned existing draft/pending posts for campaign", campaignId);
+    }
+
     await supabase.from("campaigns").update({ status: "generating" }).eq("id", campaignId);
 
     // --- SERVER-SIDE PLAN LIMIT CHECK ---
