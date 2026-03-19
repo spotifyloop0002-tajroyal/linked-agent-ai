@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Bot, Users, Target, Zap, ArrowRight } from "lucide-react";
+import { Target, Users, Zap, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/landing/Navbar";
@@ -45,7 +45,7 @@ const AboutPage = () => {
           </div>
         </section>
 
-        {/* Mission */}
+        {/* Mission Cards */}
         <section className="py-16">
           <div className="container px-4">
             <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
@@ -58,7 +58,7 @@ const AboutPage = () => {
                 {
                   icon: Users,
                   title: "Who We Serve",
-                  text: "Entrepreneurs, marketers, agencies, and professionals who want consistent, high-quality LinkedIn content on autopilot.",
+                  text: "Founders, creators, marketers, students, and professionals who want consistent, high-quality LinkedIn content on autopilot.",
                 },
                 {
                   icon: Zap,
@@ -85,7 +85,7 @@ const AboutPage = () => {
           </div>
         </section>
 
-        {/* Story */}
+        {/* Our Story */}
         <section className="py-16 bg-muted/30">
           <div className="container px-4 max-w-3xl mx-auto">
             <motion.div
@@ -93,21 +93,98 @@ const AboutPage = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
             >
-              <h2 className="text-3xl font-bold mb-6 text-center">Our Story</h2>
-              <div className="space-y-4 text-muted-foreground leading-relaxed">
+              <h2 className="text-3xl font-bold mb-8 text-center">Our Story</h2>
+              <div className="space-y-5 text-muted-foreground leading-relaxed text-[1.05rem]">
                 <p>
-                  LinkedBot was born from a simple frustration: creating consistent,
-                  high-quality LinkedIn content is time-consuming and difficult to
-                  sustain. We built an AI-powered solution that handles the heavy
-                  lifting — research, writing, image generation, and publishing — so
-                  you can focus on what matters most: growing your business.
+                  It started with a frustration most professionals know too well.
                 </p>
                 <p>
-                  Today, LinkedBot helps professionals across industries save over 10
-                  hours per week on content creation while seeing up to 3× more
-                  engagement on their posts. Our platform combines cutting-edge AI
-                  models with smart scheduling and analytics to deliver real results.
+                  You know LinkedIn matters. You know posting consistently can change your
+                  career, attract clients, and build real authority. But every time you sit
+                  down to write — nothing comes out. Or worse, you spend an hour crafting
+                  the "perfect post" and it gets 12 views.
                 </p>
+                <p>
+                  That's exactly where we were. Staring at a blank screen, overthinking
+                  every word, posting once a month, and wondering why nothing was working.
+                </p>
+                <p>
+                  So we asked a simple question:{" "}
+                  <span className="text-foreground font-medium">
+                    What if AI could handle the hard part — the research, the writing, the
+                    scheduling — and you could just show up as yourself?
+                  </span>
+                </p>
+                <p>
+                  That question became LinkedBot.
+                </p>
+                <p>
+                  We built an AI engine that doesn't just generate generic content. It
+                  learns <em>your</em> voice. It studies trending topics in <em>your</em>{" "}
+                  industry. It writes posts that sound like <em>you</em> — not a robot.
+                  Then it schedules and publishes them at the best possible time.
+                </p>
+                <p>
+                  Today, LinkedBot helps founders, creators, students, and professionals
+                  save 10+ hours every week while growing their engagement by up to 3×.
+                  And we're just getting started.
+                </p>
+                <p className="text-foreground font-medium">
+                  Our mission is simple: make personal branding effortless — so you can
+                  focus on doing great work while your LinkedIn grows on autopilot.
+                </p>
+              </div>
+            </motion.div>
+          </div>
+        </section>
+
+        {/* Meet the Founder */}
+        <section className="py-16">
+          <div className="container px-4 max-w-3xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+            >
+              <h2 className="text-3xl font-bold mb-8 text-center">Meet the Founder</h2>
+              <div className="p-8 rounded-2xl bg-card border border-border shadow-lg">
+                <div className="space-y-5 text-muted-foreground leading-relaxed text-[1.05rem]">
+                  <p className="text-foreground text-lg font-semibold">
+                    Hi, I'm Aryan 👋
+                  </p>
+                  <p>
+                    I built LinkedBot because I lived the exact problem it solves.
+                  </p>
+                  <p>
+                    I wanted to grow on LinkedIn — share my ideas, connect with people,
+                    build a personal brand. But I kept falling into the same trap: I'd post
+                    for a week, get busy, disappear for a month, and start over. Every.
+                    Single. Time.
+                  </p>
+                  <p>
+                    I tried schedulers, templates, even ghostwriters. Nothing felt like
+                    <em> me</em>. The content was either too generic or took too long to
+                    create. I knew there had to be a better way.
+                  </p>
+                  <p>
+                    So I started building. What began as a simple AI writing tool turned
+                    into a full platform — one that learns your voice, researches what's
+                    trending, writes posts that actually sound human, and publishes them
+                    while you sleep.
+                  </p>
+                  <p>
+                    LinkedBot isn't just another AI tool. It's the assistant I wish I had
+                    when I was struggling to stay consistent on LinkedIn.
+                  </p>
+                  <p className="text-foreground font-medium">
+                    We're just getting started — and I'm building this in public, one
+                    feature at a time. If you believe in the vision, I'd love for you to
+                    join the ride. 🚀
+                  </p>
+                  <p className="text-sm text-muted-foreground/70 pt-2">
+                    — Aryan Bhatnagar, Founder of LinkedBot
+                  </p>
+                </div>
               </div>
             </motion.div>
           </div>
