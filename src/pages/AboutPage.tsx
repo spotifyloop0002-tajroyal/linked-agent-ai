@@ -86,54 +86,81 @@ const AboutPage = () => {
         </section>
 
         {/* Our Story */}
-        <section className="py-16 bg-muted/30">
-          <div className="container px-4 max-w-3xl mx-auto">
+        <section className="py-20 bg-muted/30">
+          <div className="container px-4 max-w-4xl mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
             >
-              <h2 className="text-3xl font-bold mb-8 text-center">Our Story</h2>
-              <div className="space-y-5 text-muted-foreground leading-relaxed text-[1.05rem]">
-                <p>
-                  It started with a frustration most professionals know too well.
-                </p>
-                <p>
-                  You know LinkedIn matters. You know posting consistently can change your
-                  career, attract clients, and build real authority. But every time you sit
-                  down to write — nothing comes out. Or worse, you spend an hour crafting
-                  the "perfect post" and it gets 12 views.
-                </p>
-                <p>
-                  That's exactly where we were. Staring at a blank screen, overthinking
-                  every word, posting once a month, and wondering why nothing was working.
-                </p>
-                <p>
-                  So we asked a simple question:{" "}
-                  <span className="text-foreground font-medium">
-                    What if AI could handle the hard part — the research, the writing, the
-                    scheduling — and you could just show up as yourself?
-                  </span>
-                </p>
-                <p>
-                  That question became LinkedBot.
-                </p>
-                <p>
-                  We built an AI engine that doesn't just generate generic content. It
-                  learns <em>your</em> voice. It studies trending topics in <em>your</em>{" "}
-                  industry. It writes posts that sound like <em>you</em> — not a robot.
-                  Then it schedules and publishes them at the best possible time.
-                </p>
-                <p>
-                  Today, LinkedBot helps founders, creators, students, and professionals
-                  save 10+ hours every week while growing their engagement by up to 3×.
-                  And we're just getting started.
-                </p>
-                <p className="text-foreground font-medium">
-                  Our mission is simple: make personal branding effortless — so you can
+              <div className="text-center mb-12">
+                <span className="text-primary font-semibold text-sm uppercase tracking-wider">
+                  Our Story
+                </span>
+                <h2 className="text-3xl md:text-4xl font-bold mt-3">
+                  Why We Built LinkedBot
+                </h2>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-8">
+                {/* Left column - The Problem */}
+                <div className="p-6 rounded-2xl bg-card border border-border shadow-lg space-y-4">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-destructive/10 text-destructive text-sm font-medium">
+                    😩 The Problem
+                  </div>
+                  <p className="text-muted-foreground leading-relaxed">
+                    It started with a frustration most professionals know too well.
+                  </p>
+                  <p className="text-muted-foreground leading-relaxed">
+                    You know LinkedIn matters. You know posting consistently can change your
+                    career, attract clients, and build real authority. But every time you sit
+                    down to write — <span className="text-foreground font-medium">nothing comes out.</span>
+                  </p>
+                  <p className="text-muted-foreground leading-relaxed">
+                    Or worse, you spend an hour crafting the "perfect post" and it gets 12 views.
+                    Staring at a blank screen, overthinking every word, posting once a month,
+                    and wondering why nothing was working.
+                  </p>
+                </div>
+
+                {/* Right column - The Solution */}
+                <div className="p-6 rounded-2xl bg-card border border-border shadow-lg space-y-4">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">
+                    💡 The Solution
+                  </div>
+                  <p className="text-muted-foreground leading-relaxed">
+                    So we asked a simple question:{" "}
+                    <span className="text-foreground font-medium">
+                      What if AI could handle the hard part — and you could just show up as yourself?
+                    </span>
+                  </p>
+                  <p className="text-muted-foreground leading-relaxed">
+                    That question became LinkedBot. We built an AI engine that learns{" "}
+                    <em>your</em> voice, studies trending topics in <em>your</em> industry,
+                    writes posts that sound like <em>you</em> — not a robot — then schedules
+                    and publishes them at the best possible time.
+                  </p>
+                  <p className="text-muted-foreground leading-relaxed">
+                    Today, LinkedBot helps founders, creators, students, and professionals
+                    save <span className="text-foreground font-semibold">10+ hours every week</span> while
+                    growing engagement by up to <span className="text-foreground font-semibold">3×</span>.
+                  </p>
+                </div>
+              </div>
+
+              {/* Mission statement */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.2 }}
+                className="mt-10 p-6 rounded-2xl bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 border border-primary/20 text-center"
+              >
+                <p className="text-lg text-foreground font-medium leading-relaxed">
+                  🎯 Our mission is simple: make personal branding effortless — so you can
                   focus on doing great work while your LinkedIn grows on autopilot.
                 </p>
-              </div>
+              </motion.div>
             </motion.div>
           </div>
         </section>
