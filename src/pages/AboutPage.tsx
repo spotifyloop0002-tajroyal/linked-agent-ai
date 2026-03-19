@@ -176,8 +176,11 @@ const AboutPage = () => {
               <h2 className="text-3xl font-bold mb-8 text-center">Meet the Founder</h2>
               <div className="p-8 rounded-2xl bg-card border border-border shadow-lg">
                 <div className="space-y-5 text-muted-foreground leading-relaxed text-[1.05rem]">
-                  <p className="text-foreground text-lg font-semibold">
-                    Hi, I'm Aryan 👋
+                  <p className="text-foreground text-xl font-bold">
+                    Hi, I'm Aryan Bhatnagar 👋
+                  </p>
+                  <p className="text-primary font-medium text-sm">
+                    Founder of LinkedBot
                   </p>
                   <p>
                     I built LinkedBot because I lived the exact problem it solves.
