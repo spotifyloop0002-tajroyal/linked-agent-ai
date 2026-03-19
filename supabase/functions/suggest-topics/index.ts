@@ -40,12 +40,27 @@ serve(async (req) => {
         });
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
-          const { data: profile } = await supabase
-            .from("user_profiles")
-            .select("name, industry, company_name, company_description, background, target_audience, default_topics, role, posting_goals")
-            .eq("user_id", user.id)
-            .single();
+          // Fetch profile, writing DNA, and reference materials in parallel
+          const [profileRes, writingDnaRes, referencesRes] = await Promise.all([
+            supabase
+              .from("user_profiles")
+              .select("name, industry, company_name, company_description, background, target_audience, default_topics, role, posting_goals")
+              .eq("user_id", user.id)
+              .single(),
+            supabase
+              .from("user_writing_profiles")
+              .select("tone_type, hook_style, signature_phrases, topics_history, sample_posts")
+              .eq("user_id", user.id)
+              .maybeSingle(),
+            supabase
+              .from("agent_reference_materials")
+              .select("title, content, type")
+              .eq("user_id", user.id)
+              .order("created_at", { ascending: false })
+              .limit(20),
+          ]);
 
+          const profile = profileRes.data;
           if (profile) {
             const parts: string[] = [];
             if (profile.name) parts.push(`Name: ${profile.name}`);
@@ -60,6 +75,29 @@ serve(async (req) => {
             if (parts.length > 0) {
               profileContext = `\n\nUser Profile:\n${parts.join("\n")}`;
             }
+          }
+
+          // Add Writing DNA context
+          const writingDna = writingDnaRes.data;
+          if (writingDna) {
+            profileContext += `\n\nWriting DNA Profile:`;
+            if (writingDna.tone_type) profileContext += `\n- Tone: ${writingDna.tone_type}`;
+            if (writingDna.hook_style) profileContext += `\n- Hook style: ${writingDna.hook_style}`;
+            if (writingDna.topics_history?.length) profileContext += `\n- Past topics: ${writingDna.topics_history.join(", ")}`;
+            if (writingDna.signature_phrases?.length) profileContext += `\n- Signature phrases: ${writingDna.signature_phrases.join(", ")}`;
+            if (writingDna.sample_posts?.length) {
+              const samples = (writingDna.sample_posts as any[]).slice(0, 3);
+              profileContext += `\n- Sample posts:\n${samples.map((s: any) => `  "${(s.content || "").substring(0, 200)}"`).join("\n")}`;
+            }
+          }
+
+          // Add reference materials context
+          const references = referencesRes.data;
+          if (references?.length) {
+            profileContext += `\n\nUser's Reference Materials & Training Data (use these to understand their content style and suggest relevant topics):`;
+            references.forEach((ref: any) => {
+              profileContext += `\n[${ref.type?.toUpperCase() || "DOC"}] ${ref.title}: ${ref.content?.substring(0, 300)}`;
+            });
           }
         }
       }
