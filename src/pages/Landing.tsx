@@ -17,8 +17,8 @@ const organizationJsonLd = {
   "@context": "https://schema.org",
   "@type": "Organization",
   name: "LinkedBot",
-  url: "https://linkedbot.online",
-  logo: "https://linkedbot.online/linkedbot-icon.png",
+  url: "https://www.linkedbot.online",
+  logo: "https://www.linkedbot.online/linkedbot-icon.png",
   sameAs: [],
   contactPoint: {
     "@type": "ContactPoint",
@@ -33,7 +33,7 @@ const softwareJsonLd = {
   name: "LinkedBot",
   applicationCategory: "BusinessApplication",
   operatingSystem: "Web",
-  url: "https://linkedbot.online",
+  url: "https://www.linkedbot.online",
   description:
     "AI-powered LinkedIn automation tool for content creation, scheduling, and publishing. Save 10+ hours/week and get 3× more engagement.",
   offers: {
@@ -77,10 +77,10 @@ const Landing = () => {
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
-        title="LinkedBot – AI LinkedIn Automation & Content Scheduling"
-        description="Automate your LinkedIn content creation, scheduling, and publishing with AI. Save 10+ hours/week and get 3× more engagement. Try LinkedBot free."
-        canonical="https://linkedbot.online/"
-        keywords="LinkedIn automation, AI LinkedIn tool, LinkedIn post scheduler, LinkedIn content creator, automate LinkedIn posts, LinkedIn marketing tool, LinkedIn AI assistant, schedule LinkedIn posts, LinkedIn growth tool, personal branding LinkedIn"
+        title="LinkedBot – AI LinkedIn Post Generator & Automation Tool"
+        description="LinkedBot helps you generate, schedule, and automate LinkedIn posts using AI agents. Build your personal brand faster. Try LinkedBot free."
+        canonical="https://www.linkedbot.online/"
+        keywords="LinkedBot, AI LinkedIn tool, LinkedIn post generator, LinkedIn automation, personal branding tool, LinkedIn scheduler, LinkedIn content creator, automate LinkedIn posts, LinkedIn marketing tool"
         jsonLd={[organizationJsonLd, softwareJsonLd, faqJsonLd]}
       />
       <Navbar isLoggedIn={isLoggedIn} />

@@ -12,5 +12,9 @@ Allow: /
 
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /onboarding
+Disallow: /auth/
 
-Sitemap: https://linkedbot.online/sitemap.xml
+Sitemap: https://www.linkedbot.online/sitemap.xml

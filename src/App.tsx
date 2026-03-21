@@ -10,6 +10,7 @@ import { Loader2 } from "lucide-react";
 
 // Eagerly load critical pages
 import Landing from "./pages/Landing";
+import CanonicalRedirect from "./components/CanonicalRedirect";
 const Login = lazy(() => import("./pages/Login"));
 const Signup = lazy(() => import("./pages/Signup"));
 
@@ -96,6 +97,7 @@ const AppContent = () => {
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <CanonicalRedirect />
         <Suspense fallback={null}><CookieConsentBanner /></Suspense>
         <PageViewTracker />
         <Suspense fallback={<PageLoader />}>

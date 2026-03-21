@@ -30,7 +30,7 @@ const ContactPage = () => {
       <SEOHead
         title="Contact LinkedBot – Get in Touch"
         description="Have questions about LinkedBot? Contact our team for support, partnerships, or general inquiries. We typically respond within 24 hours."
-        canonical="https://linkedbot.online/contact"
+        canonical="https://www.linkedbot.online/contact"
         keywords="contact LinkedBot, LinkedBot support, LinkedIn automation help, LinkedBot customer service"
       />
       <Navbar />
