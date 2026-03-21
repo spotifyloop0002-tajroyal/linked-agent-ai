@@ -80,7 +80,7 @@ const HowItWorks = () => {
       <SEOHead
         title="How LinkedBot Works – Automate LinkedIn in 5 Steps"
         description="Learn how LinkedBot automates your LinkedIn content in 5 simple steps: sign up, connect LinkedIn, chat with AI, schedule posts, and track analytics."
-        canonical="https://linkedbot.online/how-it-works"
+        canonical="https://www.linkedbot.online/how-it-works"
         keywords="how to automate LinkedIn, LinkedIn automation steps, LinkedIn AI tool setup, automate LinkedIn posts, LinkedIn content automation"
       />
       <Navbar />
