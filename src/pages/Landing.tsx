@@ -33,7 +33,7 @@ const softwareJsonLd = {
   name: "LinkedBot",
   applicationCategory: "BusinessApplication",
   operatingSystem: "Web",
-  url: "https://linkedbot.online",
+  url: "https://www.linkedbot.online",
   description:
     "AI-powered LinkedIn automation tool for content creation, scheduling, and publishing. Save 10+ hours/week and get 3× more engagement.",
   offers: {
