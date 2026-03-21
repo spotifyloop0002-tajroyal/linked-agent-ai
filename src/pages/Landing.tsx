@@ -77,10 +77,10 @@ const Landing = () => {
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
-        title="LinkedBot – AI LinkedIn Automation & Content Scheduling"
-        description="Automate your LinkedIn content creation, scheduling, and publishing with AI. Save 10+ hours/week and get 3× more engagement. Try LinkedBot free."
-        canonical="https://linkedbot.online/"
-        keywords="LinkedIn automation, AI LinkedIn tool, LinkedIn post scheduler, LinkedIn content creator, automate LinkedIn posts, LinkedIn marketing tool, LinkedIn AI assistant, schedule LinkedIn posts, LinkedIn growth tool, personal branding LinkedIn"
+        title="LinkedBot – AI LinkedIn Post Generator & Automation Tool"
+        description="LinkedBot helps you generate, schedule, and automate LinkedIn posts using AI agents. Build your personal brand faster. Try LinkedBot free."
+        canonical="https://www.linkedbot.online/"
+        keywords="LinkedBot, AI LinkedIn tool, LinkedIn post generator, LinkedIn automation, personal branding tool, LinkedIn scheduler, LinkedIn content creator, automate LinkedIn posts, LinkedIn marketing tool"
         jsonLd={[organizationJsonLd, softwareJsonLd, faqJsonLd]}
       />
       <Navbar isLoggedIn={isLoggedIn} />

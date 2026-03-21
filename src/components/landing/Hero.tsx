@@ -33,9 +33,9 @@ const Hero = ({ isLoggedIn }: HeroProps) => {
 
           {/* Main heading */}
           <h1 className="animate-fade-up [animation-delay:100ms] text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold mb-4 md:mb-6 leading-tight">
-            Build Your Personal Brand
+            LinkedBot – Automate Your
             <br />
-            <span className="gradient-text">On Autopilot</span>
+            <span className="gradient-text">LinkedIn Content with AI</span>
           </h1>
 
           {/* Subtitle */}

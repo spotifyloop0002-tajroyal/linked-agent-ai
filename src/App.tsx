@@ -97,6 +97,7 @@ const AppContent = () => {
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <CanonicalRedirect />
         <Suspense fallback={null}><CookieConsentBanner /></Suspense>
         <PageViewTracker />
         <Suspense fallback={<PageLoader />}>

@@ -36,6 +36,20 @@
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
 
+# Force HTTPS
+[[redirects]]
+  from = "http://linkedbot.online/*"
+  to = "https://www.linkedbot.online/:splat"
+  status = 301
+  force = true
+
+# Non-www to www redirect
+[[redirects]]
+  from = "https://linkedbot.online/*"
+  to = "https://www.linkedbot.online/:splat"
+  status = 301
+  force = true
+
 # SPA redirect
 [[redirects]]
   from = "/*"
