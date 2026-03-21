@@ -123,7 +123,10 @@ const AnalyticsPage = () => {
     setIsLoading(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
+      if (!session) {
+        setIsLoading(false);
+        return;
+      }
 
       const { data, error } = await supabase
         .from("posts")
