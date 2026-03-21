@@ -17,8 +17,8 @@ const organizationJsonLd = {
   "@context": "https://schema.org",
   "@type": "Organization",
   name: "LinkedBot",
-  url: "https://linkedbot.online",
-  logo: "https://linkedbot.online/linkedbot-icon.png",
+  url: "https://www.linkedbot.online",
+  logo: "https://www.linkedbot.online/linkedbot-icon.png",
   sameAs: [],
   contactPoint: {
     "@type": "ContactPoint",
