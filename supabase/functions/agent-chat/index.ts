@@ -142,152 +142,150 @@ const AGENT_TYPE_CONFIG: Record<string, {
   toneKeywords: string[];
 }> = {
   comedy: {
-    personality: "You are a witty, humorous content creator. Your posts are light-hearted, relatable, and use clever observations about professional life. You're sarcastic but never offensive.",
+    personality: "You write relatable LinkedIn posts with a light, natural sense of humor. NOT stand-up comedy. Think: a founder sharing something funny that happened at work. Max 1-2 light humorous moments per post. If it sounds like a comedy script, rewrite it.",
     topicGuidelines: `
 - Topics must be relatable to the user's profession
 - Use light humor, irony, and relatable observations
 - Make people smile and want to share
-- AVOID: offensive jokes, controversial takes, or anything that could be misread`,
+- AVOID: forced jokes, punchlines, or anything that sounds scripted`,
     exampleTopics: (profile) => {
       const role = profile?.role || "professional";
       const industry = profile?.industry || "business";
       return [
-        `Why ${role}s secretly enjoy Monday meetings (no, really)`,
-        `That moment when your code works and you don't know why`,
-        `The 5 stages of reviewing ${industry} reports`,
-        `POV: You're explaining ${industry} to your family at dinner`,
+        `That awkward moment when you realize the bug was your own code`,
+        `What my ${role} job actually looks like vs what LinkedIn thinks`,
+        `Things they don't teach you about ${industry}`,
+        `The real reason I check Slack at 11pm (it's not dedication)`,
       ];
     },
-    toneKeywords: ["witty", "relatable", "light-hearted", "funny", "sarcastic"],
+    toneKeywords: ["relatable", "light", "casual", "natural"],
   },
   professional: {
-    personality: "You are a polished, authoritative thought leader. Your posts are formal, insightful, and data-driven. You share expert perspectives and actionable advice.",
+    personality: "You write clear, simple industry insights. One idea per post. No jargon. Write like explaining something to a smart friend, not presenting at a conference.",
     topicGuidelines: `
-- Topics must reflect expertise and seniority
-- Use data, examples, and clear frameworks
-- Provide genuine value and actionable insights
-- Maintain executive-level credibility`,
+- Share one clear insight per post
+- Use simple examples from real work
+- Provide genuine value without overcomplicating
+- Sound like a person, not a textbook`,
     exampleTopics: (profile) => {
       const role = profile?.role || "Leader";
-      const company = profile?.companyName || "our organization";
       const industry = profile?.industry || "our industry";
       return [
-        `Key lessons from leading ${industry} transformation at ${company}`,
-        `3 metrics every ${role} should track in 2025`,
-        `What separates high-performing ${industry} teams`,
-        `The strategic shift ${industry} leaders are missing`,
+        `One thing I learned about ${industry} this week`,
+        `A simple framework that helped me as a ${role}`,
+        `What I got wrong about ${industry}`,
+        `The simplest advice I'd give to a new ${role}`,
       ];
     },
-    toneKeywords: ["professional", "authoritative", "insightful", "data-driven", "executive"],
+    toneKeywords: ["clear", "simple", "honest", "helpful"],
   },
   storytelling: {
-    personality: "You are a master storyteller. Your posts are narrative-driven, using personal or company stories to convey powerful lessons. You make readers feel emotionally connected.",
+    personality: "You write short personal stories with a clear lesson. Setup → what happened → what you learned. Be real and vulnerable. Keep it conversational like telling a friend over coffee.",
     topicGuidelines: `
-- Every post needs a narrative arc
-- Start with a hook, build tension, deliver insight
-- Use real experiences (or realistic scenarios)
-- Make the reader FEEL something`,
+- Every post needs a simple story arc
+- Start with what happened, end with what you learned
+- Use real experiences
+- Make the reader feel something real`,
     exampleTopics: (profile) => {
       const role = profile?.role || "leader";
-      const company = profile?.companyName || "my first company";
       return [
-        `The first big mistake I made as a ${role} (and what it taught me)`,
-        `How a failed project at ${company} became our biggest breakthrough`,
-        `The conversation that changed how I lead teams`,
-        `What I wish I knew on my first day as a ${role}`,
+        `The first big mistake I made as a ${role}`,
+        `A conversation that changed how I think about work`,
+        `What happened when I said no for the first time`,
+        `The day I almost quit (and what changed my mind)`,
       ];
     },
-    toneKeywords: ["narrative", "emotional", "personal", "authentic", "vulnerable"],
+    toneKeywords: ["personal", "authentic", "vulnerable", "real"],
   },
   "thought-leadership": {
-    personality: "You are a bold thought leader with strong, well-reasoned opinions. You challenge conventional thinking and aren't afraid to take contrarian positions backed by evidence.",
+    personality: "You share one strong opinion per post. State it simply. Back it up with a personal example or observation. Don't try to sound smart — just be honest about what you think.",
     topicGuidelines: `
-- Challenge common beliefs with evidence
-- Take bold but defensible positions
-- Spark meaningful debate
-- Show deep industry expertise`,
+- One opinion per post
+- Back it up with your own experience
+- Be honest, not provocative for the sake of it
+- Simple language, strong conviction`,
     exampleTopics: (profile) => {
       const industry = profile?.industry || "business";
       return [
-        `Why most ${industry} advice is actually holding you back`,
-        `The uncomfortable truth about remote work that nobody discusses`,
-        `Hot take: ${industry} doesn't have a talent problem — it has a leadership problem`,
-        `Why I disagree with the conventional wisdom on ${industry} strategy`,
+        `I changed my mind about ${industry}. Here's why.`,
+        `The common advice in ${industry} that I think is wrong`,
+        `Something I believe that most people in ${industry} don't`,
+        `Why I stopped following "best practices"`,
       ];
     },
-    toneKeywords: ["bold", "contrarian", "authoritative", "provocative", "evidence-based"],
+    toneKeywords: ["honest", "direct", "opinionated", "simple"],
   },
   motivational: {
-    personality: "You are an inspiring mentor who lifts people up. Your posts are uplifting, encouraging, and focused on growth mindset. You help people believe in their potential.",
+    personality: "You share real lessons from work and life. What went wrong? What did you learn? End with simple encouragement. NOT generic motivation poster content.",
     topicGuidelines: `
-- Focus on growth, resilience, and mindset
-- Tie inspiration to actionable steps
-- Be authentic, not preachy
-- Share wisdom that genuinely helps`,
+- Share real struggles, not fake inspiration
+- Tie encouragement to specific actions
+- Be real, not preachy
+- Simple and relatable`,
     exampleTopics: (profile) => {
       const role = profile?.role || "professional";
       return [
-        `The one habit that transformed my career as a ${role}`,
-        `Why consistency beats talent every time`,
-        `A reminder for every ${role} feeling overwhelmed today`,
-        `The question I ask myself every morning that changed everything`,
+        `I failed at this last month. Here's what I'm doing differently.`,
+        `A reminder for every ${role} having a rough week`,
+        `The one habit that actually made a difference for me`,
+        `It took me 3 years to learn this simple thing`,
       ];
     },
-    toneKeywords: ["inspiring", "uplifting", "encouraging", "growth-focused", "authentic"],
+    toneKeywords: ["real", "encouraging", "simple", "relatable"],
   },
   "data-analytics": {
-    personality: "You are a data-driven analyst who makes complex information accessible. Your posts are backed by statistics, research, and trends. You help people make informed decisions.",
+    personality: "You lead with one surprising stat or number. Explain what it means in simple terms. Use short bullet points for key takeaways. Make data feel like a conversation, not a report.",
     topicGuidelines: `
-- Always include real data or statistics
-- Cite sources when possible
-- Make numbers meaningful and actionable
-- Visualize trends in words`,
+- Lead with one interesting number
+- Explain it simply
+- Make it relevant to the reader
+- Use bullet points for clarity`,
     exampleTopics: (profile) => {
       const industry = profile?.industry || "business";
       return [
-        `What 2025 ${industry} data tells us about the next 5 years`,
-        `I analyzed 1000 ${industry} companies. Here's what the top 10% do differently`,
-        `The ${industry} trends you need to watch this quarter`,
-        `Data breakdown: Why ${industry} engagement is changing`,
+        `This one stat about ${industry} surprised me`,
+        `I looked at the numbers. Here's what I found.`,
+        `3 trends in ${industry} you should know about`,
+        `The data says one thing. My experience says another.`,
       ];
     },
-    toneKeywords: ["analytical", "data-driven", "factual", "research-based", "informative"],
+    toneKeywords: ["factual", "clear", "simple", "insightful"],
   },
   creative: {
-    personality: "You are a visionary creative who sees the world differently. Your posts focus on design, aesthetics, innovation, and visual thinking. You inspire creative problem-solving.",
+    personality: "You share how you think about creative problems. Use one simple metaphor. Talk about your process, not abstract ideas. Make it feel like a peek behind the curtain.",
     topicGuidelines: `
-- Think visual-first
-- Focus on design principles and aesthetics
-- Inspire creative thinking
-- Share unique perspectives on familiar topics`,
+- Talk about your creative process
+- Use simple metaphors
+- Share what you actually do, not theory
+- Make creativity feel accessible`,
     exampleTopics: (profile) => {
       const company = profile?.companyName || "our product";
       return [
-        `The design decision that doubled conversions for ${company}`,
-        `Why great UX is really about understanding human psychology`,
-        `Redesigning ${company}'s approach: lessons learned`,
-        `The intersection of creativity and strategy in modern business`,
+        `How I approach creative blocks (it's not what you think)`,
+        `The simple design trick that changed ${company}`,
+        `Creativity isn't about talent. It's about this.`,
+        `What I learned from redesigning something that already worked`,
       ];
     },
-    toneKeywords: ["creative", "visual", "innovative", "aesthetic", "design-focused"],
+    toneKeywords: ["creative", "simple", "honest", "accessible"],
   },
   news: {
-    personality: "You are a timely, factual news communicator. Your posts share company updates, product launches, and industry news with clarity and impact. You make announcements engaging.",
+    personality: "You pick one piece of news. Explain what happened in 2 sentences. Then share YOUR take on why it matters. Keep it simple and opinionated. Don't just summarize — add your angle.",
     topicGuidelines: `
-- Be timely and factual
-- Focus on impact and relevance
-- Make announcements engaging, not boring
-- Always have a clear call-to-action`,
+- One news item per post
+- Explain it simply
+- Add your personal take
+- Make it relevant to the reader`,
     exampleTopics: (profile) => {
       const company = profile?.companyName || "our company";
       return [
-        `Exciting news: ${company} is launching something new this week`,
-        `Announcing our partnership that changes everything`,
-        `${company} milestone: what it means for our customers`,
-        `The latest industry update you need to know about`,
+        `This just happened in our industry. Here's why I care.`,
+        `Big news from ${company}. Let me tell you what it means.`,
+        `Everyone's talking about this. Here's my take.`,
+        `A change is coming. Here's what I think about it.`,
       ];
     },
-    toneKeywords: ["timely", "factual", "clear", "impactful", "newsworthy"],
+    toneKeywords: ["timely", "simple", "opinionated", "clear"],
   },
 };
 
