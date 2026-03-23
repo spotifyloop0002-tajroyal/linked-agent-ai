@@ -2,7 +2,6 @@ import { useState, useEffect, useMemo } from "react";
 // framer-motion removed — using CSS animations for faster page load
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useLinkedBotExtension } from "@/hooks/useLinkedBotExtension";
-import { useLinkedInAnalytics } from "@/hooks/useLinkedInAnalytics";
 import { useDashboardProfile } from "@/contexts/DashboardContext";
 import { useToast } from "@/hooks/use-toast";
 import { usePageTitle } from "@/hooks/usePageTitle";
@@ -94,7 +93,7 @@ const AnalyticsPage = () => {
   const { toast } = useToast();
   const { isConnected, isInstalled, isLoading: extensionLoading, connectExtension, checkExtension } = useLinkedBotExtension();
   const { profile: userProfile, isLoading: profileLoading } = useDashboardProfile();
-  const { isSyncing, syncAnalytics } = useLinkedInAnalytics();
+  const [isSyncing, setIsSyncing] = useState(false);
 
   const [posts, setPosts] = useState<PostData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -257,6 +256,7 @@ const AnalyticsPage = () => {
       return;
     }
 
+    setIsSyncing(true);
     toast({ title: "Syncing analytics", description: "Scraping your LinkedIn analytics..." });
 
     // Try window.LinkedBotExtension API first, fallback to postMessage
@@ -269,8 +269,16 @@ const AnalyticsPage = () => {
         const result = await ext.scrapeAnalytics();
         if (!result?.success) throw new Error(result?.error || "Failed to scrape");
         const data = result.data || {};
-        await syncAnalytics({ profile: data.profile || null, posts: data.posts || [] });
+        // Save analytics via edge function
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          await supabase.functions.invoke('save-analytics', {
+            body: { profile: data.profile || null, posts: data.posts || [], scrapedAt: new Date().toISOString() },
+            headers: { Authorization: `Bearer ${session.access_token}` },
+          });
+        }
         await fetchPosts();
+        setIsSyncing(false);
         return;
       } catch (err) {
         console.warn("Direct API failed, trying postMessage:", err);
@@ -303,6 +311,7 @@ const AnalyticsPage = () => {
     } catch (err) {
       console.warn("Bulk analytics request failed:", err);
     }
+    setIsSyncing(false);
   };
 
   const summaryCards = [

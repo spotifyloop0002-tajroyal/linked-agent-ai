@@ -23,13 +23,13 @@ export function RefreshAnalyticsButton({
     setIsRefreshing(true);
 
     try {
-      // Get current user
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
         toast.error('Please log in to refresh analytics');
         setIsRefreshing(false);
         return;
       }
+      const user = session.user;
 
       // Fetch recent posts with LinkedIn URLs
       const { data: posts, error } = await supabase

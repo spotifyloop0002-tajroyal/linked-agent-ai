@@ -47,15 +47,14 @@ const DashboardGuard = () => {
           return;
         }
 
-        // Verify user still exists (handles deleted accounts with stale JWT)
-        const { error: userError } = await supabase.auth.getUser();
-        if (userError) {
-          console.warn("⚠️ User no longer exists, signing out:", userError.message);
-          await supabase.auth.signOut();
-          checkedRef.current = true;
-          navigate("/login", { replace: true });
-          return;
-        }
+        // Verify user still exists in background — don't block rendering
+        supabase.auth.getUser().then(({ error: userError }) => {
+          if (userError) {
+            console.warn("⚠️ User no longer exists, signing out:", userError.message);
+            supabase.auth.signOut();
+            navigate("/login", { replace: true });
+          }
+        });
 
         let profile = profileHook.profile;
 

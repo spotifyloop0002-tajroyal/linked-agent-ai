@@ -20,8 +20,9 @@ export const useNotifications = () => {
 
   const fetchNotifications = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) return;
+      const user = session.user;
 
       const { data, error } = await supabase
         .from("notifications")
@@ -66,8 +67,9 @@ export const useNotifications = () => {
 
   const markAllAsRead = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) return;
+      const user = session.user;
 
       const unreadIds = notifications.filter(n => !n.is_read && n.user_id === user.id).map(n => n.id);
       
@@ -94,8 +96,9 @@ export const useNotifications = () => {
     userId?: string
   ) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return false;
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) return false;
+      const user = session.user;
 
       const { error } = await supabase
         .from("notifications")
