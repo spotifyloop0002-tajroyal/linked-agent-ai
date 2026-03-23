@@ -93,7 +93,7 @@ const AnalyticsPage = () => {
   const { toast } = useToast();
   const { isConnected, isInstalled, isLoading: extensionLoading, connectExtension, checkExtension } = useLinkedBotExtension();
   const { profile: userProfile, isLoading: profileLoading } = useDashboardProfile();
-  const { isSyncing, syncAnalytics } = useLinkedInAnalytics();
+  const [isSyncing, setIsSyncing] = useState(false);
 
   const [posts, setPosts] = useState<PostData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
