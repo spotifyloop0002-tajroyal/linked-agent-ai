@@ -70,39 +70,39 @@ export const useSubscription = () => {
       }
       const user = session.user;
 
-      // Get user profile with subscription info
-      const { data: profile } = await supabase
-        .from("user_profiles_safe")
-        .select("subscription_plan, subscription_expires_at")
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      // Get posts created today
+      // Parallel fetch all data instead of sequential
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      
-      const { count: postsToday } = await supabase
-        .from("posts")
-        .select("*", { count: "exact", head: true })
-        .eq("user_id", user.id)
-        .eq("status", "posted")
-        .gte("posted_at", today.toISOString());
-
-      // Get posts posted this month
       const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-      
-      const { count: postsThisMonth } = await supabase
-        .from("posts")
-        .select("*", { count: "exact", head: true })
-        .eq("user_id", user.id)
-        .eq("status", "posted")
-        .gte("posted_at", monthStart.toISOString());
 
-      // Count actual agents
-      const { count: agentsCount } = await supabase
-        .from("agents")
-        .select("*", { count: "exact", head: true })
-        .eq("user_id", user.id);
+      const [profileRes, postsTodayRes, postsMonthRes, agentsRes] = await Promise.all([
+        supabase
+          .from("user_profiles_safe")
+          .select("subscription_plan, subscription_expires_at")
+          .eq("user_id", user.id)
+          .maybeSingle(),
+        supabase
+          .from("posts")
+          .select("*", { count: "exact", head: true })
+          .eq("user_id", user.id)
+          .eq("status", "posted")
+          .gte("posted_at", today.toISOString()),
+        supabase
+          .from("posts")
+          .select("*", { count: "exact", head: true })
+          .eq("user_id", user.id)
+          .eq("status", "posted")
+          .gte("posted_at", monthStart.toISOString()),
+        supabase
+          .from("agents")
+          .select("*", { count: "exact", head: true })
+          .eq("user_id", user.id),
+      ]);
+
+      const profile = profileRes.data;
+      const postsToday = postsTodayRes.count;
+      const postsThisMonth = postsMonthRes.count;
+      const agentsCount = agentsRes.count;
 
       // Determine plan
       let plan: "free" | "pro" | "business" | "custom" = "free";

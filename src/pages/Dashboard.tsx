@@ -39,8 +39,14 @@ const DashboardPage = () => {
   const navigate = useNavigate();
   const { isConnected, isLoading: apiLoading, getAuthUrl, disconnect } = useDashboardLinkedIn();
   const { profile, isLoading: profileLoading } = useDashboardProfile();
-  const { status: limitsStatus, isLoading: limitsLoading } = usePostingLimits();
+  const { status: limitsStatus, isLoading: limitsLoading, checkLimits } = usePostingLimits(false);
   const { campaigns, isLoading: campaignsLoading } = useCampaigns();
+
+  // Defer limits check — not needed for initial render
+  useEffect(() => {
+    const timer = setTimeout(() => checkLimits(), 1500);
+    return () => clearTimeout(timer);
+  }, [checkLimits]);
 
   const {
     analyticsPosts,
