@@ -118,29 +118,28 @@ export function useCampaigns() {
       }
       postCount = formData.postCount || postCount || 7;
 
-      // --- PLAN LIMIT CHECK ---
-      const { data: profile } = await supabase
-        .from('user_profiles_safe')
-        .select('subscription_plan')
-        .eq('user_id', session.user.id)
-        .maybeSingle();
-
-      const plan = (profile?.subscription_plan as PlanType) || 'free';
-      const monthlyLimit = MONTHLY_LIMITS[plan] || MONTHLY_LIMITS.free;
-
-      // Count existing posts this month (all non-failed statuses)
+      // --- PLAN LIMIT CHECK (parallel) ---
       const monthStart = new Date();
       monthStart.setDate(1);
       monthStart.setHours(0, 0, 0, 0);
 
-      const { count: existingPosts } = await supabase
-        .from('posts')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', session.user.id)
-        .in('status', ['posted', 'pending', 'posting', 'draft'])
-        .gte('scheduled_time', monthStart.toISOString());
+      const [profileRes, postsRes] = await Promise.all([
+        supabase
+          .from('user_profiles_safe')
+          .select('subscription_plan')
+          .eq('user_id', session.user.id)
+          .maybeSingle(),
+        supabase
+          .from('posts')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', session.user.id)
+          .in('status', ['posted', 'pending', 'posting', 'draft'])
+          .gte('scheduled_time', monthStart.toISOString()),
+      ]);
 
-      const currentCount = existingPosts || 0;
+      const plan = (profileRes.data?.subscription_plan as PlanType) || 'free';
+      const monthlyLimit = MONTHLY_LIMITS[plan] || MONTHLY_LIMITS.free;
+      const currentCount = postsRes.count || 0;
       const remaining = monthlyLimit - currentCount;
 
       if (remaining <= 0) {

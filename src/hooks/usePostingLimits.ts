@@ -44,39 +44,41 @@ export const usePostingLimits = (autoCheck = true) => {
       }
       const user = session.user;
 
-      const { data: profile } = await supabase
-        .from('user_profiles_safe')
-        .select('subscription_plan')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      const plan = (profile?.subscription_plan as PlanType) || 'free';
-      const dailyLimit = DAILY_LIMITS[plan] || DAILY_LIMITS.free;
-      const monthlyLimit = MONTHLY_LIMITS[plan] || MONTHLY_LIMITS.free;
-
       const todayStart = new Date();
       todayStart.setHours(0, 0, 0, 0);
       const todayEnd = new Date();
       todayEnd.setHours(23, 59, 59, 999);
-
       const monthStart = new Date();
       monthStart.setDate(1);
       monthStart.setHours(0, 0, 0, 0);
 
-      const { count: postedToday } = await supabase
-        .from('posts')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id)
-        .in('status', ['posted', 'pending', 'posting', 'draft'])
-        .gte('scheduled_time', todayStart.toISOString())
-        .lte('scheduled_time', todayEnd.toISOString());
+      // Parallel fetch instead of 3 sequential queries
+      const [profileRes, todayRes, monthRes] = await Promise.all([
+        supabase
+          .from('user_profiles_safe')
+          .select('subscription_plan')
+          .eq('user_id', user.id)
+          .maybeSingle(),
+        supabase
+          .from('posts')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .in('status', ['posted', 'pending', 'posting', 'draft'])
+          .gte('scheduled_time', todayStart.toISOString())
+          .lte('scheduled_time', todayEnd.toISOString()),
+        supabase
+          .from('posts')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .in('status', ['posted', 'pending', 'posting', 'draft'])
+          .gte('created_at', monthStart.toISOString()),
+      ]);
 
-      const { count: postsThisMonth } = await supabase
-        .from('posts')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id)
-        .in('status', ['posted', 'pending', 'posting', 'draft'])
-        .gte('created_at', monthStart.toISOString());
+      const plan = (profileRes.data?.subscription_plan as PlanType) || 'free';
+      const dailyLimit = DAILY_LIMITS[plan] || DAILY_LIMITS.free;
+      const monthlyLimit = MONTHLY_LIMITS[plan] || MONTHLY_LIMITS.free;
+      const postedToday = todayRes.count;
+      const postsThisMonth = monthRes.count;
 
       const todayCount = postedToday || 0;
       const monthCount = postsThisMonth || 0;
