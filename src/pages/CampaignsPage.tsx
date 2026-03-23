@@ -20,25 +20,27 @@ const CampaignsPage = () => {
   usePageTitle("Agent Campaigns");
   const { campaigns, isLoading, isGenerating, isCreating, createCampaign, generateCampaignPosts, updateCampaignStatus, deleteCampaign, approveCampaignPosts } = useCampaigns();
   const { isConnected: linkedInConnected, isLoading: linkedInLoading } = useDashboardLinkedIn();
-  const { canPost, limitMessage, checkLimits } = usePostingLimits();
+  const { checkLimits } = usePostingLimits(false);
   const navigate = useNavigate();
   const [showSetup, setShowSetup] = useState(false);
   const [showPlanner, setShowPlanner] = useState(false);
   const [previewCampaignId, setPreviewCampaignId] = useState<string | null>(null);
   const [isCreatingWeekly, setIsCreatingWeekly] = useState(false);
 
-  const handleNewCampaignClick = () => {
-    if (!canPost) {
-      toast.error(limitMessage || "You've reached your posting limit. Please upgrade your plan.");
+  const handleNewCampaignClick = async () => {
+    const limits = await checkLimits();
+    if (limits && !limits.canPost) {
+      toast.error(limits.limitMessage || "You've reached your posting limit. Please upgrade your plan.");
       return;
     }
     setShowSetup(true);
     setShowPlanner(false);
   };
 
-  const handleWeeklyPlannerClick = () => {
-    if (!canPost) {
-      toast.error(limitMessage || "You've reached your posting limit. Please upgrade your plan.");
+  const handleWeeklyPlannerClick = async () => {
+    const limits = await checkLimits();
+    if (limits && !limits.canPost) {
+      toast.error(limits.limitMessage || "You've reached your posting limit. Please upgrade your plan.");
       return;
     }
     setShowPlanner(!showPlanner);

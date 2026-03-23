@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, lazy, Suspense } from "react";
 import { useNavigate, Outlet } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useUserProfile, type UserProfile } from "@/hooks/useUserProfile";
@@ -7,7 +7,8 @@ import { DashboardContext } from "@/contexts/DashboardContext";
 import { startAnalyticsCron, stopAnalyticsCron } from "@/lib/analytics-cron";
 import { useTimezoneSync } from "@/hooks/useTimezoneSync";
 import { Loader2 } from "lucide-react";
-import LiveChatWidget from "@/components/support/LiveChatWidget";
+
+const LiveChatWidget = lazy(() => import("@/components/support/LiveChatWidget"));
 
 /**
  * DashboardGuard v5: Optimized context stability.
@@ -24,7 +25,6 @@ const DashboardGuard = () => {
   const linkedInHook = useLinkedInAPI();
   const checkedRef = useRef(false);
   
-  // Sync timezone from saved profile on dashboard load
   useTimezoneSync(profileHook.profile ?? resolvedProfile);
 
   useEffect(() => {
@@ -33,7 +33,6 @@ const DashboardGuard = () => {
     }
   }, [profileHook.profile]);
 
-  // Wait for profileHook to finish loading, then decide routing
   useEffect(() => {
     if (checkedRef.current) return;
     if (profileHook.isLoading) return;
@@ -47,7 +46,6 @@ const DashboardGuard = () => {
           return;
         }
 
-        // Verify user still exists in background — don't block rendering
         supabase.auth.getUser().then(({ error: userError }) => {
           if (userError) {
             console.warn("⚠️ User no longer exists, signing out:", userError.message);
@@ -80,7 +78,6 @@ const DashboardGuard = () => {
           return;
         }
 
-        // Backfill onboarding flag for old users
         if (!profile.onboarding_completed && isOnboarded) {
           supabase
             .from("user_profiles")
@@ -94,7 +91,6 @@ const DashboardGuard = () => {
         setAuthorized(true);
         setAuthChecked(true);
 
-        // Dynamically load extension bridge script on dashboard
         if (!document.querySelector('script[src="/extension-bridge.js"]')) {
           const s = document.createElement('script');
           s.src = '/extension-bridge.js';
@@ -102,7 +98,6 @@ const DashboardGuard = () => {
           document.body.appendChild(s);
         }
 
-        // Start analytics cron only when dashboard is active
         startAnalyticsCron();
       } catch (err) {
         console.error("❌ Auth check failed:", err);
@@ -114,7 +109,6 @@ const DashboardGuard = () => {
     checkAuth();
   }, [profileHook.isLoading, profileHook.profile, navigate]);
 
-  // Handle auth state changes (sign out, user switch)
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_OUT") {
@@ -150,7 +144,6 @@ const DashboardGuard = () => {
     };
   }, []);
 
-  // Memoize context value — use individual fields to prevent cascading re-renders
   const contextValue = useMemo(() => ({
     profile: profileHook.profile ?? resolvedProfile,
     isLoading: profileHook.isLoading,
@@ -203,7 +196,9 @@ const DashboardGuard = () => {
   return (
     <DashboardContext.Provider value={contextValue}>
       <Outlet />
-      <LiveChatWidget />
+      <Suspense fallback={null}>
+        <LiveChatWidget />
+      </Suspense>
     </DashboardContext.Provider>
   );
 };
