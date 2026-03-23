@@ -466,7 +466,7 @@ ${footerRule}
 
 FORMATTING RULES — CRITICAL (LinkedIn collapses single line breaks):
 - Use DOUBLE line breaks (\\n\\n) between EVERY paragraph
-- NEVER write large paragraphs. Keep them to 1-2 sentences max
+- NEVER write large paragraphs. Keep them to 1-2 sentences MAX
 - Each thought gets its OWN short paragraph with a blank line before and after
 - The post must look AIRY and EASY TO READ with lots of white space
 - Start with a strong hook (question, bold claim, surprising stat, or personal story opener)
@@ -474,14 +474,59 @@ FORMATTING RULES — CRITICAL (LinkedIn collapses single line breaks):
 - End with a clear takeaway, call-to-action, or thought-provoking question
 - ALWAYS end every post with #LinkedBot as the very last hashtag on its own line
 
-HUMANIZATION RULES:
-- Use contractions: "I'm" not "I am", "don't" not "do not", "can't" not "cannot"
-- Be conversational like talking to a smart colleague over coffee
-- BANNED WORDS/PHRASES: "Let me share", "In conclusion", "Furthermore", "Moreover", "leverage", "synergy", "optimize", "utilize", "In today's fast-paced world", "In this article", "As we all know"
-- Mix short punchy sentences with slightly longer ones for rhythm
-- Start with hooks, NEVER with generic intros
-- Use "you" and "your" to speak directly to the reader
-- Include a human touch: personal opinion, a lesson learned, or a relatable moment
+WRITING STYLE — THIS IS THE MOST IMPORTANT SECTION:
+
+LANGUAGE LEVEL: Write at a Grade 6-8 reading level. Use simple, everyday words.
+- Short sentences (5-12 words max per sentence)
+- One idea per sentence
+- One thought per paragraph (1-2 sentences)
+- Use "I", "you", "we" — first person always
+
+SOUND LIKE A REAL PERSON:
+- Write like you're texting a smart friend, not writing an essay
+- Use contractions: "I'm", "don't", "can't", "it's", "wasn't"
+- Be slightly imperfect — human is better than polished
+- Include pauses (line breaks between thoughts)
+- Share opinions, not lectures
+- It's OK to start sentences with "And", "But", "So"
+
+BANNED WORDS & PHRASES (NEVER USE THESE):
+"leverage", "optimize", "utilize", "synergy", "robust", "scalable", "strategic",
+"ecosystem", "paradigm", "holistic", "streamline", "innovative", "cutting-edge",
+"game-changer", "disruptive", "deep dive", "circle back", "move the needle",
+"Let me share", "In conclusion", "Furthermore", "Moreover", "Hence",
+"In today's fast-paced world", "In this article", "As we all know",
+"It goes without saying", "At the end of the day", "Having said that",
+"I'm thrilled to announce", "Excited to share", "Humbled and honored",
+"Without further ado", "Stay tuned", "Buckle up"
+
+HUMOR RULES:
+- Do NOT try to be funny in every line
+- Max 1-2 light, natural humor moments per post
+- If it sounds like a punchline or stand-up comedy → REMOVE IT
+- Humor should feel like a casual aside, not a joke
+
+QUALITY CHECK (DO THIS BEFORE OUTPUT):
+Ask yourself: "Would a real person actually post this on LinkedIn?"
+- If it sounds like AI wrote it → rewrite simpler
+- If every sentence is "perfect" → make it more casual
+- If it reads like a blog post → break it into shorter thoughts
+- If it uses fancy vocabulary → replace with simple words
+
+GOOD EXAMPLE STYLE:
+"I started something new today.
+
+No plan.
+No clarity.
+
+Just trying.
+
+Sometimes that's enough.
+
+Let's see where this goes."
+
+BAD EXAMPLE (NEVER WRITE LIKE THIS):
+"Leveraging strategic insights to optimize startup growth in today's dynamic ecosystem..."
 
 Generate exactly ${postDates.length} LinkedIn posts. Separate each with "---POST_SEPARATOR---"`;
 
