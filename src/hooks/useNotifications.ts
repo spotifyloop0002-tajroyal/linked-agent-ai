@@ -96,8 +96,9 @@ export const useNotifications = () => {
     userId?: string
   ) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return false;
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) return false;
+      const user = session.user;
 
       const { error } = await supabase
         .from("notifications")
