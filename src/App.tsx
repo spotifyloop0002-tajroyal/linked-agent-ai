@@ -91,8 +91,6 @@ const PageViewTracker = () => {
 
 // Inner component that uses hooks
 const AppContent = () => {
-  const CookieConsentBanner = lazy(() => import("./components/CookieConsentBanner"));
-
   return (
     <>
       <Toaster />
