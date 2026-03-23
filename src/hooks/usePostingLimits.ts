@@ -29,21 +29,21 @@ interface PostingLimitsStatus {
   limitMessage: string | null;
 }
 
-export const usePostingLimits = () => {
+export const usePostingLimits = (autoCheck = true) => {
   const [status, setStatus] = useState<PostingLimitsStatus | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(autoCheck);
 
-  const checkLimits = useCallback(async () => {
+  const checkLimits = useCallback(async (): Promise<PostingLimitsStatus | null> => {
     try {
+      setIsLoading(true);
+
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) {
         setStatus(null);
-        setIsLoading(false);
-        return;
+        return null;
       }
       const user = session.user;
 
-      // Get user profile for plan
       const { data: profile } = await supabase
         .from('user_profiles_safe')
         .select('subscription_plan')
@@ -54,18 +54,15 @@ export const usePostingLimits = () => {
       const dailyLimit = DAILY_LIMITS[plan] || DAILY_LIMITS.free;
       const monthlyLimit = MONTHLY_LIMITS[plan] || MONTHLY_LIMITS.free;
 
-      // Get today's date range (start and end of day in UTC)
       const todayStart = new Date();
       todayStart.setHours(0, 0, 0, 0);
       const todayEnd = new Date();
       todayEnd.setHours(23, 59, 59, 999);
 
-      // Get month's date range
       const monthStart = new Date();
       monthStart.setDate(1);
       monthStart.setHours(0, 0, 0, 0);
 
-      // Count posts that are posted OR scheduled (pending/draft/posting) today
       const { count: postedToday } = await supabase
         .from('posts')
         .select('*', { count: 'exact', head: true })
@@ -73,12 +70,6 @@ export const usePostingLimits = () => {
         .in('status', ['posted', 'pending', 'posting', 'draft'])
         .gte('scheduled_time', todayStart.toISOString())
         .lte('scheduled_time', todayEnd.toISOString());
-
-      // Count ALL posts this month (posted + scheduled + draft) against monthly limit
-      // Use created_at as fallback when scheduled_time is null
-      const monthEnd = new Date();
-      monthEnd.setMonth(monthEnd.getMonth() + 1, 0);
-      monthEnd.setHours(23, 59, 59, 999);
 
       const { count: postsThisMonth } = await supabase
         .from('posts')
@@ -101,7 +92,7 @@ export const usePostingLimits = () => {
         limitMessage = `⚠️ Monthly limit reached. You can create ${monthlyLimit} posts/month on the ${plan} plan. Upgrade for more!`;
       }
 
-      setStatus({
+      const nextStatus: PostingLimitsStatus = {
         plan,
         postsToday: todayCount,
         postsThisMonth: monthCount,
@@ -111,20 +102,27 @@ export const usePostingLimits = () => {
         remainingToday: Math.max(0, dailyLimit - todayCount),
         remainingThisMonth: Math.max(0, monthlyLimit - monthCount),
         limitMessage,
-      });
+      };
+
+      setStatus(nextStatus);
+      return nextStatus;
     } catch (error) {
       console.error('Error checking posting limits:', error);
+      return null;
     } finally {
       setIsLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    checkLimits();
-  }, [checkLimits]);
+    if (autoCheck) {
+      checkLimits();
+    } else {
+      setIsLoading(false);
+    }
+  }, [autoCheck, checkLimits]);
 
   const incrementPostCount = useCallback(async () => {
-    // Refresh limits after creating a post
     await checkLimits();
   }, [checkLimits]);
 
@@ -133,7 +131,7 @@ export const usePostingLimits = () => {
     isLoading,
     checkLimits,
     incrementPostCount,
-    canPost: isLoading ? false : (status?.canPost ?? false),
+    canPost: autoCheck ? (isLoading ? false : (status?.canPost ?? false)) : (status?.canPost ?? true),
     limitMessage: status?.limitMessage ?? null,
   };
 };
