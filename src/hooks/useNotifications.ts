@@ -67,8 +67,9 @@ export const useNotifications = () => {
 
   const markAllAsRead = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) return;
+      const user = session.user;
 
       const unreadIds = notifications.filter(n => !n.is_read && n.user_id === user.id).map(n => n.id);
       
