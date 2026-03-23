@@ -311,6 +311,7 @@ const AnalyticsPage = () => {
     } catch (err) {
       console.warn("Bulk analytics request failed:", err);
     }
+    setIsSyncing(false);
   };
 
   const summaryCards = [
