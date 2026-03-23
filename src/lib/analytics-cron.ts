@@ -27,12 +27,13 @@ export async function scrapeAllPostAnalytics() {
   try {
     isScrapingInProgress = true;
     
-    // Get current user
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
+    // Use getSession (cached) instead of getUser (network call)
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) {
       console.log('📊 No authenticated user - skipping analytics scrape');
       return;
     }
+    const user = session.user;
 
     // Get all posts from last 30 days that have LinkedIn URLs
     const thirtyDaysAgo = new Date();
