@@ -9,50 +9,50 @@ const corsHeaders = {
 // Agent type configurations for post generation
 const AGENT_TYPE_PROMPTS: Record<string, { style: string; emoji: string; imageStyle: string; suggestedHour: number }> = {
   comedy: {
-    style: "Write funny, relatable LinkedIn posts. Use humor to make a point. Include a twist or punchline. Be genuinely funny like a comedian who works in tech. Self-deprecating humor works great.",
-    emoji: "Use humor emojis like 😂🤣💀🫠 sparingly for punchlines",
+    style: "Write relatable LinkedIn posts with a light, natural sense of humor. NOT stand-up comedy. Think: a founder sharing something funny that happened at work. Max 1-2 light humorous moments per post. If it sounds like a comedy script, rewrite it.",
+    emoji: "Use 1-2 humor emojis like 😂🫠 only at the funniest moment",
     imageStyle: "meme-style, cartoon, funny reaction images",
     suggestedHour: 21,
   },
   professional: {
-    style: "Write authoritative industry analysis posts. Share expert insights with data backing. Professional but not boring — be the smartest person in the room without being arrogant.",
-    emoji: "Minimal emojis. Use 📊📈💡 only at paragraph starts for scannability",
+    style: "Write clear, simple industry insights. Share one idea per post. No jargon. Write like you're explaining something to a smart friend, not presenting at a conference.",
+    emoji: "Minimal emojis. Use 📊💡 only if they genuinely add clarity",
     imageStyle: "minimal business graphics, clean professional design",
     suggestedHour: 10,
   },
   storytelling: {
-    style: "Write personal stories with a clear narrative arc: setup → conflict → resolution → lesson. Be vulnerable and authentic. Every story should teach something. Use 'I' and share real experiences.",
-    emoji: "Warm emojis like ❤️🙏✨🌟 to enhance emotional moments",
+    style: "Write short personal stories with a clear lesson. Setup → what happened → what you learned. Be real and vulnerable. Use 'I'. Keep it conversational like telling a friend over coffee.",
+    emoji: "1-2 warm emojis like ❤️🙏 only at emotional moments",
     imageStyle: "emotional visual scenes, cinematic moments",
     suggestedHour: 12,
   },
   "thought-leadership": {
-    style: "Write posts with strong, sometimes contrarian opinions. Challenge conventional thinking. Start with a bold claim, then back it up. Be the industry voice people follow for hot takes.",
-    emoji: "Strategic emojis like 🔥💡🎯⚡ for emphasis on key points",
+    style: "Share one strong opinion per post. State it simply. Back it up with a personal example or observation. Don't try to sound smart — just be honest about what you think.",
+    emoji: "1-2 strategic emojis like 🔥🎯 for emphasis",
     imageStyle: "bold typography graphics, quote cards, futuristic design",
     suggestedHour: 11,
   },
   motivational: {
-    style: "Write posts that motivate people to take action. Share lessons from failures and wins. Use power words. End with a call-to-action or challenge. Morning energy vibes.",
-    emoji: "Energetic emojis like 🚀💪🔥✨🌟 throughout for energy",
+    style: "Share a real lesson from your work or life. What went wrong? What did you learn? End with simple encouragement. NOT generic motivation poster content.",
+    emoji: "1-2 energetic emojis like 🚀💪 at key moments only",
     imageStyle: "sunrise/nature scenes, achievement moments, inspirational",
     suggestedHour: 8,
   },
   "data-analytics": {
-    style: "Write posts built around compelling statistics and data. Lead with a surprising number. Break down complex data into simple insights. Use bullet points for key stats.",
-    emoji: "Data emojis like 📊📈🔢📉 at key stat callouts",
+    style: "Lead with one surprising stat or number. Explain what it means in simple terms. Use short bullet points for key takeaways. Make data feel like a conversation, not a report.",
+    emoji: "1-2 data emojis like 📊📈 at key stat callouts only",
     imageStyle: "charts, graphs, data visualizations, infographic style",
     suggestedHour: 16,
   },
   creative: {
-    style: "Write posts about creative thinking, design principles, and innovation. Use vivid metaphors and visual language. Share creative processes and 'aha' moments.",
-    emoji: "Creative emojis like 🎨✨🎭🌈 to match artistic tone",
+    style: "Share how you think about creative problems. Use one simple metaphor. Talk about your process, not abstract ideas. Make it feel like a peek behind the curtain.",
+    emoji: "1-2 creative emojis like 🎨✨ only when natural",
     imageStyle: "AI illustrations, abstract art, creative designs",
     suggestedHour: 19,
   },
   news: {
-    style: "Write posts analyzing latest industry news and trends. Be the first to break down what a development means. Add your own take on why it matters.",
-    emoji: "News emojis like 🗞️📰🔔⚡ for urgency and relevance",
+    style: "Pick one piece of news. Explain what happened in 2 sentences. Then share YOUR take on why it matters. Keep it simple and opinionated. Don't just summarize — add your angle.",
+    emoji: "1-2 news emojis like 🗞️⚡ for urgency only",
     imageStyle: "headline-style news graphics, breaking news format",
     suggestedHour: 9,
   },
@@ -466,7 +466,7 @@ ${footerRule}
 
 FORMATTING RULES — CRITICAL (LinkedIn collapses single line breaks):
 - Use DOUBLE line breaks (\\n\\n) between EVERY paragraph
-- NEVER write large paragraphs. Keep them to 1-2 sentences max
+- NEVER write large paragraphs. Keep them to 1-2 sentences MAX
 - Each thought gets its OWN short paragraph with a blank line before and after
 - The post must look AIRY and EASY TO READ with lots of white space
 - Start with a strong hook (question, bold claim, surprising stat, or personal story opener)
@@ -474,14 +474,59 @@ FORMATTING RULES — CRITICAL (LinkedIn collapses single line breaks):
 - End with a clear takeaway, call-to-action, or thought-provoking question
 - ALWAYS end every post with #LinkedBot as the very last hashtag on its own line
 
-HUMANIZATION RULES:
-- Use contractions: "I'm" not "I am", "don't" not "do not", "can't" not "cannot"
-- Be conversational like talking to a smart colleague over coffee
-- BANNED WORDS/PHRASES: "Let me share", "In conclusion", "Furthermore", "Moreover", "leverage", "synergy", "optimize", "utilize", "In today's fast-paced world", "In this article", "As we all know"
-- Mix short punchy sentences with slightly longer ones for rhythm
-- Start with hooks, NEVER with generic intros
-- Use "you" and "your" to speak directly to the reader
-- Include a human touch: personal opinion, a lesson learned, or a relatable moment
+WRITING STYLE — THIS IS THE MOST IMPORTANT SECTION:
+
+LANGUAGE LEVEL: Write at a Grade 6-8 reading level. Use simple, everyday words.
+- Short sentences (5-12 words max per sentence)
+- One idea per sentence
+- One thought per paragraph (1-2 sentences)
+- Use "I", "you", "we" — first person always
+
+SOUND LIKE A REAL PERSON:
+- Write like you're texting a smart friend, not writing an essay
+- Use contractions: "I'm", "don't", "can't", "it's", "wasn't"
+- Be slightly imperfect — human is better than polished
+- Include pauses (line breaks between thoughts)
+- Share opinions, not lectures
+- It's OK to start sentences with "And", "But", "So"
+
+BANNED WORDS & PHRASES (NEVER USE THESE):
+"leverage", "optimize", "utilize", "synergy", "robust", "scalable", "strategic",
+"ecosystem", "paradigm", "holistic", "streamline", "innovative", "cutting-edge",
+"game-changer", "disruptive", "deep dive", "circle back", "move the needle",
+"Let me share", "In conclusion", "Furthermore", "Moreover", "Hence",
+"In today's fast-paced world", "In this article", "As we all know",
+"It goes without saying", "At the end of the day", "Having said that",
+"I'm thrilled to announce", "Excited to share", "Humbled and honored",
+"Without further ado", "Stay tuned", "Buckle up"
+
+HUMOR RULES:
+- Do NOT try to be funny in every line
+- Max 1-2 light, natural humor moments per post
+- If it sounds like a punchline or stand-up comedy → REMOVE IT
+- Humor should feel like a casual aside, not a joke
+
+QUALITY CHECK (DO THIS BEFORE OUTPUT):
+Ask yourself: "Would a real person actually post this on LinkedIn?"
+- If it sounds like AI wrote it → rewrite simpler
+- If every sentence is "perfect" → make it more casual
+- If it reads like a blog post → break it into shorter thoughts
+- If it uses fancy vocabulary → replace with simple words
+
+GOOD EXAMPLE STYLE:
+"I started something new today.
+
+No plan.
+No clarity.
+
+Just trying.
+
+Sometimes that's enough.
+
+Let's see where this goes."
+
+BAD EXAMPLE (NEVER WRITE LIKE THIS):
+"Leveraging strategic insights to optimize startup growth in today's dynamic ecosystem..."
 
 Generate exactly ${postDates.length} LinkedIn posts. Separate each with "---POST_SEPARATOR---"`;
 
