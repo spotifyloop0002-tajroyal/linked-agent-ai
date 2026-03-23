@@ -1,20 +1,30 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useCampaigns, CampaignFormData } from "@/hooks/useCampaigns";
-import { CampaignSetupForm } from "@/components/campaigns/CampaignSetupForm";
 import { CampaignList } from "@/components/campaigns/CampaignList";
-import { CampaignPreview } from "@/components/campaigns/CampaignPreview";
-import { WeeklyContentPlanner, WeeklyPlan } from "@/components/campaigns/WeeklyContentPlanner";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Plus, Bot, CalendarDays, Linkedin, AlertCircle } from "lucide-react";
+import { Plus, Bot, CalendarDays, Linkedin, AlertCircle, Loader2 } from "lucide-react";
 import { AGENT_TYPE_MAP } from "@/lib/agentTypes";
 import { toast } from "sonner";
 import { addDays } from "date-fns";
 import { useDashboardLinkedIn } from "@/contexts/DashboardContext";
 import { useNavigate } from "react-router-dom";
 import { usePostingLimits } from "@/hooks/usePostingLimits";
+import { supabase } from "@/integrations/supabase/client";
+
+const CampaignSetupForm = lazy(() => import("@/components/campaigns/CampaignSetupForm").then((module) => ({ default: module.CampaignSetupForm })));
+const CampaignPreview = lazy(() => import("@/components/campaigns/CampaignPreview").then((module) => ({ default: module.CampaignPreview })));
+const WeeklyContentPlanner = lazy(() => import("@/components/campaigns/WeeklyContentPlanner").then((module) => ({ default: module.WeeklyContentPlanner })));
+
+type WeeklyPlan = Record<string, string | null>;
+
+const DeferredSectionLoader = () => (
+  <div className="flex items-center justify-center py-6">
+    <Loader2 className="h-6 w-6 animate-spin text-primary" />
+  </div>
+);
 
 const CampaignsPage = () => {
   usePageTitle("Agent Campaigns");
@@ -56,9 +66,8 @@ const CampaignsPage = () => {
         // If user uploaded an image, apply it to all generated posts
         if (formData.imageOption === "upload" && formData.uploadedImageUrl) {
           try {
-            const { data: { session } } = await (await import("@/integrations/supabase/client")).supabase.auth.getSession();
+            const { data: { session } } = await supabase.auth.getSession();
             if (session) {
-              const { supabase } = await import("@/integrations/supabase/client");
               await supabase
                 .from("posts")
                 .update({ photo_url: formData.uploadedImageUrl })
@@ -177,31 +186,37 @@ const CampaignsPage = () => {
 
         {/* Weekly Content Planner */}
         {showPlanner && (
-          <WeeklyContentPlanner
-            onCreateCampaigns={handleCreateWeeklyCampaigns}
-            isCreating={isCreatingWeekly}
-          />
+          <Suspense fallback={<DeferredSectionLoader />}>
+            <WeeklyContentPlanner
+              onCreateCampaigns={handleCreateWeeklyCampaigns}
+              isCreating={isCreatingWeekly}
+            />
+          </Suspense>
         )}
 
         {/* Campaign Setup Modal */}
         {showSetup && (
-          <CampaignSetupForm
-            onSubmit={handleCreate}
-            onCancel={() => setShowSetup(false)}
-            isGenerating={isGenerating || isCreating}
-          />
+          <Suspense fallback={<DeferredSectionLoader />}>
+            <CampaignSetupForm
+              onSubmit={handleCreate}
+              onCancel={() => setShowSetup(false)}
+              isGenerating={isGenerating || isCreating}
+            />
+          </Suspense>
         )}
 
         {/* Campaign Preview */}
         {previewCampaignId && (
-          <CampaignPreview
-            campaignId={previewCampaignId}
-            onClose={() => setPreviewCampaignId(null)}
-            onApproveAll={() => approveCampaignPosts(previewCampaignId)}
-            onRegenerate={async () => {
-              await generateCampaignPosts(previewCampaignId);
-            }}
-          />
+          <Suspense fallback={<DeferredSectionLoader />}>
+            <CampaignPreview
+              campaignId={previewCampaignId}
+              onClose={() => setPreviewCampaignId(null)}
+              onApproveAll={() => approveCampaignPosts(previewCampaignId)}
+              onRegenerate={async () => {
+                await generateCampaignPosts(previewCampaignId);
+              }}
+            />
+          </Suspense>
         )}
 
         {/* Campaign List */}

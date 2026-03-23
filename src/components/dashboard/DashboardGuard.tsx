@@ -1,14 +1,12 @@
-import { useState, useEffect, useRef, useMemo, lazy, Suspense } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate, Outlet } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useUserProfile, type UserProfile } from "@/hooks/useUserProfile";
 import { useLinkedInAPI } from "@/hooks/useLinkedInAPI";
 import { DashboardContext } from "@/contexts/DashboardContext";
-import { startAnalyticsCron, stopAnalyticsCron } from "@/lib/analytics-cron";
 import { useTimezoneSync } from "@/hooks/useTimezoneSync";
+import { SupportChatLauncher } from "@/components/support/SupportChatLauncher";
 import { Loader2 } from "lucide-react";
-
-const LiveChatWidget = lazy(() => import("@/components/support/LiveChatWidget"));
 
 /**
  * DashboardGuard v5: Optimized context stability.
@@ -91,14 +89,6 @@ const DashboardGuard = () => {
         setAuthorized(true);
         setAuthChecked(true);
 
-        if (!document.querySelector('script[src="/extension-bridge.js"]')) {
-          const s = document.createElement('script');
-          s.src = '/extension-bridge.js';
-          s.defer = true;
-          document.body.appendChild(s);
-        }
-
-        startAnalyticsCron();
       } catch (err) {
         console.error("❌ Auth check failed:", err);
         checkedRef.current = true;
@@ -112,7 +102,6 @@ const DashboardGuard = () => {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_OUT") {
-        stopAnalyticsCron();
         setAuthorized(false);
         setAuthChecked(false);
         setCurrentUserId(null);
@@ -137,12 +126,6 @@ const DashboardGuard = () => {
 
     return () => subscription.unsubscribe();
   }, [navigate, currentUserId, profileHook.fetchProfile]);
-
-  useEffect(() => {
-    return () => {
-      stopAnalyticsCron();
-    };
-  }, []);
 
   const contextValue = useMemo(() => ({
     profile: profileHook.profile ?? resolvedProfile,
@@ -196,9 +179,7 @@ const DashboardGuard = () => {
   return (
     <DashboardContext.Provider value={contextValue}>
       <Outlet />
-      <Suspense fallback={null}>
-        <LiveChatWidget />
-      </Suspense>
+      <SupportChatLauncher />
     </DashboardContext.Provider>
   );
 };

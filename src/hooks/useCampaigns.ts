@@ -56,6 +56,34 @@ export interface CampaignFormData {
   campaignName?: string;
 }
 
+const CAMPAIGN_LIST_SELECT = [
+  "id",
+  "user_id",
+  "topic",
+  "tone_type",
+  "duration_type",
+  "start_date",
+  "end_date",
+  "post_count",
+  "posts_per_day",
+  "research_mode",
+  "auto_best_time",
+  "auto_approve",
+  "status",
+  "created_at",
+  "updated_at",
+  "content_length",
+  "emoji_level",
+  "hashtag_mode",
+  "fixed_hashtags",
+  "footer_text",
+  "image_option",
+  "posting_time",
+  "agent_type",
+  "posting_days",
+  "campaign_name",
+].join(", ");
+
 export function useCampaigns() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -78,7 +106,7 @@ export function useCampaigns() {
 
       const { data, error } = await supabase
         .from("campaigns")
-        .select("*")
+        .select(CAMPAIGN_LIST_SELECT)
         .eq("user_id", session.user.id)
         .order("created_at", { ascending: false });
 
