@@ -2,7 +2,6 @@ import { useState, useEffect, useMemo } from "react";
 // framer-motion removed — using CSS animations for faster page load
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useLinkedBotExtension } from "@/hooks/useLinkedBotExtension";
-import { useLinkedInAnalytics } from "@/hooks/useLinkedInAnalytics";
 import { useDashboardProfile } from "@/contexts/DashboardContext";
 import { useToast } from "@/hooks/use-toast";
 import { usePageTitle } from "@/hooks/usePageTitle";
