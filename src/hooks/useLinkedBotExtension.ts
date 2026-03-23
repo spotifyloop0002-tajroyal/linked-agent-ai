@@ -32,6 +32,15 @@ export function useLinkedBotExtension() {
   
   const messageHandlerRef = useRef<((event: MessageEvent) => void) | null>(null);
 
+  useEffect(() => {
+    if (document.querySelector('script[src="/extension-bridge.js"]')) return;
+
+    const script = document.createElement('script');
+    script.src = '/extension-bridge.js';
+    script.defer = true;
+    document.body.appendChild(script);
+  }, []);
+
   // ============================================================================
   // HANDLE EXTENSION MESSAGES
   // ============================================================================
