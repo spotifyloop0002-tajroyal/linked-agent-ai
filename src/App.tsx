@@ -8,9 +8,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 // analytics-cron moved to DashboardGuard to avoid running on every page
 import { Loader2 } from "lucide-react";
 
-// Eagerly load critical pages
-import Landing from "./pages/Landing";
-import CanonicalRedirect from "./components/CanonicalRedirect";
+// Lazy load pages by route so dashboard pages don't download landing-page code
+const Landing = lazy(() => import("./pages/Landing"));
 const Login = lazy(() => import("./pages/Login"));
 const Signup = lazy(() => import("./pages/Signup"));
 
