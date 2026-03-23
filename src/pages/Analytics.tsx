@@ -256,6 +256,7 @@ const AnalyticsPage = () => {
       return;
     }
 
+    setIsSyncing(true);
     toast({ title: "Syncing analytics", description: "Scraping your LinkedIn analytics..." });
 
     // Try window.LinkedBotExtension API first, fallback to postMessage
@@ -268,8 +269,16 @@ const AnalyticsPage = () => {
         const result = await ext.scrapeAnalytics();
         if (!result?.success) throw new Error(result?.error || "Failed to scrape");
         const data = result.data || {};
-        await syncAnalytics({ profile: data.profile || null, posts: data.posts || [] });
+        // Save analytics via edge function
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          await supabase.functions.invoke('save-analytics', {
+            body: { profile: data.profile || null, posts: data.posts || [], scrapedAt: new Date().toISOString() },
+            headers: { Authorization: `Bearer ${session.access_token}` },
+          });
+        }
         await fetchPosts();
+        setIsSyncing(false);
         return;
       } catch (err) {
         console.warn("Direct API failed, trying postMessage:", err);
