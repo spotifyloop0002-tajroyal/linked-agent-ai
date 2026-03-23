@@ -60,6 +60,7 @@ const Blog = lazy(() => import("./pages/resources/Blog"));
 const HelpCenter = lazy(() => import("./pages/resources/HelpCenter"));
 const Community = lazy(() => import("./pages/resources/Community"));
 const API = lazy(() => import("./pages/product/API"));
+const CookieConsentBanner = lazy(() => import("./components/CookieConsentBanner"));
 
 // Lazy-loaded AdminRoute wrapper
 const AdminRoute = lazy(() => import("./components/admin/AdminRoute"));
@@ -90,8 +91,6 @@ const PageViewTracker = () => {
 
 // Inner component that uses hooks
 const AppContent = () => {
-  const CookieConsentBanner = lazy(() => import("./components/CookieConsentBanner"));
-
   return (
     <>
       <Toaster />
