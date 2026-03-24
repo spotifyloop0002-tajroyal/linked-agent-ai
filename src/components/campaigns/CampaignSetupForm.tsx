@@ -127,6 +127,7 @@ export function CampaignSetupForm({ onSubmit, onCancel, isGenerating }: Campaign
   const [imageOption, setImageOption] = useState("none");
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [isRedesigning, setIsRedesigning] = useState(false);
   const [researchMode, setResearchMode] = useState(false);
   const [autoBestTime, setAutoBestTime] = useState(true);
   const [autoApprove, setAutoApprove] = useState(false);
