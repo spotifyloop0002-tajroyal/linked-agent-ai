@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { CampaignFormData } from "@/hooks/useCampaigns";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,7 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Loader2, Search, Sparkles, X, Type, Smile, Hash, Image, FileSignature, ArrowRight, ArrowLeft, Upload, Plus } from "lucide-react";
+import { CalendarIcon, Loader2, Search, Sparkles, X, Type, Smile, Hash, Image, FileSignature, ArrowRight, ArrowLeft, Upload, Plus, AlertTriangle } from "lucide-react";
 import { format, addDays } from "date-fns";
 import { cn } from "@/lib/utils";
 import { AGENT_TYPES, POSTING_DAYS, AGENT_TYPE_MAP } from "@/lib/agentTypes";
@@ -53,6 +53,26 @@ export function CampaignSetupForm({ onSubmit, onCancel, isGenerating }: Campaign
   const [step, setStep] = useState(1);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Subscription expiry date cap
+  const [planExpiryDate, setPlanExpiryDate] = useState<Date | null>(null);
+  const [planName, setPlanName] = useState<string>("free");
+
+  useEffect(() => {
+    (async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      const { data } = await supabase
+        .from("user_profiles_safe")
+        .select("subscription_plan, subscription_expires_at")
+        .eq("user_id", session.user.id)
+        .maybeSingle();
+      if (data?.subscription_expires_at) {
+        setPlanExpiryDate(new Date(data.subscription_expires_at));
+      }
+      setPlanName(data?.subscription_plan || "free");
+    })();
+  }, []);
+
   // Step 1: Agent Type
   const [agentType, setAgentType] = useState<string | null>(null);
   const [campaignName, setCampaignName] = useState("");
@@ -65,6 +85,13 @@ export function CampaignSetupForm({ onSubmit, onCancel, isGenerating }: Campaign
   const [endDate, setEndDate] = useState<Date>(addDays(new Date(), 27));
   const [postingDays, setPostingDays] = useState<string[]>(["monday", "wednesday", "friday"]);
   const [postsPerDay, setPostsPerDay] = useState(1);
+
+  // When plan expiry loads, cap the default end date
+  useEffect(() => {
+    if (planExpiryDate && endDate > planExpiryDate) {
+      setEndDate(planExpiryDate);
+    }
+  }, [planExpiryDate]);
 
   // AI topic suggestions
   const [suggestedTopics, setSuggestedTopics] = useState<string[]>([]);
@@ -585,10 +612,29 @@ export function CampaignSetupForm({ onSubmit, onCancel, isGenerating }: Campaign
                       <Calendar
                         mode="single"
                         selected={endDate}
-                        onSelect={(d) => d && setEndDate(d)}
-                        disabled={(d) => d <= startDate}
+                        onSelect={(d) => {
+                          if (!d) return;
+                          if (planExpiryDate && d > planExpiryDate) {
+                            toast.error(`Your ${planName} plan ends on ${format(planExpiryDate, "PPP")}. Upgrade to extend.`);
+                            return;
+                          }
+                          setEndDate(d);
+                        }}
+                        disabled={(d) => {
+                          if (d <= startDate) return true;
+                          if (planExpiryDate && d > planExpiryDate) return true;
+                          return false;
+                        }}
                         className="p-3 pointer-events-auto"
                       />
+                      {planExpiryDate && (
+                        <div className="px-3 pb-3">
+                          <p className="text-xs text-amber-600 flex items-center gap-1">
+                            <AlertTriangle className="w-3 h-3" />
+                            Plan ends {format(planExpiryDate, "PPP")}
+                          </p>
+                        </div>
+                      )}
                     </PopoverContent>
                   </Popover>
                 </div>
