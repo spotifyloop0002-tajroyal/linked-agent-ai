@@ -53,6 +53,26 @@ export function CampaignSetupForm({ onSubmit, onCancel, isGenerating }: Campaign
   const [step, setStep] = useState(1);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Subscription expiry date cap
+  const [planExpiryDate, setPlanExpiryDate] = useState<Date | null>(null);
+  const [planName, setPlanName] = useState<string>("free");
+
+  useEffect(() => {
+    (async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      const { data } = await supabase
+        .from("user_profiles_safe")
+        .select("subscription_plan, subscription_expires_at")
+        .eq("user_id", session.user.id)
+        .maybeSingle();
+      if (data?.subscription_expires_at) {
+        setPlanExpiryDate(new Date(data.subscription_expires_at));
+      }
+      setPlanName(data?.subscription_plan || "free");
+    })();
+  }, []);
+
   // Step 1: Agent Type
   const [agentType, setAgentType] = useState<string | null>(null);
   const [campaignName, setCampaignName] = useState("");
@@ -65,6 +85,13 @@ export function CampaignSetupForm({ onSubmit, onCancel, isGenerating }: Campaign
   const [endDate, setEndDate] = useState<Date>(addDays(new Date(), 27));
   const [postingDays, setPostingDays] = useState<string[]>(["monday", "wednesday", "friday"]);
   const [postsPerDay, setPostsPerDay] = useState(1);
+
+  // When plan expiry loads, cap the default end date
+  useEffect(() => {
+    if (planExpiryDate && endDate > planExpiryDate) {
+      setEndDate(planExpiryDate);
+    }
+  }, [planExpiryDate]);
 
   // AI topic suggestions
   const [suggestedTopics, setSuggestedTopics] = useState<string[]>([]);
