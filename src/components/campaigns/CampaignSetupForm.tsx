@@ -163,6 +163,11 @@ export function CampaignSetupForm({ onSubmit, onCancel, isGenerating }: Campaign
     return count;
   };
 
+  const getUserId = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    return session?.user?.id;
+  };
+
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -178,7 +183,9 @@ export function CampaignSetupForm({ onSubmit, onCancel, isGenerating }: Campaign
 
     setIsUploading(true);
     try {
-      const fileName = `campaign-upload-${Date.now()}-${file.name}`;
+      const userId = await getUserId();
+      if (!userId) throw new Error("Not authenticated");
+      const fileName = `${userId}/campaign-upload-${Date.now()}-${file.name}`;
       const { error: uploadError } = await supabase.storage
         .from("post-images")
         .upload(fileName, file, { contentType: file.type, upsert: true });
@@ -193,6 +200,32 @@ export function CampaignSetupForm({ onSubmit, onCancel, isGenerating }: Campaign
       console.error(err);
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  const handleRedesignWithAI = async () => {
+    if (!uploadedImageUrl) return;
+    setIsRedesigning(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-post-image", {
+        body: {
+          postContent: topic || "Professional LinkedIn post",
+          mode: "redesign",
+          originalImageUrl: uploadedImageUrl,
+        },
+      });
+      if (error) throw error;
+      if (data?.imageUrl) {
+        setUploadedImageUrl(data.imageUrl);
+        toast.success("Image redesigned with AI!");
+      } else {
+        throw new Error("No image returned");
+      }
+    } catch (err) {
+      toast.error("Failed to redesign image");
+      console.error(err);
+    } finally {
+      setIsRedesigning(false);
     }
   };
 
