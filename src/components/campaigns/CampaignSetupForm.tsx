@@ -612,10 +612,29 @@ export function CampaignSetupForm({ onSubmit, onCancel, isGenerating }: Campaign
                       <Calendar
                         mode="single"
                         selected={endDate}
-                        onSelect={(d) => d && setEndDate(d)}
-                        disabled={(d) => d <= startDate}
+                        onSelect={(d) => {
+                          if (!d) return;
+                          if (planExpiryDate && d > planExpiryDate) {
+                            toast.error(`Your ${planName} plan ends on ${format(planExpiryDate, "PPP")}. Upgrade to extend.`);
+                            return;
+                          }
+                          setEndDate(d);
+                        }}
+                        disabled={(d) => {
+                          if (d <= startDate) return true;
+                          if (planExpiryDate && d > planExpiryDate) return true;
+                          return false;
+                        }}
                         className="p-3 pointer-events-auto"
                       />
+                      {planExpiryDate && (
+                        <div className="px-3 pb-3">
+                          <p className="text-xs text-amber-600 flex items-center gap-1">
+                            <AlertTriangle className="w-3 h-3" />
+                            Plan ends {format(planExpiryDate, "PPP")}
+                          </p>
+                        </div>
+                      )}
                     </PopoverContent>
                   </Popover>
                 </div>
