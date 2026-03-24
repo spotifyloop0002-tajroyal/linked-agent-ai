@@ -839,23 +839,40 @@ export function CampaignSetupForm({ onSubmit, onCancel, isGenerating }: Campaign
                     className="hidden"
                   />
                   {uploadedImageUrl ? (
-                    <div className="relative">
-                      <img
-                        src={uploadedImageUrl}
-                        alt="Uploaded"
-                        className="w-full max-h-48 object-cover rounded-lg border border-border"
-                      />
+                    <div className="space-y-3">
+                      <div className="relative">
+                        <img
+                          src={uploadedImageUrl}
+                          alt="Uploaded"
+                          className="w-full max-h-48 object-cover rounded-lg border border-border"
+                        />
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="icon"
+                          className="absolute top-2 right-2 h-7 w-7"
+                          onClick={() => {
+                            setUploadedImageUrl(null);
+                            if (fileInputRef.current) fileInputRef.current.value = "";
+                          }}
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
+                      {/* Redesign with AI button */}
                       <Button
                         type="button"
-                        variant="destructive"
-                        size="icon"
-                        className="absolute top-2 right-2 h-7 w-7"
-                        onClick={() => {
-                          setUploadedImageUrl(null);
-                          if (fileInputRef.current) fileInputRef.current.value = "";
-                        }}
+                        variant="outline"
+                        className="w-full gap-2 border-primary/30 text-primary hover:bg-primary/5"
+                        onClick={handleRedesignWithAI}
+                        disabled={isRedesigning}
                       >
-                        <X className="w-4 h-4" />
+                        {isRedesigning ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Wand2 className="w-4 h-4" />
+                        )}
+                        {isRedesigning ? "Redesigning..." : "Redesign with AI"}
                       </Button>
                     </div>
                   ) : (
