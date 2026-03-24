@@ -7,7 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Loader2, Search, Sparkles, X, Type, Smile, Hash, Image, FileSignature, ArrowRight, ArrowLeft, Upload, Plus, AlertTriangle } from "lucide-react";
+import { CalendarIcon, Loader2, Search, Sparkles, X, Type, Smile, Hash, Image, FileSignature, ArrowRight, ArrowLeft, Upload, Plus, AlertTriangle, Wand2 } from "lucide-react";
 import { format, addDays } from "date-fns";
 import { cn } from "@/lib/utils";
 import { AGENT_TYPES, POSTING_DAYS, AGENT_TYPE_MAP } from "@/lib/agentTypes";
@@ -127,6 +127,7 @@ export function CampaignSetupForm({ onSubmit, onCancel, isGenerating }: Campaign
   const [imageOption, setImageOption] = useState("none");
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [isRedesigning, setIsRedesigning] = useState(false);
   const [researchMode, setResearchMode] = useState(false);
   const [autoBestTime, setAutoBestTime] = useState(true);
   const [autoApprove, setAutoApprove] = useState(false);
@@ -162,6 +163,11 @@ export function CampaignSetupForm({ onSubmit, onCancel, isGenerating }: Campaign
     return count;
   };
 
+  const getUserId = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    return session?.user?.id;
+  };
+
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -177,7 +183,9 @@ export function CampaignSetupForm({ onSubmit, onCancel, isGenerating }: Campaign
 
     setIsUploading(true);
     try {
-      const fileName = `campaign-upload-${Date.now()}-${file.name}`;
+      const userId = await getUserId();
+      if (!userId) throw new Error("Not authenticated");
+      const fileName = `${userId}/campaign-upload-${Date.now()}-${file.name}`;
       const { error: uploadError } = await supabase.storage
         .from("post-images")
         .upload(fileName, file, { contentType: file.type, upsert: true });
@@ -192,6 +200,32 @@ export function CampaignSetupForm({ onSubmit, onCancel, isGenerating }: Campaign
       console.error(err);
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  const handleRedesignWithAI = async () => {
+    if (!uploadedImageUrl) return;
+    setIsRedesigning(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-post-image", {
+        body: {
+          postContent: topic || "Professional LinkedIn post",
+          mode: "redesign",
+          originalImageUrl: uploadedImageUrl,
+        },
+      });
+      if (error) throw error;
+      if (data?.imageUrl) {
+        setUploadedImageUrl(data.imageUrl);
+        toast.success("Image redesigned with AI!");
+      } else {
+        throw new Error("No image returned");
+      }
+    } catch (err) {
+      toast.error("Failed to redesign image");
+      console.error(err);
+    } finally {
+      setIsRedesigning(false);
     }
   };
 
@@ -805,23 +839,40 @@ export function CampaignSetupForm({ onSubmit, onCancel, isGenerating }: Campaign
                     className="hidden"
                   />
                   {uploadedImageUrl ? (
-                    <div className="relative">
-                      <img
-                        src={uploadedImageUrl}
-                        alt="Uploaded"
-                        className="w-full max-h-48 object-cover rounded-lg border border-border"
-                      />
+                    <div className="space-y-3">
+                      <div className="relative">
+                        <img
+                          src={uploadedImageUrl}
+                          alt="Uploaded"
+                          className="w-full max-h-48 object-cover rounded-lg border border-border"
+                        />
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="icon"
+                          className="absolute top-2 right-2 h-7 w-7"
+                          onClick={() => {
+                            setUploadedImageUrl(null);
+                            if (fileInputRef.current) fileInputRef.current.value = "";
+                          }}
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
+                      {/* Redesign with AI button */}
                       <Button
                         type="button"
-                        variant="destructive"
-                        size="icon"
-                        className="absolute top-2 right-2 h-7 w-7"
-                        onClick={() => {
-                          setUploadedImageUrl(null);
-                          if (fileInputRef.current) fileInputRef.current.value = "";
-                        }}
+                        variant="outline"
+                        className="w-full gap-2 border-primary/30 text-primary hover:bg-primary/5"
+                        onClick={handleRedesignWithAI}
+                        disabled={isRedesigning}
                       >
-                        <X className="w-4 h-4" />
+                        {isRedesigning ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Wand2 className="w-4 h-4" />
+                        )}
+                        {isRedesigning ? "Redesigning..." : "Redesign with AI"}
                       </Button>
                     </div>
                   ) : (
