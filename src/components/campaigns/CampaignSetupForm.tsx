@@ -67,7 +67,9 @@ export function CampaignSetupForm({ onSubmit, onCancel, isGenerating }: Campaign
         .eq("user_id", session.user.id)
         .maybeSingle();
       if (data?.subscription_expires_at) {
-        setPlanExpiryDate(new Date(data.subscription_expires_at));
+        const expiry = new Date(data.subscription_expires_at);
+        expiry.setHours(23, 59, 59, 999);
+        setPlanExpiryDate(expiry);
       }
       setPlanName(data?.subscription_plan || "free");
     })();
