@@ -139,20 +139,81 @@ serve(async (req) => {
   }
 
   try {
-    const { prompt, postContent, mode = 'concept' } = await req.json() as {
+    const { prompt, postContent, mode = 'concept', originalImageUrl } = await req.json() as {
       prompt?: string;
       postContent: string;
-      mode?: 'concept' | 'text-card';
+      mode?: 'concept' | 'text-card' | 'redesign';
+      originalImageUrl?: string;
     };
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     const HUGGINGFACE_API_KEY = Deno.env.get("HUGGINGFACE_API_KEY");
     const content = postContent || prompt || '';
 
+    let imageUrl: string | null = null;
+
+    // ─── REDESIGN MODE: Edit uploaded image with AI ───
+    if (mode === 'redesign' && originalImageUrl && LOVABLE_API_KEY) {
+      console.log("🎨 Redesigning uploaded image with AI...");
+      const redesignPrompt = `Redesign this image for a professional LinkedIn post.
+
+GOAL: Transform into a clean, modern, high-performing LinkedIn visual.
+
+RULES:
+- Keep text short (max 10-15 words), focus on main message
+- Minimal layout with large bold readable text
+- High contrast, mobile-friendly
+- Clean spacing and strong visual hierarchy
+- Remove clutter and unnecessary elements
+- Do NOT keep original messy layout
+- Make it look like a high-quality design studio piece
+
+STYLE: Clean, modern, professional — suitable for LinkedIn feed. 1:1 aspect ratio.`;
+
+      try {
+        const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${LOVABLE_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model: "google/gemini-2.5-flash-image",
+            messages: [{
+              role: "user",
+              content: [
+                { type: "text", text: redesignPrompt },
+                { type: "image_url", image_url: { url: originalImageUrl } }
+              ]
+            }],
+            modalities: ["image", "text"],
+          }),
+        });
+
+        if (!response.ok) {
+          console.error("❌ Redesign error:", response.status, await response.text());
+        } else {
+          const data = await response.json();
+          const base64Url = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+          if (base64Url) {
+            imageUrl = await uploadToStorage(base64Url);
+            console.log("✅ Redesigned image ready:", imageUrl?.substring(0, 80));
+          }
+        }
+      } catch (err) {
+        console.error("❌ Redesign failed:", err);
+      }
+
+      if (!imageUrl) throw new Error("Failed to redesign image");
+
+      return new Response(JSON.stringify({ success: true, imageUrl, message: "Image redesigned!" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // ─── GENERATE MODE: Create new image from content ───
     const imagePrompt = buildImagePrompt(content, mode);
     console.log("📝 Mode:", mode, "| Prompt preview:", imagePrompt.substring(0, 150));
-
-    let imageUrl: string | null = null;
 
     // Try Lovable AI Gateway first
     if (LOVABLE_API_KEY) {
