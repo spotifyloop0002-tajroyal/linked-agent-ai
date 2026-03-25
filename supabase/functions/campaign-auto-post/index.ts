@@ -154,20 +154,35 @@ serve(async (req) => {
         // Update status to 'posting'
         await supabase.from("posts").update({ status: "posting", updated_at: now }).eq("id", post.id);
 
-        // Fetch user's LinkedIn credentials
+        // Fetch user's LinkedIn credentials and profile info
         const { data: profile } = await supabase
           .from("user_profiles")
-          .select("linkedin_access_token, linkedin_id")
+          .select("linkedin_access_token, linkedin_id, name, email")
           .eq("user_id", post.user_id)
           .single();
 
         if (!profile?.linkedin_access_token || !profile?.linkedin_id) {
-          // Mark as failed
+          const errMsg = "LinkedIn not connected. Please connect your LinkedIn account.";
           await supabase.from("posts").update({
             status: "failed",
-            last_error: "LinkedIn not connected. Please connect your LinkedIn account.",
+            last_error: errMsg,
             updated_at: new Date().toISOString(),
           }).eq("id", post.id);
+
+          // Notify user in-app + email
+          await supabase.from("notifications").insert({
+            user_id: post.user_id,
+            title: "❌ Post failed – LinkedIn not connected",
+            message: `Your post could not be published: ${errMsg}`,
+            type: "post_failed",
+          });
+
+          if (brevoApiKey && profile?.email) {
+            await sendPostFailureEmail(brevoApiKey, { email: profile.email, name: profile.name || "User" }, post.content, post.id, post.scheduled_time, errMsg, false);
+          }
+          if (brevoApiKey) {
+            await sendPostFailureEmail(brevoApiKey, { email: ADMIN_EMAIL, name: profile?.name || "Unknown" }, post.content, post.id, post.scheduled_time, errMsg, true);
+          }
 
           results.push({ postId: post.id, status: "failed", reason: "No LinkedIn credentials" });
           continue;
