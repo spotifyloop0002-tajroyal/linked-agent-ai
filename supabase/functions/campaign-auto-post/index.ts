@@ -284,7 +284,30 @@ serve(async (req) => {
           last_error: errStr,
           updated_at: new Date().toISOString(),
         }).eq("id", post.id);
-        results.push({ postId: post.id, status: "failed", reason: String(postError) });
+
+        // Send failure email for exceptions
+        // Fetch profile if not already fetched
+        const { data: catchProfile } = await supabase
+          .from("user_profiles")
+          .select("name, email")
+          .eq("user_id", post.user_id)
+          .single();
+
+        await supabase.from("notifications").insert({
+          user_id: post.user_id,
+          title: "❌ Post failed",
+          message: `Your post encountered an error: ${errStr.substring(0, 100)}`,
+          type: "post_failed",
+        });
+
+        if (brevoApiKey && catchProfile?.email) {
+          await sendPostFailureEmail(brevoApiKey, { email: catchProfile.email, name: catchProfile.name || "User" }, post.content, post.id, post.scheduled_time, errStr, false);
+        }
+        if (brevoApiKey) {
+          await sendPostFailureEmail(brevoApiKey, { email: ADMIN_EMAIL, name: catchProfile?.name || "Unknown" }, post.content, post.id, post.scheduled_time, errStr, true);
+        }
+
+        results.push({ postId: post.id, status: "failed", reason: errStr });
       }
     }
 
