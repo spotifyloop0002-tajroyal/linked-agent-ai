@@ -6,6 +6,61 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const ADMIN_EMAIL = "topcarszone@gmail.com";
+
+async function sendPostFailureEmail(
+  brevoApiKey: string,
+  to: { email: string; name: string },
+  postContent: string,
+  postId: string,
+  scheduledTime: string,
+  errorMsg: string,
+  isAdmin: boolean
+) {
+  const formattedTime = new Date(scheduledTime).toLocaleString("en-IN", {
+    timeZone: "Asia/Kolkata",
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
+  const preview = postContent.length > 150 ? postContent.substring(0, 150) + "..." : postContent;
+  const subject = isAdmin
+    ? `🚨 Post Failed for ${to.name} – ${formattedTime}`
+    : `❌ Your LinkedIn post failed to publish`;
+
+  try {
+    const res = await fetch("https://api.brevo.com/v3/smtp/email", {
+      method: "POST",
+      headers: { "api-key": brevoApiKey, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        sender: { name: "LinkedBot", email: "team@linkedbot.online" },
+        to: [{ email: to.email, name: to.name }],
+        subject,
+        htmlContent: `
+          <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:600px;margin:0 auto;padding:24px;">
+            <div style="background:linear-gradient(135deg,#DC2626,#B91C1C);padding:24px;border-radius:12px 12px 0 0;color:white;">
+              <h1 style="margin:0;font-size:20px;">❌ Post Failed to Publish</h1>
+            </div>
+            <div style="background:#fff;border:1px solid #e5e7eb;border-top:none;padding:24px;border-radius:0 0 12px 12px;">
+              <p style="font-size:14px;color:#6b7280;">Scheduled: <strong>${formattedTime}</strong></p>
+              ${isAdmin ? `<p style="font-size:14px;color:#6b7280;">User: ${to.name} (${to.email})</p>` : ""}
+              <div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:12px;margin:16px 0;">
+                <p style="font-size:14px;color:#991B1B;margin:0;"><strong>Error:</strong> ${errorMsg}</p>
+              </div>
+              <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:16px;margin:16px 0;white-space:pre-wrap;font-size:14px;color:#374151;">${preview}</div>
+              ${isAdmin ? `<p style="font-size:11px;color:#9ca3af;font-family:monospace;">Post ID: ${postId}</p>` : ""}
+              <p style="font-size:13px;color:#6b7280;text-align:center;margin-top:16px;">${isAdmin ? "Please investigate." : "Log in to LinkedBot to retry."}</p>
+            </div>
+          </div>`,
+      }),
+    });
+    const text = await res.text();
+    if (!res.ok) console.error(`[EMAIL] Failed:`, text);
+    else console.log(`[EMAIL] ✅ Failure email sent to ${to.email}`);
+  } catch (err) {
+    console.error(`[EMAIL] Exception:`, err);
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -14,6 +69,7 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const brevoApiKey = Deno.env.get("BREVO_API_KEY") || "";
     const supabase = createClient(supabaseUrl, serviceKey);
 
     const now = new Date().toISOString();
@@ -98,20 +154,35 @@ serve(async (req) => {
         // Update status to 'posting'
         await supabase.from("posts").update({ status: "posting", updated_at: now }).eq("id", post.id);
 
-        // Fetch user's LinkedIn credentials
+        // Fetch user's LinkedIn credentials and profile info
         const { data: profile } = await supabase
           .from("user_profiles")
-          .select("linkedin_access_token, linkedin_id")
+          .select("linkedin_access_token, linkedin_id, name, email")
           .eq("user_id", post.user_id)
           .single();
 
         if (!profile?.linkedin_access_token || !profile?.linkedin_id) {
-          // Mark as failed
+          const errMsg = "LinkedIn not connected. Please connect your LinkedIn account.";
           await supabase.from("posts").update({
             status: "failed",
-            last_error: "LinkedIn not connected. Please connect your LinkedIn account.",
+            last_error: errMsg,
             updated_at: new Date().toISOString(),
           }).eq("id", post.id);
+
+          // Notify user in-app + email
+          await supabase.from("notifications").insert({
+            user_id: post.user_id,
+            title: "❌ Post failed – LinkedIn not connected",
+            message: `Your post could not be published: ${errMsg}`,
+            type: "post_failed",
+          });
+
+          if (brevoApiKey && profile?.email) {
+            await sendPostFailureEmail(brevoApiKey, { email: profile.email, name: profile.name || "User" }, post.content, post.id, post.scheduled_time, errMsg, false);
+          }
+          if (brevoApiKey) {
+            await sendPostFailureEmail(brevoApiKey, { email: ADMIN_EMAIL, name: profile?.name || "Unknown" }, post.content, post.id, post.scheduled_time, errMsg, true);
+          }
 
           results.push({ postId: post.id, status: "failed", reason: "No LinkedIn credentials" });
           continue;
@@ -178,14 +249,15 @@ serve(async (req) => {
             results.push({ postId: post.id, status: "retrying", attempt: retryCount });
           } else {
             // Max retries reached
+            const finalError = linkedinResult.error || "LinkedIn posting failed after 3 attempts";
             await supabase.from("posts").update({
               status: "failed",
               retry_count: retryCount,
-              last_error: linkedinResult.error || "LinkedIn posting failed after 3 attempts",
+              last_error: finalError,
               updated_at: new Date().toISOString(),
             }).eq("id", post.id);
 
-            // Alert user
+            // Alert user in-app
             await supabase.from("notifications").insert({
               user_id: post.user_id,
               title: "❌ Post failed",
@@ -193,17 +265,49 @@ serve(async (req) => {
               type: "post_failed",
             });
 
+            // Email to user and admin
+            if (brevoApiKey && profile?.email) {
+              await sendPostFailureEmail(brevoApiKey, { email: profile.email, name: profile.name || "User" }, post.content, post.id, post.scheduled_time, finalError, false);
+            }
+            if (brevoApiKey) {
+              await sendPostFailureEmail(brevoApiKey, { email: ADMIN_EMAIL, name: profile?.name || "Unknown" }, post.content, post.id, post.scheduled_time, finalError, true);
+            }
+
             results.push({ postId: post.id, status: "failed", reason: "Max retries reached" });
           }
         }
       } catch (postError) {
+        const errStr = String(postError);
         console.error(`Error posting ${post.id}:`, postError);
         await supabase.from("posts").update({
           status: "failed",
-          last_error: String(postError),
+          last_error: errStr,
           updated_at: new Date().toISOString(),
         }).eq("id", post.id);
-        results.push({ postId: post.id, status: "failed", reason: String(postError) });
+
+        // Send failure email for exceptions
+        // Fetch profile if not already fetched
+        const { data: catchProfile } = await supabase
+          .from("user_profiles")
+          .select("name, email")
+          .eq("user_id", post.user_id)
+          .single();
+
+        await supabase.from("notifications").insert({
+          user_id: post.user_id,
+          title: "❌ Post failed",
+          message: `Your post encountered an error: ${errStr.substring(0, 100)}`,
+          type: "post_failed",
+        });
+
+        if (brevoApiKey && catchProfile?.email) {
+          await sendPostFailureEmail(brevoApiKey, { email: catchProfile.email, name: catchProfile.name || "User" }, post.content, post.id, post.scheduled_time, errStr, false);
+        }
+        if (brevoApiKey) {
+          await sendPostFailureEmail(brevoApiKey, { email: ADMIN_EMAIL, name: catchProfile?.name || "Unknown" }, post.content, post.id, post.scheduled_time, errStr, true);
+        }
+
+        results.push({ postId: post.id, status: "failed", reason: errStr });
       }
     }
 
