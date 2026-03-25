@@ -249,14 +249,15 @@ serve(async (req) => {
             results.push({ postId: post.id, status: "retrying", attempt: retryCount });
           } else {
             // Max retries reached
+            const finalError = linkedinResult.error || "LinkedIn posting failed after 3 attempts";
             await supabase.from("posts").update({
               status: "failed",
               retry_count: retryCount,
-              last_error: linkedinResult.error || "LinkedIn posting failed after 3 attempts",
+              last_error: finalError,
               updated_at: new Date().toISOString(),
             }).eq("id", post.id);
 
-            // Alert user
+            // Alert user in-app
             await supabase.from("notifications").insert({
               user_id: post.user_id,
               title: "❌ Post failed",
@@ -264,14 +265,23 @@ serve(async (req) => {
               type: "post_failed",
             });
 
+            // Email to user and admin
+            if (brevoApiKey && profile?.email) {
+              await sendPostFailureEmail(brevoApiKey, { email: profile.email, name: profile.name || "User" }, post.content, post.id, post.scheduled_time, finalError, false);
+            }
+            if (brevoApiKey) {
+              await sendPostFailureEmail(brevoApiKey, { email: ADMIN_EMAIL, name: profile?.name || "Unknown" }, post.content, post.id, post.scheduled_time, finalError, true);
+            }
+
             results.push({ postId: post.id, status: "failed", reason: "Max retries reached" });
           }
         }
       } catch (postError) {
+        const errStr = String(postError);
         console.error(`Error posting ${post.id}:`, postError);
         await supabase.from("posts").update({
           status: "failed",
-          last_error: String(postError),
+          last_error: errStr,
           updated_at: new Date().toISOString(),
         }).eq("id", post.id);
         results.push({ postId: post.id, status: "failed", reason: String(postError) });
