@@ -1,8 +1,7 @@
 import { forwardRef, useState, useEffect } from "react";
-import { Bot, Linkedin, Twitter, Github, Download, Smartphone } from "lucide-react";
+import { Bot, Linkedin, Twitter, Github, Download } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 
 const APP_URL = "https://linked-agent-ai.lovable.app";
