@@ -13,6 +13,7 @@ const Navbar = ({ isLoggedIn: isLoggedInProp }: NavbarProps) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [authChecked, setAuthChecked] = useState(isLoggedInProp !== undefined);
   const [localLoggedIn, setLocalLoggedIn] = useState(false);
+  const [installPrompt, setInstallPrompt] = useState<any>(null);
   const navigate = useNavigate();
   const location = useLocation();
 
