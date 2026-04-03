@@ -97,6 +97,9 @@ const Landing = () => {
       <Suspense fallback={null}>
         <Footer />
       </Suspense>
+      <Suspense fallback={null}>
+        <InstallPopup />
+      </Suspense>
     </div>
   );
 };
