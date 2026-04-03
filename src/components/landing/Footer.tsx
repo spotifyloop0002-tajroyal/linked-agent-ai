@@ -6,8 +6,32 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
+const APP_URL = "https://linked-agent-ai.lovable.app";
+
 const Footer = forwardRef<HTMLElement>((_, ref) => {
   const navigate = useNavigate();
+  const [installPrompt, setInstallPrompt] = useState<any>(null);
+  const [showFallbackDialog, setShowFallbackDialog] = useState(false);
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      e.preventDefault();
+      setInstallPrompt(e);
+    };
+    window.addEventListener("beforeinstallprompt", handler);
+    return () => window.removeEventListener("beforeinstallprompt", handler);
+  }, []);
+
+  const handleGetApp = async () => {
+    if (installPrompt) {
+      installPrompt.prompt();
+      const result = await installPrompt.userChoice;
+      if (result.outcome === "accepted") toast.success("App installed!");
+      setInstallPrompt(null);
+    } else {
+      setShowFallbackDialog(true);
+    }
+  };
 
   const handleNavClick = (path: string) => {
     navigate(path);
