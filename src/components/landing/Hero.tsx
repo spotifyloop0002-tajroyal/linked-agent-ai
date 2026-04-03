@@ -1,8 +1,6 @@
-import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Bot, Sparkles, Calendar, BarChart3, Linkedin, LayoutDashboard, Download } from "lucide-react";
+import { Bot, Sparkles, Calendar, BarChart3, Linkedin, LayoutDashboard } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
 
 const dashboardPreview = "/images/dashboard-preview.webp";
 
@@ -10,33 +8,8 @@ interface HeroProps {
   isLoggedIn: boolean;
 }
 
-const APP_URL = "https://linked-agent-ai.lovable.app";
-
 const Hero = ({ isLoggedIn }: HeroProps) => {
   const navigate = useNavigate();
-  const [installPrompt, setInstallPrompt] = useState<any>(null);
-
-  useEffect(() => {
-    const handler = (e: Event) => {
-      e.preventDefault();
-      setInstallPrompt(e);
-    };
-    window.addEventListener("beforeinstallprompt", handler);
-    return () => window.removeEventListener("beforeinstallprompt", handler);
-  }, []);
-
-  const handleGetApp = async () => {
-    if (installPrompt) {
-      installPrompt.prompt();
-      const result = await installPrompt.userChoice;
-      if (result.outcome === "accepted") toast.success("App installed!");
-      setInstallPrompt(null);
-    } else {
-      toast.info("On iPhone: tap Share ⬆️ → Add to Home Screen. On Android: open in Chrome and tap ⋮ → Install app.");
-    }
-  };
-
-  const isStandalone = typeof window !== "undefined" && window.matchMedia("(display-mode: standalone)").matches;
 
   return (
     <section className="relative min-h-[90vh] md:min-h-screen flex items-center justify-center overflow-hidden">
@@ -156,20 +129,6 @@ const Hero = ({ isLoggedIn }: HeroProps) => {
             </div>
           </div>
         </div>
-        {/* Install App Button */}
-        {!isStandalone && (
-          <div className="animate-fade-up [animation-delay:600ms] mt-10 flex justify-center">
-            <Button 
-              variant="outline" 
-              size="lg" 
-              className="gap-2 rounded-full border-primary/30 hover:border-primary"
-              onClick={handleGetApp}
-            >
-              <Download className="w-5 h-5 text-primary" />
-              Install LinkedBot App
-            </Button>
-          </div>
-        )}
       </div>
 
     </section>
