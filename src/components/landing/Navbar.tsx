@@ -133,6 +133,21 @@ const Navbar = ({ isLoggedIn: isLoggedInProp }: NavbarProps) => {
             </button>
           ))}
           <div className="flex flex-col gap-2 pt-4 border-t border-border">
+            {installPrompt && (
+              <Button
+                variant="outline"
+                className="w-full gap-2"
+                onClick={async () => {
+                  installPrompt.prompt();
+                  const result = await installPrompt.userChoice;
+                  if (result.outcome === "accepted") setInstallPrompt(null);
+                  setMobileMenuOpen(false);
+                }}
+              >
+                <Download className="w-4 h-4" />
+                Install App
+              </Button>
+            )}
             {isLoggedIn ? (
               <Button variant="gradient" onClick={() => navigate("/dashboard")}>
                 Dashboard
