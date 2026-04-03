@@ -1,5 +1,9 @@
-import { forwardRef } from "react";
-import { Bot, Linkedin, Twitter, Github } from "lucide-react";
+import { forwardRef, useState, useEffect } from "react";
+import { Bot, Linkedin, Twitter, Github, Download, Smartphone } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
 const Footer = forwardRef<HTMLElement>((_, ref) => {
