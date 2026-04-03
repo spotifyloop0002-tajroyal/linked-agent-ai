@@ -12,6 +12,7 @@ const Pricing = lazy(() => import("@/components/landing/Pricing"));
 const FAQSection = lazy(() => import("@/components/landing/FAQSection"));
 const AffiliateSection = lazy(() => import("@/components/landing/AffiliateSection"));
 const Footer = lazy(() => import("@/components/landing/Footer"));
+const InstallPopup = lazy(() => import("@/components/landing/InstallPopup"));
 
 const organizationJsonLd = {
   "@context": "https://schema.org",
