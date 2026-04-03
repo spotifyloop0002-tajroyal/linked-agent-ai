@@ -15,7 +15,6 @@ const APP_URL = "https://linked-agent-ai.lovable.app";
 const Hero = ({ isLoggedIn }: HeroProps) => {
   const navigate = useNavigate();
   const [installPrompt, setInstallPrompt] = useState<any>(null);
-  const [showFallbackDialog, setShowFallbackDialog] = useState(false);
 
   useEffect(() => {
     const handler = (e: Event) => {
