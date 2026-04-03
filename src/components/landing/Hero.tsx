@@ -129,20 +129,6 @@ const Hero = ({ isLoggedIn }: HeroProps) => {
             </div>
           </div>
         </div>
-        {/* Install App Button */}
-        {!isStandalone && (
-          <div className="animate-fade-up [animation-delay:600ms] mt-10 flex justify-center">
-            <Button 
-              variant="outline" 
-              size="lg" 
-              className="gap-2 rounded-full border-primary/30 hover:border-primary"
-              onClick={handleGetApp}
-            >
-              <Download className="w-5 h-5 text-primary" />
-              Install LinkedBot App
-            </Button>
-          </div>
-        )}
       </div>
 
     </section>
