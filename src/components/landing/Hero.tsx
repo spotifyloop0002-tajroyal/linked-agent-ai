@@ -29,12 +29,10 @@ const Hero = ({ isLoggedIn }: HeroProps) => {
     if (installPrompt) {
       installPrompt.prompt();
       const result = await installPrompt.userChoice;
-      if (result.outcome === "accepted") {
-        toast.success("App installed successfully!");
-      }
+      if (result.outcome === "accepted") toast.success("App installed!");
       setInstallPrompt(null);
     } else {
-      setShowFallbackDialog(true);
+      toast.info("On iPhone: tap Share ⬆️ → Add to Home Screen. On Android: open in Chrome and tap ⋮ → Install app.");
     }
   };
 
