@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Bot, Menu, X } from "lucide-react";
+import { Bot, Menu, X, Download } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -12,8 +12,34 @@ const Navbar = ({ isLoggedIn: isLoggedInProp }: NavbarProps) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [authChecked, setAuthChecked] = useState(isLoggedInProp !== undefined);
   const [localLoggedIn, setLocalLoggedIn] = useState(false);
+  const [installPrompt, setInstallPrompt] = useState<any>(null);
+  const [isAppInstalled, setIsAppInstalled] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      e.preventDefault();
+      setInstallPrompt(e);
+    };
+    window.addEventListener("beforeinstallprompt", handler);
+
+    if (window.matchMedia("(display-mode: standalone)").matches) {
+      setIsAppInstalled(true);
+    }
+
+    return () => window.removeEventListener("beforeinstallprompt", handler);
+  }, []);
+
+  const handleInstall = async () => {
+    if (!installPrompt) return;
+    installPrompt.prompt();
+    const result = await installPrompt.userChoice;
+    if (result.outcome === "accepted") {
+      setIsAppInstalled(true);
+    }
+    setInstallPrompt(null);
+  };
 
   // Only run auth check if prop not provided (standalone usage)
   useEffect(() => {
@@ -81,6 +107,12 @@ const Navbar = ({ isLoggedIn: isLoggedInProp }: NavbarProps) => {
 
           {/* Desktop CTA — session-aware */}
           <div className="hidden md:flex items-center gap-3">
+            {installPrompt && !isAppInstalled && (
+              <Button variant="outline" size="sm" onClick={handleInstall} className="gap-2">
+                <Download className="w-4 h-4" />
+                Install App
+              </Button>
+            )}
             {isLoggedIn ? (
               <Button variant="gradient" onClick={() => navigate("/dashboard")}>
                 Dashboard
@@ -132,6 +164,12 @@ const Navbar = ({ isLoggedIn: isLoggedInProp }: NavbarProps) => {
             </button>
           ))}
           <div className="flex flex-col gap-2 pt-4 border-t border-border">
+            {installPrompt && !isAppInstalled && (
+              <Button variant="outline" onClick={handleInstall} className="gap-2 w-full">
+                <Download className="w-4 h-4" />
+                Install App
+              </Button>
+            )}
             {isLoggedIn ? (
               <Button variant="gradient" onClick={() => navigate("/dashboard")}>
                 Dashboard
