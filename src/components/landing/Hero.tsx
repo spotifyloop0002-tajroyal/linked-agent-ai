@@ -172,46 +172,6 @@ const Hero = ({ isLoggedIn }: HeroProps) => {
         )}
       </div>
 
-      {/* Fallback dialog for iOS / unsupported browsers */}
-      <Dialog open={showFallbackDialog} onOpenChange={setShowFallbackDialog}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Smartphone className="w-5 h-5 text-primary" />
-              Install LinkedBot
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-5 pt-2">
-            <div className="space-y-2">
-              <h3 className="font-semibold text-foreground">📱 Android (Chrome)</h3>
-              <ol className="list-decimal list-inside space-y-1 text-sm text-muted-foreground">
-                <li>Open the link below in Chrome</li>
-                <li>Tap <strong className="text-foreground">⋮ menu</strong> → <strong className="text-foreground">"Install app"</strong></li>
-              </ol>
-            </div>
-            <div className="space-y-2">
-              <h3 className="font-semibold text-foreground">🍎 iPhone (Safari)</h3>
-              <ol className="list-decimal list-inside space-y-1 text-sm text-muted-foreground">
-                <li>Open the link below in Safari</li>
-                <li>Tap <strong className="text-foreground">Share ⬆️</strong> → <strong className="text-foreground">"Add to Home Screen"</strong></li>
-              </ol>
-            </div>
-            <div className="rounded-lg bg-muted p-3 flex items-center justify-between gap-2">
-              <code className="text-sm text-foreground break-all">{APP_URL}</code>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => {
-                  navigator.clipboard.writeText(APP_URL);
-                  toast.success("Link copied!");
-                }}
-              >
-                Copy
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
     </section>
   );
 };
