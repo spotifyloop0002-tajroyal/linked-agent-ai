@@ -1,6 +1,9 @@
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Bot, Sparkles, Calendar, BarChart3, Linkedin, LayoutDashboard } from "lucide-react";
+import { Bot, Sparkles, Calendar, BarChart3, Linkedin, LayoutDashboard, Download, Smartphone } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { toast } from "sonner";
 
 const dashboardPreview = "/images/dashboard-preview.webp";
 
@@ -8,8 +11,36 @@ interface HeroProps {
   isLoggedIn: boolean;
 }
 
+const APP_URL = "https://linked-agent-ai.lovable.app";
+
 const Hero = ({ isLoggedIn }: HeroProps) => {
   const navigate = useNavigate();
+  const [installPrompt, setInstallPrompt] = useState<any>(null);
+  const [showFallbackDialog, setShowFallbackDialog] = useState(false);
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      e.preventDefault();
+      setInstallPrompt(e);
+    };
+    window.addEventListener("beforeinstallprompt", handler);
+    return () => window.removeEventListener("beforeinstallprompt", handler);
+  }, []);
+
+  const handleGetApp = async () => {
+    if (installPrompt) {
+      installPrompt.prompt();
+      const result = await installPrompt.userChoice;
+      if (result.outcome === "accepted") {
+        toast.success("App installed successfully!");
+      }
+      setInstallPrompt(null);
+    } else {
+      setShowFallbackDialog(true);
+    }
+  };
+
+  const isStandalone = typeof window !== "undefined" && window.matchMedia("(display-mode: standalone)").matches;
 
   return (
     <section className="relative min-h-[90vh] md:min-h-screen flex items-center justify-center overflow-hidden">
@@ -129,7 +160,62 @@ const Hero = ({ isLoggedIn }: HeroProps) => {
             </div>
           </div>
         </div>
+        {/* Install App Button */}
+        {!isStandalone && (
+          <div className="animate-fade-up [animation-delay:600ms] mt-10 flex justify-center">
+            <Button 
+              variant="outline" 
+              size="lg" 
+              className="gap-2 rounded-full border-primary/30 hover:border-primary"
+              onClick={handleGetApp}
+            >
+              <Download className="w-5 h-5 text-primary" />
+              Install LinkedBot App
+            </Button>
+          </div>
+        )}
       </div>
+
+      {/* Fallback dialog for iOS / unsupported browsers */}
+      <Dialog open={showFallbackDialog} onOpenChange={setShowFallbackDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Smartphone className="w-5 h-5 text-primary" />
+              Install LinkedBot
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-5 pt-2">
+            <div className="space-y-2">
+              <h3 className="font-semibold text-foreground">📱 Android (Chrome)</h3>
+              <ol className="list-decimal list-inside space-y-1 text-sm text-muted-foreground">
+                <li>Open the link below in Chrome</li>
+                <li>Tap <strong className="text-foreground">⋮ menu</strong> → <strong className="text-foreground">"Install app"</strong></li>
+              </ol>
+            </div>
+            <div className="space-y-2">
+              <h3 className="font-semibold text-foreground">🍎 iPhone (Safari)</h3>
+              <ol className="list-decimal list-inside space-y-1 text-sm text-muted-foreground">
+                <li>Open the link below in Safari</li>
+                <li>Tap <strong className="text-foreground">Share ⬆️</strong> → <strong className="text-foreground">"Add to Home Screen"</strong></li>
+              </ol>
+            </div>
+            <div className="rounded-lg bg-muted p-3 flex items-center justify-between gap-2">
+              <code className="text-sm text-foreground break-all">{APP_URL}</code>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => {
+                  navigator.clipboard.writeText(APP_URL);
+                  toast.success("Link copied!");
+                }}
+              >
+                Copy
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 };
