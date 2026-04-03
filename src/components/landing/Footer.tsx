@@ -1,8 +1,7 @@
 import { forwardRef, useState, useEffect } from "react";
-import { Bot, Linkedin, Twitter, Github, Download, Smartphone } from "lucide-react";
+import { Bot, Linkedin, Twitter, Github, Download } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 
 const APP_URL = "https://linked-agent-ai.lovable.app";
@@ -10,7 +9,6 @@ const APP_URL = "https://linked-agent-ai.lovable.app";
 const Footer = forwardRef<HTMLElement>((_, ref) => {
   const navigate = useNavigate();
   const [installPrompt, setInstallPrompt] = useState<any>(null);
-  const [showFallbackDialog, setShowFallbackDialog] = useState(false);
 
   useEffect(() => {
     const handler = (e: Event) => {
@@ -28,7 +26,7 @@ const Footer = forwardRef<HTMLElement>((_, ref) => {
       if (result.outcome === "accepted") toast.success("App installed!");
       setInstallPrompt(null);
     } else {
-      setShowFallbackDialog(true);
+      toast.info("On iPhone: tap Share ⬆️ → Add to Home Screen. On Android: open in Chrome and tap ⋮ → Install app.");
     }
   };
 
@@ -193,39 +191,6 @@ const Footer = forwardRef<HTMLElement>((_, ref) => {
           </div>
         </div>
 
-        {/* Fallback install dialog */}
-        <Dialog open={showFallbackDialog} onOpenChange={setShowFallbackDialog}>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <Smartphone className="w-5 h-5 text-primary" />
-                Install LinkedBot
-              </DialogTitle>
-            </DialogHeader>
-            <div className="space-y-5 pt-2">
-              <div className="space-y-2">
-                <h3 className="font-semibold text-foreground">📱 Android (Chrome)</h3>
-                <ol className="list-decimal list-inside space-y-1 text-sm text-muted-foreground">
-                  <li>Open the link below in Chrome</li>
-                  <li>Tap <strong className="text-foreground">⋮ menu</strong> → <strong className="text-foreground">"Install app"</strong></li>
-                </ol>
-              </div>
-              <div className="space-y-2">
-                <h3 className="font-semibold text-foreground">🍎 iPhone (Safari)</h3>
-                <ol className="list-decimal list-inside space-y-1 text-sm text-muted-foreground">
-                  <li>Open the link below in Safari</li>
-                  <li>Tap <strong className="text-foreground">Share ⬆️</strong> → <strong className="text-foreground">"Add to Home Screen"</strong></li>
-                </ol>
-              </div>
-              <div className="rounded-lg bg-muted p-3 flex items-center justify-between gap-2">
-                <code className="text-sm text-foreground break-all">{APP_URL}</code>
-                <Button variant="secondary" size="sm" onClick={() => { navigator.clipboard.writeText(APP_URL); toast.success("Link copied!"); }}>
-                  Copy
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
       </div>
     </footer>
   );
