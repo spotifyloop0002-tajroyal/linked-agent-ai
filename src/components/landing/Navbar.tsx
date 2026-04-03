@@ -167,12 +167,6 @@ const Navbar = ({ isLoggedIn: isLoggedInProp }: NavbarProps) => {
               </button>
             ))}
             <div className="flex flex-col gap-2 pt-4 border-t border-border">
-              {!isStandalone && (
-                <Button variant="outline" className="gap-2 w-full" onClick={handleGetApp}>
-                  <Download className="w-4 h-4" />
-                  Get App
-                </Button>
-              )}
               {isLoggedIn ? (
                 <Button variant="gradient" onClick={() => navigate("/dashboard")}>
                   Dashboard
