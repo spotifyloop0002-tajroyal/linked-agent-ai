@@ -107,6 +107,12 @@ const Navbar = ({ isLoggedIn: isLoggedInProp }: NavbarProps) => {
 
           {/* Desktop CTA — session-aware */}
           <div className="hidden md:flex items-center gap-3">
+            {installPrompt && !isAppInstalled && (
+              <Button variant="outline" size="sm" onClick={handleInstall} className="gap-2">
+                <Download className="w-4 h-4" />
+                Install App
+              </Button>
+            )}
             {isLoggedIn ? (
               <Button variant="gradient" onClick={() => navigate("/dashboard")}>
                 Dashboard
