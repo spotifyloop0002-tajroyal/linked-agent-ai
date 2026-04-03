@@ -1,8 +1,6 @@
-import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Bot, Sparkles, Calendar, BarChart3, Linkedin, LayoutDashboard, Download } from "lucide-react";
+import { Bot, Sparkles, Calendar, BarChart3, Linkedin, LayoutDashboard } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
 
 const dashboardPreview = "/images/dashboard-preview.webp";
 
