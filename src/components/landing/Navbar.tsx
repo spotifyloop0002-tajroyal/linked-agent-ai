@@ -120,12 +120,6 @@ const Navbar = ({ isLoggedIn: isLoggedInProp }: NavbarProps) => {
 
             {/* Desktop CTA */}
             <div className="hidden md:flex items-center gap-3">
-              {!isStandalone && (
-                <Button variant="outline" size="sm" className="gap-2" onClick={handleGetApp}>
-                  <Download className="w-4 h-4" />
-                  Get App
-                </Button>
-              )}
               {isLoggedIn ? (
                 <Button variant="gradient" onClick={() => navigate("/dashboard")}>
                   Dashboard
