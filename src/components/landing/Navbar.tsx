@@ -31,6 +31,15 @@ const Navbar = ({ isLoggedIn: isLoggedInProp }: NavbarProps) => {
     return () => subscription.unsubscribe();
   }, [isLoggedInProp]);
 
+  useEffect(() => {
+    const handler = (e: Event) => {
+      e.preventDefault();
+      setInstallPrompt(e);
+    };
+    window.addEventListener("beforeinstallprompt", handler);
+    return () => window.removeEventListener("beforeinstallprompt", handler);
+  }, []);
+
   const isLoggedIn = isLoggedInProp !== undefined ? isLoggedInProp : localLoggedIn;
 
   const navLinks = [
