@@ -11,8 +11,36 @@ interface HeroProps {
   isLoggedIn: boolean;
 }
 
+const APP_URL = "https://linked-agent-ai.lovable.app";
+
 const Hero = ({ isLoggedIn }: HeroProps) => {
   const navigate = useNavigate();
+  const [installPrompt, setInstallPrompt] = useState<any>(null);
+  const [showFallbackDialog, setShowFallbackDialog] = useState(false);
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      e.preventDefault();
+      setInstallPrompt(e);
+    };
+    window.addEventListener("beforeinstallprompt", handler);
+    return () => window.removeEventListener("beforeinstallprompt", handler);
+  }, []);
+
+  const handleGetApp = async () => {
+    if (installPrompt) {
+      installPrompt.prompt();
+      const result = await installPrompt.userChoice;
+      if (result.outcome === "accepted") {
+        toast.success("App installed successfully!");
+      }
+      setInstallPrompt(null);
+    } else {
+      setShowFallbackDialog(true);
+    }
+  };
+
+  const isStandalone = typeof window !== "undefined" && window.matchMedia("(display-mode: standalone)").matches;
 
   return (
     <section className="relative min-h-[90vh] md:min-h-screen flex items-center justify-center overflow-hidden">
