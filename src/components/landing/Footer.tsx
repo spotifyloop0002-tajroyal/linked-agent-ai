@@ -9,7 +9,6 @@ const APP_URL = "https://linked-agent-ai.lovable.app";
 const Footer = forwardRef<HTMLElement>((_, ref) => {
   const navigate = useNavigate();
   const [installPrompt, setInstallPrompt] = useState<any>(null);
-  const [showFallbackDialog, setShowFallbackDialog] = useState(false);
 
   useEffect(() => {
     const handler = (e: Event) => {
