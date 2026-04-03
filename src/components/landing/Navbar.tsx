@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { Download } from "lucide-react";
 import { Bot, Menu, X } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,6 +13,7 @@ const Navbar = ({ isLoggedIn: isLoggedInProp }: NavbarProps) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [authChecked, setAuthChecked] = useState(isLoggedInProp !== undefined);
   const [localLoggedIn, setLocalLoggedIn] = useState(false);
+  const [installPrompt, setInstallPrompt] = useState<any>(null);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -28,6 +30,15 @@ const Navbar = ({ isLoggedIn: isLoggedInProp }: NavbarProps) => {
     });
     return () => subscription.unsubscribe();
   }, [isLoggedInProp]);
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      e.preventDefault();
+      setInstallPrompt(e);
+    };
+    window.addEventListener("beforeinstallprompt", handler);
+    return () => window.removeEventListener("beforeinstallprompt", handler);
+  }, []);
 
   const isLoggedIn = isLoggedInProp !== undefined ? isLoggedInProp : localLoggedIn;
 
@@ -122,6 +133,21 @@ const Navbar = ({ isLoggedIn: isLoggedInProp }: NavbarProps) => {
             </button>
           ))}
           <div className="flex flex-col gap-2 pt-4 border-t border-border">
+            {installPrompt && (
+              <Button
+                variant="outline"
+                className="w-full gap-2"
+                onClick={async () => {
+                  installPrompt.prompt();
+                  const result = await installPrompt.userChoice;
+                  if (result.outcome === "accepted") setInstallPrompt(null);
+                  setMobileMenuOpen(false);
+                }}
+              >
+                <Download className="w-4 h-4" />
+                Install App
+              </Button>
+            )}
             {isLoggedIn ? (
               <Button variant="gradient" onClick={() => navigate("/dashboard")}>
                 Dashboard
