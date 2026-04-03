@@ -1,45 +1,28 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Bot, Menu, X, Download } from "lucide-react";
+import { Bot, Menu, X, Download, Smartphone } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 interface NavbarProps {
   isLoggedIn?: boolean;
 }
 
+const APP_URL = "https://linked-agent-ai.lovable.app";
+
 const Navbar = ({ isLoggedIn: isLoggedInProp }: NavbarProps) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [authChecked, setAuthChecked] = useState(isLoggedInProp !== undefined);
   const [localLoggedIn, setLocalLoggedIn] = useState(false);
-  const [installPrompt, setInstallPrompt] = useState<any>(null);
-  const [isAppInstalled, setIsAppInstalled] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-
-  useEffect(() => {
-    const handler = (e: Event) => {
-      e.preventDefault();
-      setInstallPrompt(e);
-    };
-    window.addEventListener("beforeinstallprompt", handler);
-
-    if (window.matchMedia("(display-mode: standalone)").matches) {
-      setIsAppInstalled(true);
-    }
-
-    return () => window.removeEventListener("beforeinstallprompt", handler);
-  }, []);
-
-  const handleInstall = async () => {
-    if (!installPrompt) return;
-    installPrompt.prompt();
-    const result = await installPrompt.userChoice;
-    if (result.outcome === "accepted") {
-      setIsAppInstalled(true);
-    }
-    setInstallPrompt(null);
-  };
 
   // Only run auth check if prop not provided (standalone usage)
   useEffect(() => {
@@ -72,6 +55,68 @@ const Navbar = ({ isLoggedIn: isLoggedInProp }: NavbarProps) => {
     navigate(href);
     setMobileMenuOpen(false);
   };
+
+  const InstallAppDialog = () => (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm" className="gap-2">
+          <Download className="w-4 h-4" />
+          Get App
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Smartphone className="w-5 h-5 text-primary" />
+            Install LinkedBot on Your Phone
+          </DialogTitle>
+        </DialogHeader>
+        <div className="space-y-5 pt-2">
+          {/* Android */}
+          <div className="space-y-2">
+            <h3 className="font-semibold text-foreground flex items-center gap-2">
+              📱 Android (Chrome / Edge)
+            </h3>
+            <ol className="list-decimal list-inside space-y-1 text-sm text-muted-foreground">
+              <li>Open the link below in Chrome</li>
+              <li>Tap the <strong className="text-foreground">⋮ menu</strong> (top right)</li>
+              <li>Tap <strong className="text-foreground">"Install app"</strong> or <strong className="text-foreground">"Add to Home screen"</strong></li>
+            </ol>
+          </div>
+
+          {/* iOS */}
+          <div className="space-y-2">
+            <h3 className="font-semibold text-foreground flex items-center gap-2">
+              🍎 iPhone / iPad (Safari)
+            </h3>
+            <ol className="list-decimal list-inside space-y-1 text-sm text-muted-foreground">
+              <li>Open the link below in Safari</li>
+              <li>Tap the <strong className="text-foreground">Share button</strong> (⬆️)</li>
+              <li>Scroll down and tap <strong className="text-foreground">"Add to Home Screen"</strong></li>
+            </ol>
+          </div>
+
+          {/* Link */}
+          <div className="rounded-lg bg-muted p-3 flex items-center justify-between gap-2">
+            <code className="text-sm text-foreground break-all">{APP_URL}</code>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => {
+                navigator.clipboard.writeText(APP_URL);
+              }}
+            >
+              Copy
+            </Button>
+          </div>
+
+          <p className="text-xs text-muted-foreground text-center">
+            Open this link on your phone to install LinkedBot as an app
+          </p>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50">
@@ -107,12 +152,7 @@ const Navbar = ({ isLoggedIn: isLoggedInProp }: NavbarProps) => {
 
           {/* Desktop CTA — session-aware */}
           <div className="hidden md:flex items-center gap-3">
-            {installPrompt && !isAppInstalled && (
-              <Button variant="outline" size="sm" onClick={handleInstall} className="gap-2">
-                <Download className="w-4 h-4" />
-                Install App
-              </Button>
-            )}
+            <InstallAppDialog />
             {isLoggedIn ? (
               <Button variant="gradient" onClick={() => navigate("/dashboard")}>
                 Dashboard
@@ -146,7 +186,7 @@ const Navbar = ({ isLoggedIn: isLoggedInProp }: NavbarProps) => {
       {/* Mobile menu */}
       <div
         className={`md:hidden bg-background border-b border-border overflow-hidden transition-all duration-300 ease-in-out ${
-          mobileMenuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+          mobileMenuOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
         }`}
       >
         <div className="container px-4 py-4 space-y-4">
@@ -164,12 +204,7 @@ const Navbar = ({ isLoggedIn: isLoggedInProp }: NavbarProps) => {
             </button>
           ))}
           <div className="flex flex-col gap-2 pt-4 border-t border-border">
-            {installPrompt && !isAppInstalled && (
-              <Button variant="outline" onClick={handleInstall} className="gap-2 w-full">
-                <Download className="w-4 h-4" />
-                Install App
-              </Button>
-            )}
+            <InstallAppDialog />
             {isLoggedIn ? (
               <Button variant="gradient" onClick={() => navigate("/dashboard")}>
                 Dashboard
